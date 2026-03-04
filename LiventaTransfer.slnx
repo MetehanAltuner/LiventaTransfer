@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LiventaTransfer.API/LiventaTransfer.API.csproj" />
+    <Project Path="src/LiventaTransfer.Application/LiventaTransfer.Application.csproj" />
+    <Project Path="src/LiventaTransfer.Domain/LiventaTransfer.Domain.csproj" />
+    <Project Path="src/LiventaTransfer.Infrastructure/LiventaTransfer.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LiventaTransfer.Tests/LiventaTransfer.Tests.csproj" />
+  </Folder>
+</Solution>
