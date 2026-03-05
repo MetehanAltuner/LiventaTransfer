@@ -45,8 +45,12 @@ builder.Services.AddControllers(options =>
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
 // DbContext
+var connectionString = Environment.GetEnvironmentVariable("Transferapi.ConnectionString")
+    ?? cfg.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Database connection string is not configured. Set the Transferapi.ConnectionString environment variable.");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(cfg.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddScoped<IAppDbContext>(provider => provider.GetRequiredService<AppDbContext>());
 
