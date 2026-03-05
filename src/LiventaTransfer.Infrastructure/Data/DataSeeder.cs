@@ -76,10 +76,6 @@ public static class DataSeeder
 
     private static string BCryptHash(string password)
     {
-        // Simple hash for seed data — replace with proper BCrypt in production
-        using var sha = System.Security.Cryptography.SHA256.Create();
-        var bytes = System.Text.Encoding.UTF8.GetBytes(password);
-        var hash = sha.ComputeHash(bytes);
-        return Convert.ToBase64String(hash);
+        return BCrypt.Net.BCrypt.HashPassword(password);
     }
 }
