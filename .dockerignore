@@ -1,0 +1,13 @@
+**/.vs
+**/.idea
+**/bin
+**/obj
+**/logs
+**/node_modules
+**/.git
+**/.claude
+*.md
+.gitignore
+.dockerignore
+docker-compose.yml
+tests/
