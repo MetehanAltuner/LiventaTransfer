@@ -76,6 +76,9 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 
+# Claude
+.claude/
+
 # Misc
 *.tmp
 *.bak
