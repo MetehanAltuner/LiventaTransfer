@@ -61,6 +61,12 @@ builder.Services.AddScoped<VehicleOwnerService>();
 builder.Services.AddScoped<VehicleService>();
 builder.Services.AddScoped<DriverService>();
 builder.Services.AddScoped<LocationService>();
+builder.Services.AddScoped<JobService>();
+builder.Services.AddScoped<JobNoteService>();
+builder.Services.AddScoped<TripLogService>();
+builder.Services.AddScoped<InvoiceService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddScoped<UserService>();
 
 // JWT Authentication
 var jwtKey = cfg["Jwt:Key"]!;
@@ -71,6 +77,7 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.MapInboundClaims = false;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
