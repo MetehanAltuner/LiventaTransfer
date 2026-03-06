@@ -1,6 +1,6 @@
 services:
   transfer-api:
-    build: .
+    image: transferapi:latest
     container_name: transfer-api
     restart: unless-stopped
     ports:
@@ -10,8 +10,3 @@ services:
       - Transferapi.ConnectionString=Host=host.docker.internal;Port=5432;Database=liventa_transfer;Username=liventa_user;Password=Liventa2025!
     extra_hosts:
       - "host.docker.internal:host-gateway"
-
-networks:
-  default:
-    name: transfer-net
-    external: false
