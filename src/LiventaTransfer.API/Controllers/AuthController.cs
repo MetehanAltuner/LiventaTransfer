@@ -24,9 +24,9 @@ public sealed class AuthController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    /// <summary>Yeni kullanıcı kaydı (sadece Admin yapabilir)</summary>
+    /// <summary>Yeni kullanıcı kaydı</summary>
     [HttpPost("register")]
-    [Authorize(Roles = "Admin")]
+    [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
         var r = await _auth.RegisterAsync(request, ct);
