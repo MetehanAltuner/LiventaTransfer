@@ -9,11 +9,11 @@ public class Job : BaseEntity
     public TimeOnly JobTime { get; set; }
     public JobType JobType { get; set; }
     public JobStatus Status { get; set; }
-    public Guid CustomerId { get; set; }
-    public Guid? PassengerId { get; set; }
+    public long CustomerId { get; set; }
+    public long? PassengerId { get; set; }
     public int PassengerCount { get; set; } = 1;
-    public Guid? PickupLocationId { get; set; }
-    public Guid? DropoffLocationId { get; set; }
+    public long? PickupLocationId { get; set; }
+    public long? DropoffLocationId { get; set; }
     public string? PickupAddress { get; set; }
     public string? DropoffAddress { get; set; }
     public string? RouteDescription { get; set; }
@@ -21,9 +21,9 @@ public class Job : BaseEntity
     public string? ExtraInfo { get; set; }
     public string? Notes { get; set; }
     public string? SourceEmail { get; set; }
-    public Guid? VehicleOwnerId { get; set; }
-    public Guid? VehicleId { get; set; }
-    public Guid? DriverId { get; set; }
+    public long? VehicleOwnerId { get; set; }
+    public long? VehicleId { get; set; }
+    public long? DriverId { get; set; }
     public decimal? SalePrice { get; set; }
     public decimal? PurchasePrice { get; set; }
     public decimal? ExtraCost { get; set; }

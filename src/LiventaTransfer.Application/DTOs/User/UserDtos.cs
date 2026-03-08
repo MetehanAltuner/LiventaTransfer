@@ -31,7 +31,7 @@ public record UserDetailDto
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
     public UserRole Role { get; init; }
-    public Guid BranchId { get; init; }
+    public long BranchId { get; init; }
     public string BranchName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -57,6 +57,6 @@ public record UpdateUserRequest
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
     public UserRole Role { get; init; }
-    public Guid BranchId { get; init; }
+    public long BranchId { get; init; }
     public bool IsActive { get; init; }
 }

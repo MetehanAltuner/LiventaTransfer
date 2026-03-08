@@ -10,7 +10,7 @@ public sealed class DriverService
     private readonly IAppDbContext _db;
     public DriverService(IAppDbContext db) => _db = db;
 
-    public async Task<ApiResult<PagedResult<DriverListDto>>> GetPagedAsync(PagedQuery query, Guid? vehicleOwnerId, CancellationToken ct)
+    public async Task<ApiResult<PagedResult<DriverListDto>>> GetPagedAsync(PagedQuery query, long? vehicleOwnerId, CancellationToken ct)
     {
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
@@ -46,7 +46,7 @@ public sealed class DriverService
         }, "Şoförler listelendi.");
     }
 
-    public async Task<ApiResult<DriverDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<DriverDetailDto>> GetByIdAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Drivers
             .AsNoTracking()
@@ -86,7 +86,7 @@ public sealed class DriverService
         return ApiResult<DriverDetailDto>.Ok(DriverDetailDto.FromEntity(entity), "Şoför oluşturuldu.", 201);
     }
 
-    public async Task<ApiResult<DriverDetailDto>> UpdateAsync(Guid id, UpdateDriverRequest request, CancellationToken ct)
+    public async Task<ApiResult<DriverDetailDto>> UpdateAsync(long id, UpdateDriverRequest request, CancellationToken ct)
     {
         var entity = await _db.Drivers.FirstOrDefaultAsync(d => d.Id == id, ct);
         if (entity is null)
@@ -112,7 +112,7 @@ public sealed class DriverService
         return ApiResult<DriverDetailDto>.Ok(DriverDetailDto.FromEntity(entity), "Şoför güncellendi.");
     }
 
-    public async Task<ApiResult<bool>> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Drivers.FirstOrDefaultAsync(d => d.Id == id, ct);
         if (entity is null)

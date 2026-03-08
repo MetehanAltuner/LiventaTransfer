@@ -4,7 +4,7 @@ namespace LiventaTransfer.Domain.Entities;
 
 public class Notification : BaseEntity
 {
-    public Guid? JobId { get; set; }
+    public long? JobId { get; set; }
     public RecipientType RecipientType { get; set; }
     public string? RecipientPhone { get; set; }
     public Guid? RecipientUserId { get; set; }

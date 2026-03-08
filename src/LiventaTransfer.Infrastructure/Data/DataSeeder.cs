@@ -25,11 +25,12 @@ public static class DataSeeder
         logger.LogInformation("Seeding database...");
 
         // ── Branches ──
-        var branchAntalya = new Branch { Id = Guid.NewGuid(), Name = "Antalya Merkez", Address = "Muratpaşa, Antalya", IsActive = true };
-        var branchBodrum = new Branch { Id = Guid.NewGuid(), Name = "Bodrum Şube", Address = "Bodrum, Muğla", IsActive = true };
+        var branchAntalya = new Branch { Name = "Antalya Merkez", Address = "Muratpaşa, Antalya", IsActive = true };
+        var branchBodrum = new Branch { Name = "Bodrum Şube", Address = "Bodrum, Muğla", IsActive = true };
         context.Branches.AddRange(branchAntalya, branchBodrum);
+        await context.SaveChangesAsync();
 
-        // ── Users ──
+        // ── Users (Id stays Guid) ──
         var adminUser = new User
         {
             Id = Guid.NewGuid(), Username = "admin", FirstName = "Admin", LastName = "User",
@@ -46,71 +47,78 @@ public static class DataSeeder
             PasswordHash = BCryptHash("reserv123"), Role = UserRole.Reservationist, BranchId = branchBodrum.Id, IsActive = true
         };
         context.Users.AddRange(adminUser, coordUser, reservUser);
+        await context.SaveChangesAsync();
 
         // ── Vehicle Owners ──
         var ownFleet = new VehicleOwner
         {
-            Id = Guid.NewGuid(), Name = "Liventa Filo", IsOwnFleet = true,
+            Name = "Liventa Filo", IsOwnFleet = true,
             ContactPerson = "Ali Demir", Phone = "05321234567", IsActive = true
         };
         var subcon1 = new VehicleOwner
         {
-            Id = Guid.NewGuid(), Name = "Ertur Turizm", IsOwnFleet = false,
+            Name = "Ertur Turizm", IsOwnFleet = false,
             ContactPerson = "Hasan Çelik", Phone = "05339876543", IsActive = true
         };
         var subcon2 = new VehicleOwner
         {
-            Id = Guid.NewGuid(), Name = "Netur VIP", IsOwnFleet = false,
+            Name = "Netur VIP", IsOwnFleet = false,
             ContactPerson = "Fatma Aksoy", Phone = "05445556677", IsActive = true
         };
         context.VehicleOwners.AddRange(ownFleet, subcon1, subcon2);
+        await context.SaveChangesAsync();
 
         // ── Vehicles ──
-        var v1 = new Vehicle { Id = Guid.NewGuid(), Plate = "07 ABC 123", VehicleType = VehicleType.Sedan, Brand = "Mercedes", Model = "E200", Year = 2023, Capacity = 4, VehicleOwnerId = ownFleet.Id, IsActive = true };
-        var v2 = new Vehicle { Id = Guid.NewGuid(), Plate = "07 DEF 456", VehicleType = VehicleType.Vito, Brand = "Mercedes", Model = "Vito Tourer", Year = 2024, Capacity = 8, VehicleOwnerId = ownFleet.Id, IsActive = true };
-        var v3 = new Vehicle { Id = Guid.NewGuid(), Plate = "07 GHI 789", VehicleType = VehicleType.Sprinter, Brand = "Mercedes", Model = "Sprinter", Year = 2022, Capacity = 16, VehicleOwnerId = subcon1.Id, IsActive = true };
-        var v4 = new Vehicle { Id = Guid.NewGuid(), Plate = "48 JKL 012", VehicleType = VehicleType.Sedan, Brand = "BMW", Model = "520i", Year = 2024, Capacity = 4, VehicleOwnerId = subcon2.Id, IsActive = true };
-        var v5 = new Vehicle { Id = Guid.NewGuid(), Plate = "48 MNO 345", VehicleType = VehicleType.Minibus, Brand = "Ford", Model = "Transit", Year = 2023, Capacity = 14, VehicleOwnerId = subcon2.Id, IsActive = true };
+        var v1 = new Vehicle { Plate = "07 ABC 123", VehicleType = VehicleType.Sedan, Brand = "Mercedes", Model = "E200", Year = 2023, Capacity = 4, VehicleOwnerId = ownFleet.Id, IsActive = true };
+        var v2 = new Vehicle { Plate = "07 DEF 456", VehicleType = VehicleType.Vito, Brand = "Mercedes", Model = "Vito Tourer", Year = 2024, Capacity = 8, VehicleOwnerId = ownFleet.Id, IsActive = true };
+        var v3 = new Vehicle { Plate = "07 GHI 789", VehicleType = VehicleType.Sprinter, Brand = "Mercedes", Model = "Sprinter", Year = 2022, Capacity = 16, VehicleOwnerId = subcon1.Id, IsActive = true };
+        var v4 = new Vehicle { Plate = "48 JKL 012", VehicleType = VehicleType.Sedan, Brand = "BMW", Model = "520i", Year = 2024, Capacity = 4, VehicleOwnerId = subcon2.Id, IsActive = true };
+        var v5 = new Vehicle { Plate = "48 MNO 345", VehicleType = VehicleType.Minibus, Brand = "Ford", Model = "Transit", Year = 2023, Capacity = 14, VehicleOwnerId = subcon2.Id, IsActive = true };
         context.Vehicles.AddRange(v1, v2, v3, v4, v5);
+        await context.SaveChangesAsync();
 
         // ── Drivers ──
-        var d1 = new Driver { Id = Guid.NewGuid(), FullName = "Ahmet Yıldırım", Phone = "05301112233", WhatsAppPhone = "05301112233", LicenseNumber = "ANT-001", VehicleOwnerId = ownFleet.Id, DefaultVehicleId = v1.Id, IsActive = true };
-        var d2 = new Driver { Id = Guid.NewGuid(), FullName = "Mustafa Özkan", Phone = "05302223344", WhatsAppPhone = "05302223344", LicenseNumber = "ANT-002", VehicleOwnerId = ownFleet.Id, DefaultVehicleId = v2.Id, IsActive = true };
-        var d3 = new Driver { Id = Guid.NewGuid(), FullName = "Emre Şahin", Phone = "05333334455", WhatsAppPhone = "05333334455", LicenseNumber = "ERT-001", VehicleOwnerId = subcon1.Id, DefaultVehicleId = v3.Id, IsActive = true };
-        var d4 = new Driver { Id = Guid.NewGuid(), FullName = "Burak Koç", Phone = "05444445566", WhatsAppPhone = "05444445566", LicenseNumber = "NET-001", VehicleOwnerId = subcon2.Id, DefaultVehicleId = v4.Id, IsActive = true };
+        var d1 = new Driver { FullName = "Ahmet Yıldırım", Phone = "05301112233", WhatsAppPhone = "05301112233", LicenseNumber = "ANT-001", VehicleOwnerId = ownFleet.Id, DefaultVehicleId = v1.Id, IsActive = true };
+        var d2 = new Driver { FullName = "Mustafa Özkan", Phone = "05302223344", WhatsAppPhone = "05302223344", LicenseNumber = "ANT-002", VehicleOwnerId = ownFleet.Id, DefaultVehicleId = v2.Id, IsActive = true };
+        var d3 = new Driver { FullName = "Emre Şahin", Phone = "05333334455", WhatsAppPhone = "05333334455", LicenseNumber = "ERT-001", VehicleOwnerId = subcon1.Id, DefaultVehicleId = v3.Id, IsActive = true };
+        var d4 = new Driver { FullName = "Burak Koç", Phone = "05444445566", WhatsAppPhone = "05444445566", LicenseNumber = "NET-001", VehicleOwnerId = subcon2.Id, DefaultVehicleId = v4.Id, IsActive = true };
         context.Drivers.AddRange(d1, d2, d3, d4);
+        await context.SaveChangesAsync();
 
         // ── Customers ──
-        var c1 = new Customer { Id = Guid.NewGuid(), Name = "TUI Türkiye", CustomerType = CustomerType.Corporate, TaxNumber = "1234567890", TaxOffice = "Antalya", Phone = "02423111111", Email = "ops@tui.com.tr", IsActive = true };
-        var c2 = new Customer { Id = Guid.NewGuid(), Name = "Coral Travel", CustomerType = CustomerType.Corporate, TaxNumber = "0987654321", TaxOffice = "Antalya", Phone = "02423222222", Email = "transfer@coraltravel.com.tr", IsActive = true };
-        var c3 = new Customer { Id = Guid.NewGuid(), Name = "Pegas Touristik", CustomerType = CustomerType.Corporate, TaxNumber = "5678901234", TaxOffice = "Antalya", Phone = "02423333333", Email = "ops@pegasus.com.tr", IsActive = true };
-        var c4 = new Customer { Id = Guid.NewGuid(), Name = "Fatih Çetin", CustomerType = CustomerType.Individual, TcKimlikNo = "12345678901", Phone = "05551112233", Email = "fatih@email.com", IsActive = true };
-        var c5 = new Customer { Id = Guid.NewGuid(), Name = "Elif Arslan", CustomerType = CustomerType.Individual, TcKimlikNo = "98765432109", Phone = "05552223344", Email = "elif@email.com", IsActive = true };
+        var c1 = new Customer { Name = "TUI Türkiye", CustomerType = CustomerType.Corporate, TaxNumber = "1234567890", TaxOffice = "Antalya", Phone = "02423111111", Email = "ops@tui.com.tr", IsActive = true };
+        var c2 = new Customer { Name = "Coral Travel", CustomerType = CustomerType.Corporate, TaxNumber = "0987654321", TaxOffice = "Antalya", Phone = "02423222222", Email = "transfer@coraltravel.com.tr", IsActive = true };
+        var c3 = new Customer { Name = "Pegas Touristik", CustomerType = CustomerType.Corporate, TaxNumber = "5678901234", TaxOffice = "Antalya", Phone = "02423333333", Email = "ops@pegasus.com.tr", IsActive = true };
+        var c4 = new Customer { Name = "Fatih Çetin", CustomerType = CustomerType.Individual, TcKimlikNo = "12345678901", Phone = "05551112233", Email = "fatih@email.com", IsActive = true };
+        var c5 = new Customer { Name = "Elif Arslan", CustomerType = CustomerType.Individual, TcKimlikNo = "98765432109", Phone = "05552223344", Email = "elif@email.com", IsActive = true };
         context.Customers.AddRange(c1, c2, c3, c4, c5);
+        await context.SaveChangesAsync();
 
         // ── Passengers ──
-        var p1 = new Passenger { Id = Guid.NewGuid(), FullName = "Hans Müller", Phone = "+491761234567", CustomerId = c1.Id, IsActive = true };
-        var p2 = new Passenger { Id = Guid.NewGuid(), FullName = "Anna Schmidt", Phone = "+491769876543", CustomerId = c1.Id, IsActive = true };
-        var p3 = new Passenger { Id = Guid.NewGuid(), FullName = "Ivan Petrov", Phone = "+79161234567", CustomerId = c2.Id, IsActive = true };
-        var p4 = new Passenger { Id = Guid.NewGuid(), FullName = "Olga Ivanova", Phone = "+79169876543", CustomerId = c2.Id, IsActive = true };
-        var p5 = new Passenger { Id = Guid.NewGuid(), FullName = "Sergei Volkov", Phone = "+79171112233", CustomerId = c3.Id, IsActive = true };
-        var p6 = new Passenger { Id = Guid.NewGuid(), FullName = "Maria Sokolova", Phone = "+79172223344", CustomerId = c3.Id, IsActive = true };
-        var p7 = new Passenger { Id = Guid.NewGuid(), FullName = "Fatih Çetin", Phone = "05551112233", CustomerId = c4.Id, IsActive = true };
-        var p8 = new Passenger { Id = Guid.NewGuid(), FullName = "Elif Arslan", Phone = "05552223344", CustomerId = c5.Id, IsActive = true };
+        var p1 = new Passenger { FullName = "Hans Müller", Phone = "+491761234567", CustomerId = c1.Id, IsActive = true };
+        var p2 = new Passenger { FullName = "Anna Schmidt", Phone = "+491769876543", CustomerId = c1.Id, IsActive = true };
+        var p3 = new Passenger { FullName = "Ivan Petrov", Phone = "+79161234567", CustomerId = c2.Id, IsActive = true };
+        var p4 = new Passenger { FullName = "Olga Ivanova", Phone = "+79169876543", CustomerId = c2.Id, IsActive = true };
+        var p5 = new Passenger { FullName = "Sergei Volkov", Phone = "+79171112233", CustomerId = c3.Id, IsActive = true };
+        var p6 = new Passenger { FullName = "Maria Sokolova", Phone = "+79172223344", CustomerId = c3.Id, IsActive = true };
+        var p7 = new Passenger { FullName = "Fatih Çetin", Phone = "05551112233", CustomerId = c4.Id, IsActive = true };
+        var p8 = new Passenger { FullName = "Elif Arslan", Phone = "05552223344", CustomerId = c5.Id, IsActive = true };
         context.Passengers.AddRange(p1, p2, p3, p4, p5, p6, p7, p8);
+        await context.SaveChangesAsync();
 
         // ── Locations ──
-        var locAYT = new Location { Id = Guid.NewGuid(), Name = "Antalya Havalimanı", ShortCode = "AYT", LocationType = LocationType.Airport, Latitude = 36.8987m, Longitude = 30.8005m, IsActive = true };
-        var locDLM = new Location { Id = Guid.NewGuid(), Name = "Dalaman Havalimanı", ShortCode = "DLM", LocationType = LocationType.Airport, Latitude = 36.7131m, Longitude = 28.7925m, IsActive = true };
-        var locBJV = new Location { Id = Guid.NewGuid(), Name = "Milas-Bodrum Havalimanı", ShortCode = "BJV", LocationType = LocationType.Airport, Latitude = 37.2506m, Longitude = 27.6643m, IsActive = true };
-        var locH1 = new Location { Id = Guid.NewGuid(), Name = "Rixos Sungate", ShortCode = "RXS", LocationType = LocationType.Hotel, Address = "Beldibi, Kemer, Antalya", IsActive = true };
-        var locH2 = new Location { Id = Guid.NewGuid(), Name = "Titanic Mardan Palace", ShortCode = "TMP", LocationType = LocationType.Hotel, Address = "Lara, Antalya", IsActive = true };
-        var locH3 = new Location { Id = Guid.NewGuid(), Name = "Regnum Carya", ShortCode = "RCG", LocationType = LocationType.Hotel, Address = "Belek, Serik, Antalya", IsActive = true };
-        var locH4 = new Location { Id = Guid.NewGuid(), Name = "Voyage Belek", ShortCode = "VBK", LocationType = LocationType.Hotel, Address = "Belek, Serik, Antalya", IsActive = true };
-        var locH5 = new Location { Id = Guid.NewGuid(), Name = "Mandarin Oriental Bodrum", ShortCode = "MOB", LocationType = LocationType.Hotel, Address = "Cennet Koyu, Bodrum", IsActive = true };
-        var locOfc = new Location { Id = Guid.NewGuid(), Name = "Liventa Ofis", ShortCode = "LVO", LocationType = LocationType.Office, Address = "Muratpaşa, Antalya", IsActive = true };
-        var locOther = new Location { Id = Guid.NewGuid(), Name = "Kaleiçi", ShortCode = "KLC", LocationType = LocationType.Other, Address = "Kaleiçi, Muratpaşa, Antalya", IsActive = true };
+        var locAYT = new Location { Name = "Antalya Havalimanı", ShortCode = "AYT", LocationType = LocationType.Airport, Latitude = 36.8987m, Longitude = 30.8005m, IsActive = true };
+        var locDLM = new Location { Name = "Dalaman Havalimanı", ShortCode = "DLM", LocationType = LocationType.Airport, Latitude = 36.7131m, Longitude = 28.7925m, IsActive = true };
+        var locBJV = new Location { Name = "Milas-Bodrum Havalimanı", ShortCode = "BJV", LocationType = LocationType.Airport, Latitude = 37.2506m, Longitude = 27.6643m, IsActive = true };
+        var locH1 = new Location { Name = "Rixos Sungate", ShortCode = "RXS", LocationType = LocationType.Hotel, Address = "Beldibi, Kemer, Antalya", IsActive = true };
+        var locH2 = new Location { Name = "Titanic Mardan Palace", ShortCode = "TMP", LocationType = LocationType.Hotel, Address = "Lara, Antalya", IsActive = true };
+        var locH3 = new Location { Name = "Regnum Carya", ShortCode = "RCG", LocationType = LocationType.Hotel, Address = "Belek, Serik, Antalya", IsActive = true };
+        var locH4 = new Location { Name = "Voyage Belek", ShortCode = "VBK", LocationType = LocationType.Hotel, Address = "Belek, Serik, Antalya", IsActive = true };
+        var locH5 = new Location { Name = "Mandarin Oriental Bodrum", ShortCode = "MOB", LocationType = LocationType.Hotel, Address = "Cennet Koyu, Bodrum", IsActive = true };
+        var locOfc = new Location { Name = "Liventa Ofis", ShortCode = "LVO", LocationType = LocationType.Office, Address = "Muratpaşa, Antalya", IsActive = true };
+        var locOther = new Location { Name = "Kaleiçi", ShortCode = "KLC", LocationType = LocationType.Other, Address = "Kaleiçi, Muratpaşa, Antalya", IsActive = true };
         context.Locations.AddRange(locAYT, locDLM, locBJV, locH1, locH2, locH3, locH4, locH5, locOfc, locOther);
+        await context.SaveChangesAsync();
 
         // ── Jobs (10 adet, farklı durumlarda) ──
         var now = DateTime.UtcNow;
@@ -118,7 +126,7 @@ public static class DataSeeder
 
         var job1 = new Job
         {
-            Id = Guid.NewGuid(), JobNumber = "JOB-20260301-0001", JobDate = today.AddDays(-4), JobTime = new TimeOnly(14, 30),
+            JobNumber = "JOB-20260301-0001", JobDate = today.AddDays(-4), JobTime = new TimeOnly(14, 30),
             JobType = JobType.Transfer, Status = JobStatus.Completed,
             CustomerId = c1.Id, PassengerId = p1.Id, PassengerCount = 2,
             PickupLocationId = locAYT.Id, DropoffLocationId = locH1.Id,
@@ -128,7 +136,7 @@ public static class DataSeeder
         };
         var job2 = new Job
         {
-            Id = Guid.NewGuid(), JobNumber = "JOB-20260301-0002", JobDate = today.AddDays(-4), JobTime = new TimeOnly(16, 0),
+            JobNumber = "JOB-20260301-0002", JobDate = today.AddDays(-4), JobTime = new TimeOnly(16, 0),
             JobType = JobType.Transfer, Status = JobStatus.Completed,
             CustomerId = c2.Id, PassengerId = p3.Id, PassengerCount = 1,
             PickupLocationId = locAYT.Id, DropoffLocationId = locH2.Id,
@@ -138,7 +146,7 @@ public static class DataSeeder
         };
         var job3 = new Job
         {
-            Id = Guid.NewGuid(), JobNumber = "JOB-20260302-0001", JobDate = today.AddDays(-3), JobTime = new TimeOnly(9, 0),
+            JobNumber = "JOB-20260302-0001", JobDate = today.AddDays(-3), JobTime = new TimeOnly(9, 0),
             JobType = JobType.Transfer, Status = JobStatus.Completed,
             CustomerId = c1.Id, PassengerId = p2.Id, PassengerCount = 2,
             PickupLocationId = locH1.Id, DropoffLocationId = locAYT.Id,
@@ -148,7 +156,7 @@ public static class DataSeeder
         };
         var job4 = new Job
         {
-            Id = Guid.NewGuid(), JobNumber = "JOB-20260303-0001", JobDate = today.AddDays(-2), JobTime = new TimeOnly(11, 0),
+            JobNumber = "JOB-20260303-0001", JobDate = today.AddDays(-2), JobTime = new TimeOnly(11, 0),
             JobType = JobType.Transfer, Status = JobStatus.PendingInvoice,
             CustomerId = c3.Id, PassengerId = p5.Id, PassengerCount = 4,
             PickupLocationId = locAYT.Id, DropoffLocationId = locH3.Id,
@@ -158,7 +166,7 @@ public static class DataSeeder
         };
         var job5 = new Job
         {
-            Id = Guid.NewGuid(), JobNumber = "JOB-20260304-0001", JobDate = today.AddDays(-1), JobTime = new TimeOnly(8, 30),
+            JobNumber = "JOB-20260304-0001", JobDate = today.AddDays(-1), JobTime = new TimeOnly(8, 30),
             JobType = JobType.DailyAllocation, Status = JobStatus.InProgress,
             CustomerId = c2.Id, PassengerId = p4.Id, PassengerCount = 3,
             PickupLocationId = locH2.Id, DropoffLocationId = locOther.Id,
@@ -168,7 +176,7 @@ public static class DataSeeder
         };
         var job6 = new Job
         {
-            Id = Guid.NewGuid(), JobNumber = "JOB-20260305-0001", JobDate = today, JobTime = new TimeOnly(10, 0),
+            JobNumber = "JOB-20260305-0001", JobDate = today, JobTime = new TimeOnly(10, 0),
             JobType = JobType.Transfer, Status = JobStatus.Assigned,
             CustomerId = c4.Id, PassengerId = p7.Id, PassengerCount = 1,
             PickupLocationId = locAYT.Id, DropoffLocationId = locH4.Id,
@@ -178,7 +186,7 @@ public static class DataSeeder
         };
         var job7 = new Job
         {
-            Id = Guid.NewGuid(), JobNumber = "JOB-20260305-0002", JobDate = today, JobTime = new TimeOnly(15, 0),
+            JobNumber = "JOB-20260305-0002", JobDate = today, JobTime = new TimeOnly(15, 0),
             JobType = JobType.Transfer, Status = JobStatus.Open,
             CustomerId = c5.Id, PassengerId = p8.Id, PassengerCount = 2,
             PickupLocationId = locBJV.Id, DropoffLocationId = locH5.Id,
@@ -187,7 +195,7 @@ public static class DataSeeder
         };
         var job8 = new Job
         {
-            Id = Guid.NewGuid(), JobNumber = "JOB-20260305-0003", JobDate = today, JobTime = new TimeOnly(18, 0),
+            JobNumber = "JOB-20260305-0003", JobDate = today, JobTime = new TimeOnly(18, 0),
             JobType = JobType.Transfer, Status = JobStatus.Open,
             CustomerId = c3.Id, PassengerId = p6.Id, PassengerCount = 2,
             PickupLocationId = locAYT.Id, DropoffLocationId = locH3.Id,
@@ -196,7 +204,7 @@ public static class DataSeeder
         };
         var job9 = new Job
         {
-            Id = Guid.NewGuid(), JobNumber = "JOB-20260306-0001", JobDate = today.AddDays(1), JobTime = new TimeOnly(7, 0),
+            JobNumber = "JOB-20260306-0001", JobDate = today.AddDays(1), JobTime = new TimeOnly(7, 0),
             JobType = JobType.Transfer, Status = JobStatus.Assigned,
             CustomerId = c1.Id, PassengerId = p1.Id, PassengerCount = 2,
             PickupLocationId = locH4.Id, DropoffLocationId = locAYT.Id,
@@ -206,7 +214,7 @@ public static class DataSeeder
         };
         var job10 = new Job
         {
-            Id = Guid.NewGuid(), JobNumber = "JOB-20260228-0001", JobDate = today.AddDays(-5), JobTime = new TimeOnly(12, 0),
+            JobNumber = "JOB-20260228-0001", JobDate = today.AddDays(-5), JobTime = new TimeOnly(12, 0),
             JobType = JobType.Transfer, Status = JobStatus.Cancelled,
             CustomerId = c5.Id, PassengerId = p8.Id, PassengerCount = 1,
             PickupLocationId = locDLM.Id, DropoffLocationId = locH5.Id,
@@ -215,6 +223,7 @@ public static class DataSeeder
             Notes = "Müşteri iptal etti - uçuş değişikliği"
         };
         context.Jobs.AddRange(job1, job2, job3, job4, job5, job6, job7, job8, job9, job10);
+        await context.SaveChangesAsync();
 
         // ── Job Status Histories ──
         var histories = new List<JobStatusHistory>
@@ -293,7 +302,7 @@ public static class DataSeeder
         // ── Invoices ──
         var inv1 = new Invoice
         {
-            Id = Guid.NewGuid(), InvoiceNumber = "INV-202603-0001",
+            InvoiceNumber = "INV-202603-0001",
             CustomerId = c1.Id, InvoiceDate = today.AddDays(-1),
             PeriodStart = today.AddDays(-7), PeriodEnd = today.AddDays(-1),
             TotalAmount = 300, TaxAmount = 60, GrandTotal = 360,
@@ -301,13 +310,14 @@ public static class DataSeeder
         };
         var inv2 = new Invoice
         {
-            Id = Guid.NewGuid(), InvoiceNumber = "INV-202603-0002",
+            InvoiceNumber = "INV-202603-0002",
             CustomerId = c2.Id, InvoiceDate = today,
             PeriodStart = today.AddDays(-7), PeriodEnd = today,
             TotalAmount = 420, TaxAmount = 84, GrandTotal = 504,
             InvoiceStatus = InvoiceStatus.Draft
         };
         context.Invoices.AddRange(inv1, inv2);
+        await context.SaveChangesAsync();
 
         // ── Invoice Items ──
         context.InvoiceItems.AddRange(

@@ -2,9 +2,9 @@ namespace LiventaTransfer.Application.DTOs.TripLog;
 
 public record TripLogDto
 {
-    public Guid Id { get; init; }
-    public Guid JobId { get; init; }
-    public Guid DriverId { get; init; }
+    public long Id { get; init; }
+    public long JobId { get; init; }
+    public long DriverId { get; init; }
     public string DriverName { get; init; } = string.Empty;
     public DateTime? PickupTime { get; init; }
     public DateTime? DropoffTime { get; init; }
@@ -36,7 +36,7 @@ public record TripLogDto
 
 public record CreateTripLogRequest
 {
-    public Guid DriverId { get; init; }
+    public long DriverId { get; init; }
     public DateTime? PickupTime { get; init; }
     public DateTime? DropoffTime { get; init; }
     public decimal? StartKm { get; init; }
@@ -48,7 +48,7 @@ public record CreateTripLogRequest
 
 public record UpdateTripLogRequest
 {
-    public Guid DriverId { get; init; }
+    public long DriverId { get; init; }
     public DateTime? PickupTime { get; init; }
     public DateTime? DropoffTime { get; init; }
     public decimal? StartKm { get; init; }

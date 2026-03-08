@@ -33,8 +33,8 @@ public sealed class NotificationsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpPatch("{id:guid}/delivered")]
-    public async Task<IActionResult> MarkAsDelivered(Guid id, CancellationToken ct)
+    [HttpPatch("{id:long}/delivered")]
+    public async Task<IActionResult> MarkAsDelivered(long id, CancellationToken ct)
     {
         var r = await _svc.MarkAsDeliveredAsync(id, ct);
         return StatusCode(r.StatusCode, r);

@@ -5,7 +5,7 @@ namespace LiventaTransfer.Domain.Entities;
 public class Invoice : BaseEntity
 {
     public string InvoiceNumber { get; set; } = null!;
-    public Guid CustomerId { get; set; }
+    public long CustomerId { get; set; }
     public DateOnly InvoiceDate { get; set; }
     public DateOnly PeriodStart { get; set; }
     public DateOnly PeriodEnd { get; set; }

@@ -4,8 +4,8 @@ namespace LiventaTransfer.Application.DTOs.Notification;
 
 public record NotificationListDto
 {
-    public Guid Id { get; init; }
-    public Guid? JobId { get; init; }
+    public long Id { get; init; }
+    public long? JobId { get; init; }
     public RecipientType RecipientType { get; init; }
     public NotificationChannel Channel { get; init; }
     public string Message { get; init; } = string.Empty;
@@ -28,7 +28,7 @@ public record NotificationListDto
 
 public record CreateNotificationRequest
 {
-    public Guid? JobId { get; init; }
+    public long? JobId { get; init; }
     public RecipientType RecipientType { get; init; }
     public string? RecipientPhone { get; init; }
     public Guid? RecipientUserId { get; init; }

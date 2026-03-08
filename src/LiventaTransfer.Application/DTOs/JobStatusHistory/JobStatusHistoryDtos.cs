@@ -4,7 +4,7 @@ namespace LiventaTransfer.Application.DTOs.JobStatusHistory;
 
 public record JobStatusHistoryDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public JobStatus? OldStatus { get; init; }
     public JobStatus NewStatus { get; init; }
     public string ChangedByUserName { get; init; } = string.Empty;

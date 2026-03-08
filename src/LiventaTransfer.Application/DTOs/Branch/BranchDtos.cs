@@ -2,7 +2,7 @@ namespace LiventaTransfer.Application.DTOs.Branch;
 
 public record BranchListDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string? Address { get; init; }
     public bool IsActive { get; init; }
@@ -18,7 +18,7 @@ public record BranchListDto
 
 public record BranchDetailDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string? Address { get; init; }
     public bool IsActive { get; init; }

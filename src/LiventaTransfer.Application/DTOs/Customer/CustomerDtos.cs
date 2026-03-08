@@ -4,7 +4,7 @@ namespace LiventaTransfer.Application.DTOs.Customer;
 
 public record CustomerListDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public CustomerType CustomerType { get; init; }
     public string? Phone { get; init; }
@@ -24,7 +24,7 @@ public record CustomerListDto
 
 public record CustomerDetailDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public CustomerType CustomerType { get; init; }
     public string? TaxNumber { get; init; }
@@ -41,7 +41,7 @@ public record CustomerDetailDto
 
     public record PassengerBrief
     {
-        public Guid Id { get; init; }
+        public long Id { get; init; }
         public string FullName { get; init; } = string.Empty;
         public string? Phone { get; init; }
         public bool IsActive { get; init; }

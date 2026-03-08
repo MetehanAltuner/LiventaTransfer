@@ -2,8 +2,8 @@ namespace LiventaTransfer.Domain.Entities;
 
 public class TripLog : BaseEntity
 {
-    public Guid JobId { get; set; }
-    public Guid DriverId { get; set; }
+    public long JobId { get; set; }
+    public long DriverId { get; set; }
     public DateTime? PickupTime { get; set; }
     public DateTime? DropoffTime { get; set; }
     public decimal? StartKm { get; set; }

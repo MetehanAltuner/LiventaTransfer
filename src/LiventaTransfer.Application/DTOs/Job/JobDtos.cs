@@ -4,7 +4,7 @@ namespace LiventaTransfer.Application.DTOs.Job;
 
 public record JobListDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string JobNumber { get; init; } = string.Empty;
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
@@ -38,20 +38,20 @@ public record JobListDto
 
 public record JobDetailDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string JobNumber { get; init; } = string.Empty;
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
     public JobStatus Status { get; init; }
-    public Guid CustomerId { get; init; }
+    public long CustomerId { get; init; }
     public string CustomerName { get; init; } = string.Empty;
-    public Guid? PassengerId { get; init; }
+    public long? PassengerId { get; init; }
     public string? PassengerName { get; init; }
     public int PassengerCount { get; init; }
-    public Guid? PickupLocationId { get; init; }
+    public long? PickupLocationId { get; init; }
     public string? PickupLocationName { get; init; }
-    public Guid? DropoffLocationId { get; init; }
+    public long? DropoffLocationId { get; init; }
     public string? DropoffLocationName { get; init; }
     public string? PickupAddress { get; init; }
     public string? DropoffAddress { get; init; }
@@ -60,11 +60,11 @@ public record JobDetailDto
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }
     public string? SourceEmail { get; init; }
-    public Guid? VehicleOwnerId { get; init; }
+    public long? VehicleOwnerId { get; init; }
     public string? VehicleOwnerName { get; init; }
-    public Guid? VehicleId { get; init; }
+    public long? VehicleId { get; init; }
     public string? VehiclePlate { get; init; }
-    public Guid? DriverId { get; init; }
+    public long? DriverId { get; init; }
     public string? DriverName { get; init; }
     public decimal? SalePrice { get; init; }
     public decimal? PurchasePrice { get; init; }
@@ -119,11 +119,11 @@ public record CreateJobRequest
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
-    public Guid CustomerId { get; init; }
-    public Guid? PassengerId { get; init; }
+    public long CustomerId { get; init; }
+    public long? PassengerId { get; init; }
     public int PassengerCount { get; init; } = 1;
-    public Guid? PickupLocationId { get; init; }
-    public Guid? DropoffLocationId { get; init; }
+    public long? PickupLocationId { get; init; }
+    public long? DropoffLocationId { get; init; }
     public string? PickupAddress { get; init; }
     public string? DropoffAddress { get; init; }
     public string? RouteDescription { get; init; }
@@ -131,9 +131,9 @@ public record CreateJobRequest
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }
     public string? SourceEmail { get; init; }
-    public Guid? VehicleOwnerId { get; init; }
-    public Guid? VehicleId { get; init; }
-    public Guid? DriverId { get; init; }
+    public long? VehicleOwnerId { get; init; }
+    public long? VehicleId { get; init; }
+    public long? DriverId { get; init; }
     public decimal? SalePrice { get; init; }
     public decimal? PurchasePrice { get; init; }
     public decimal? ExtraCost { get; init; }
@@ -144,11 +144,11 @@ public record UpdateJobRequest
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
-    public Guid CustomerId { get; init; }
-    public Guid? PassengerId { get; init; }
+    public long CustomerId { get; init; }
+    public long? PassengerId { get; init; }
     public int PassengerCount { get; init; } = 1;
-    public Guid? PickupLocationId { get; init; }
-    public Guid? DropoffLocationId { get; init; }
+    public long? PickupLocationId { get; init; }
+    public long? DropoffLocationId { get; init; }
     public string? PickupAddress { get; init; }
     public string? DropoffAddress { get; init; }
     public string? RouteDescription { get; init; }
@@ -156,9 +156,9 @@ public record UpdateJobRequest
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }
     public string? SourceEmail { get; init; }
-    public Guid? VehicleOwnerId { get; init; }
-    public Guid? VehicleId { get; init; }
-    public Guid? DriverId { get; init; }
+    public long? VehicleOwnerId { get; init; }
+    public long? VehicleId { get; init; }
+    public long? DriverId { get; init; }
     public decimal? SalePrice { get; init; }
     public decimal? PurchasePrice { get; init; }
     public decimal? ExtraCost { get; init; }

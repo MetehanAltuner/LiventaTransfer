@@ -16,14 +16,14 @@ public sealed class VehiclesController : ControllerBase
     public VehiclesController(VehicleService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] VehicleType? vehicleType, [FromQuery] Guid? vehicleOwnerId, CancellationToken ct)
+    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] VehicleType? vehicleType, [FromQuery] long? vehicleOwnerId, CancellationToken ct)
     {
         var r = await _svc.GetPagedAsync(query, vehicleType, vehicleOwnerId, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    [HttpGet("{id:long}")]
+    public async Task<IActionResult> GetById(long id, CancellationToken ct)
     {
         var r = await _svc.GetByIdAsync(id, ct);
         return StatusCode(r.StatusCode, r);
@@ -36,15 +36,15 @@ public sealed class VehiclesController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateVehicleRequest request, CancellationToken ct)
+    [HttpPut("{id:long}")]
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateVehicleRequest request, CancellationToken ct)
     {
         var r = await _svc.UpdateAsync(id, request, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    [HttpDelete("{id:long}")]
+    public async Task<IActionResult> Delete(long id, CancellationToken ct)
     {
         var r = await _svc.DeleteAsync(id, ct);
         return StatusCode(r.StatusCode, r);

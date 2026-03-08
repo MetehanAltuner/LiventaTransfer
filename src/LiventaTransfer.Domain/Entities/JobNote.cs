@@ -2,7 +2,7 @@ namespace LiventaTransfer.Domain.Entities;
 
 public class JobNote : BaseEntity
 {
-    public Guid JobId { get; set; }
+    public long JobId { get; set; }
     public string NoteText { get; set; } = null!;
     public Guid CreatedByUserId { get; set; }
 

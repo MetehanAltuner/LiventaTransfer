@@ -48,7 +48,7 @@ public sealed class VehicleOwnerService
         }, "Araç sahipleri listelendi.");
     }
 
-    public async Task<ApiResult<VehicleOwnerDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<VehicleOwnerDetailDto>> GetByIdAsync(long id, CancellationToken ct)
     {
         var entity = await _db.VehicleOwners
             .AsNoTracking()
@@ -81,7 +81,7 @@ public sealed class VehicleOwnerService
         return ApiResult<VehicleOwnerDetailDto>.Ok(VehicleOwnerDetailDto.FromEntity(entity), "Araç sahibi oluşturuldu.", 201);
     }
 
-    public async Task<ApiResult<VehicleOwnerDetailDto>> UpdateAsync(Guid id, UpdateVehicleOwnerRequest request, CancellationToken ct)
+    public async Task<ApiResult<VehicleOwnerDetailDto>> UpdateAsync(long id, UpdateVehicleOwnerRequest request, CancellationToken ct)
     {
         var entity = await _db.VehicleOwners.FirstOrDefaultAsync(v => v.Id == id, ct);
         if (entity is null)
@@ -100,7 +100,7 @@ public sealed class VehicleOwnerService
         return ApiResult<VehicleOwnerDetailDto>.Ok(VehicleOwnerDetailDto.FromEntity(entity), "Araç sahibi güncellendi.");
     }
 
-    public async Task<ApiResult<bool>> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await _db.VehicleOwners.FirstOrDefaultAsync(v => v.Id == id, ct);
         if (entity is null)
@@ -112,7 +112,7 @@ public sealed class VehicleOwnerService
         return ApiResult<bool>.Ok(true, "Araç sahibi silindi.");
     }
 
-    public async Task<ApiResult<List<VehicleListDto>>> GetVehiclesAsync(Guid ownerId, CancellationToken ct)
+    public async Task<ApiResult<List<VehicleListDto>>> GetVehiclesAsync(long ownerId, CancellationToken ct)
     {
         if (!await _db.VehicleOwners.AnyAsync(v => v.Id == ownerId, ct))
             return ApiResult<List<VehicleListDto>>.Fail("Araç sahibi bulunamadı.", statusCode: 404);
@@ -127,7 +127,7 @@ public sealed class VehicleOwnerService
         return ApiResult<List<VehicleListDto>>.Ok(vehicles, "Araçlar listelendi.");
     }
 
-    public async Task<ApiResult<List<DriverListDto>>> GetDriversAsync(Guid ownerId, CancellationToken ct)
+    public async Task<ApiResult<List<DriverListDto>>> GetDriversAsync(long ownerId, CancellationToken ct)
     {
         if (!await _db.VehicleOwners.AnyAsync(v => v.Id == ownerId, ct))
             return ApiResult<List<DriverListDto>>.Fail("Araç sahibi bulunamadı.", statusCode: 404);

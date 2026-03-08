@@ -10,7 +10,7 @@ public sealed class PassengerService
     private readonly IAppDbContext _db;
     public PassengerService(IAppDbContext db) => _db = db;
 
-    public async Task<ApiResult<PagedResult<PassengerListDto>>> GetPagedAsync(PagedQuery query, Guid? customerId, CancellationToken ct)
+    public async Task<ApiResult<PagedResult<PassengerListDto>>> GetPagedAsync(PagedQuery query, long? customerId, CancellationToken ct)
     {
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
@@ -46,7 +46,7 @@ public sealed class PassengerService
         }, "Yolcular listelendi.");
     }
 
-    public async Task<ApiResult<PassengerDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<PassengerDetailDto>> GetByIdAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Passengers
             .AsNoTracking()
@@ -80,7 +80,7 @@ public sealed class PassengerService
         return ApiResult<PassengerDetailDto>.Ok(PassengerDetailDto.FromEntity(entity), "Yolcu oluşturuldu.", 201);
     }
 
-    public async Task<ApiResult<PassengerDetailDto>> UpdateAsync(Guid id, UpdatePassengerRequest request, CancellationToken ct)
+    public async Task<ApiResult<PassengerDetailDto>> UpdateAsync(long id, UpdatePassengerRequest request, CancellationToken ct)
     {
         var entity = await _db.Passengers.FirstOrDefaultAsync(p => p.Id == id, ct);
         if (entity is null)
@@ -101,7 +101,7 @@ public sealed class PassengerService
         return ApiResult<PassengerDetailDto>.Ok(PassengerDetailDto.FromEntity(entity), "Yolcu güncellendi.");
     }
 
-    public async Task<ApiResult<bool>> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Passengers.FirstOrDefaultAsync(p => p.Id == id, ct);
         if (entity is null)

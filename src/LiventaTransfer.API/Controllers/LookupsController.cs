@@ -85,7 +85,7 @@ public sealed class LookupsController : ControllerBase
     }
 
     [HttpGet("passengers")]
-    public async Task<IActionResult> Passengers([FromQuery] Guid? customerId, CancellationToken ct)
+    public async Task<IActionResult> Passengers([FromQuery] long? customerId, CancellationToken ct)
     {
         var q = _db.Passengers.AsNoTracking().Where(p => p.IsActive);
 

@@ -10,7 +10,7 @@ public class Vehicle : BaseEntity
     public string? Model { get; set; }
     public int? Year { get; set; }
     public int Capacity { get; set; } = 4;
-    public Guid VehicleOwnerId { get; set; }
+    public long VehicleOwnerId { get; set; }
     public bool IsActive { get; set; } = true;
 
     public VehicleOwner VehicleOwner { get; set; } = null!;

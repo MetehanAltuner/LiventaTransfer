@@ -9,7 +9,7 @@ public record UserInfoDto
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
     public UserRole Role { get; init; }
-    public Guid BranchId { get; init; }
+    public long BranchId { get; init; }
     public string BranchName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
 }

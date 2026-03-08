@@ -4,7 +4,7 @@ namespace LiventaTransfer.Application.DTOs.Location;
 
 public record LocationListDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string? ShortCode { get; init; }
     public LocationType LocationType { get; init; }
@@ -22,7 +22,7 @@ public record LocationListDto
 
 public record LocationDetailDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string? ShortCode { get; init; }
     public string? Address { get; init; }

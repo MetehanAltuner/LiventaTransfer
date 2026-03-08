@@ -34,7 +34,7 @@ public class AppDbContext : DbContext, IAppDbContext
         // Global query filter for soft delete
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            if (typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
+            if (typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
             {
                 var method = typeof(AppDbContext)
                     .GetMethod(nameof(ApplySoftDeleteFilter),
@@ -46,7 +46,7 @@ public class AppDbContext : DbContext, IAppDbContext
         }
     }
 
-    private static void ApplySoftDeleteFilter<T>(ModelBuilder modelBuilder) where T : BaseEntity
+    private static void ApplySoftDeleteFilter<T>(ModelBuilder modelBuilder) where T : AuditableEntity
     {
         modelBuilder.Entity<T>().HasQueryFilter(e => !e.IsDeleted);
     }
@@ -55,20 +55,24 @@ public class AppDbContext : DbContext, IAppDbContext
     {
         var now = DateTime.UtcNow;
 
-        foreach (var entry in ChangeTracker.Entries<BaseEntity>())
+        foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
         {
             switch (entry.State)
             {
                 case EntityState.Added:
                     entry.Entity.CreatedAt = now;
                     entry.Entity.UpdatedAt = now;
-                    if (entry.Entity.Id == Guid.Empty)
-                        entry.Entity.Id = Guid.NewGuid();
                     break;
                 case EntityState.Modified:
                     entry.Entity.UpdatedAt = now;
                     break;
             }
+        }
+
+        foreach (var entry in ChangeTracker.Entries<User>()
+                     .Where(e => e.State == EntityState.Added && e.Entity.Id == Guid.Empty))
+        {
+            entry.Entity.Id = Guid.NewGuid();
         }
 
         return base.SaveChangesAsync(cancellationToken);

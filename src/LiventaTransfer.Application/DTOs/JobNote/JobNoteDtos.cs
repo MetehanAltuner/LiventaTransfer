@@ -2,8 +2,8 @@ namespace LiventaTransfer.Application.DTOs.JobNote;
 
 public record JobNoteDto
 {
-    public Guid Id { get; init; }
-    public Guid JobId { get; init; }
+    public long Id { get; init; }
+    public long JobId { get; init; }
     public string NoteText { get; init; } = string.Empty;
     public string CreatedByUserName { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }

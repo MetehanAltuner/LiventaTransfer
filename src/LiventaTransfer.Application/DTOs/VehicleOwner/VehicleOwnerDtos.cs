@@ -2,7 +2,7 @@ namespace LiventaTransfer.Application.DTOs.VehicleOwner;
 
 public record VehicleOwnerListDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public bool IsOwnFleet { get; init; }
     public string? ContactPerson { get; init; }
@@ -22,7 +22,7 @@ public record VehicleOwnerListDto
 
 public record VehicleOwnerDetailDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public bool IsOwnFleet { get; init; }
     public string? ContactPerson { get; init; }
@@ -37,7 +37,7 @@ public record VehicleOwnerDetailDto
 
     public record VehicleBrief
     {
-        public Guid Id { get; init; }
+        public long Id { get; init; }
         public string Plate { get; init; } = string.Empty;
         public string VehicleType { get; init; } = string.Empty;
         public bool IsActive { get; init; }
@@ -45,7 +45,7 @@ public record VehicleOwnerDetailDto
 
     public record DriverBrief
     {
-        public Guid Id { get; init; }
+        public long Id { get; init; }
         public string FullName { get; init; } = string.Empty;
         public string Phone { get; init; } = string.Empty;
         public bool IsActive { get; init; }

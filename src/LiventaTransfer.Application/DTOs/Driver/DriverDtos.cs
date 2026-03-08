@@ -2,10 +2,10 @@ namespace LiventaTransfer.Application.DTOs.Driver;
 
 public record DriverListDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string FullName { get; init; } = string.Empty;
     public string Phone { get; init; } = string.Empty;
-    public Guid VehicleOwnerId { get; init; }
+    public long VehicleOwnerId { get; init; }
     public string VehicleOwnerName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
 
@@ -22,14 +22,14 @@ public record DriverListDto
 
 public record DriverDetailDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string FullName { get; init; } = string.Empty;
     public string Phone { get; init; } = string.Empty;
     public string? WhatsAppPhone { get; init; }
     public string? LicenseNumber { get; init; }
-    public Guid VehicleOwnerId { get; init; }
+    public long VehicleOwnerId { get; init; }
     public string VehicleOwnerName { get; init; } = string.Empty;
-    public Guid? DefaultVehicleId { get; init; }
+    public long? DefaultVehicleId { get; init; }
     public string? DefaultVehiclePlate { get; init; }
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -58,8 +58,8 @@ public record CreateDriverRequest
     public string Phone { get; init; } = string.Empty;
     public string? WhatsAppPhone { get; init; }
     public string? LicenseNumber { get; init; }
-    public Guid VehicleOwnerId { get; init; }
-    public Guid? DefaultVehicleId { get; init; }
+    public long VehicleOwnerId { get; init; }
+    public long? DefaultVehicleId { get; init; }
 }
 
 public record UpdateDriverRequest
@@ -68,7 +68,7 @@ public record UpdateDriverRequest
     public string Phone { get; init; } = string.Empty;
     public string? WhatsAppPhone { get; init; }
     public string? LicenseNumber { get; init; }
-    public Guid VehicleOwnerId { get; init; }
-    public Guid? DefaultVehicleId { get; init; }
+    public long VehicleOwnerId { get; init; }
+    public long? DefaultVehicleId { get; init; }
     public bool IsActive { get; init; }
 }

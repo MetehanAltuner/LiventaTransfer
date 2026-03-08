@@ -64,7 +64,7 @@ public sealed class NotificationService
         return ApiResult<NotificationListDto>.Ok(NotificationListDto.FromEntity(entity), "Bildirim oluşturuldu.", 201);
     }
 
-    public async Task<ApiResult<bool>> MarkAsDeliveredAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> MarkAsDeliveredAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Notifications.FirstOrDefaultAsync(n => n.Id == id, ct);
         if (entity is null)

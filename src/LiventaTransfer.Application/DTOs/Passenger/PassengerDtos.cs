@@ -2,11 +2,11 @@ namespace LiventaTransfer.Application.DTOs.Passenger;
 
 public record PassengerListDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string FullName { get; init; } = string.Empty;
     public string? Phone { get; init; }
     public string? Email { get; init; }
-    public Guid CustomerId { get; init; }
+    public long CustomerId { get; init; }
     public string CustomerName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
 
@@ -24,12 +24,12 @@ public record PassengerListDto
 
 public record PassengerDetailDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string FullName { get; init; } = string.Empty;
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public string? Notes { get; init; }
-    public Guid CustomerId { get; init; }
+    public long CustomerId { get; init; }
     public string CustomerName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -56,7 +56,7 @@ public record CreatePassengerRequest
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public string? Notes { get; init; }
-    public Guid CustomerId { get; init; }
+    public long CustomerId { get; init; }
 }
 
 public record UpdatePassengerRequest
@@ -65,6 +65,6 @@ public record UpdatePassengerRequest
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public string? Notes { get; init; }
-    public Guid CustomerId { get; init; }
+    public long CustomerId { get; init; }
     public bool IsActive { get; init; }
 }

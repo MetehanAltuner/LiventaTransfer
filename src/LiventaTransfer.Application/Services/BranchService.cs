@@ -48,7 +48,7 @@ public sealed class BranchService
         return ApiResult<PagedResult<BranchListDto>>.Ok(paged, "Şubeler listelendi.");
     }
 
-    public async Task<ApiResult<BranchDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<BranchDetailDto>> GetByIdAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Branches.AsNoTracking().FirstOrDefaultAsync(b => b.Id == id, ct);
         if (entity is null)
@@ -72,7 +72,7 @@ public sealed class BranchService
         return ApiResult<BranchDetailDto>.Ok(BranchDetailDto.FromEntity(entity), "Şube oluşturuldu.", 201);
     }
 
-    public async Task<ApiResult<BranchDetailDto>> UpdateAsync(Guid id, UpdateBranchRequest request, CancellationToken ct)
+    public async Task<ApiResult<BranchDetailDto>> UpdateAsync(long id, UpdateBranchRequest request, CancellationToken ct)
     {
         var entity = await _db.Branches.FirstOrDefaultAsync(b => b.Id == id, ct);
         if (entity is null)
@@ -87,7 +87,7 @@ public sealed class BranchService
         return ApiResult<BranchDetailDto>.Ok(BranchDetailDto.FromEntity(entity), "Şube güncellendi.");
     }
 
-    public async Task<ApiResult<bool>> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Branches.FirstOrDefaultAsync(b => b.Id == id, ct);
         if (entity is null)

@@ -10,7 +10,7 @@ public sealed class TripLogService
     private readonly IAppDbContext _db;
     public TripLogService(IAppDbContext db) => _db = db;
 
-    public async Task<ApiResult<TripLogDto>> GetByJobIdAsync(Guid jobId, CancellationToken ct)
+    public async Task<ApiResult<TripLogDto>> GetByJobIdAsync(long jobId, CancellationToken ct)
     {
         if (!await _db.Jobs.AnyAsync(j => j.Id == jobId, ct))
             return ApiResult<TripLogDto>.Fail("İş bulunamadı.", statusCode: 404);
@@ -26,7 +26,7 @@ public sealed class TripLogService
         return ApiResult<TripLogDto>.Ok(TripLogDto.FromEntity(entity), "Sefer kaydı bulundu.");
     }
 
-    public async Task<ApiResult<TripLogDto>> CreateAsync(Guid jobId, CreateTripLogRequest request, CancellationToken ct)
+    public async Task<ApiResult<TripLogDto>> CreateAsync(long jobId, CreateTripLogRequest request, CancellationToken ct)
     {
         if (!await _db.Jobs.AnyAsync(j => j.Id == jobId, ct))
             return ApiResult<TripLogDto>.Fail("İş bulunamadı.", statusCode: 404);
@@ -61,7 +61,7 @@ public sealed class TripLogService
         return ApiResult<TripLogDto>.Ok(TripLogDto.FromEntity(created), "Sefer kaydı oluşturuldu.", 201);
     }
 
-    public async Task<ApiResult<TripLogDto>> UpdateAsync(Guid id, UpdateTripLogRequest request, CancellationToken ct)
+    public async Task<ApiResult<TripLogDto>> UpdateAsync(long id, UpdateTripLogRequest request, CancellationToken ct)
     {
         var entity = await _db.TripLogs.FirstOrDefaultAsync(t => t.Id == id, ct);
         if (entity is null)

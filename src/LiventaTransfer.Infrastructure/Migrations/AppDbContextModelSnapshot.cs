@@ -24,9 +24,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Branch", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Address")
                         .HasMaxLength(500)
@@ -58,9 +60,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Customer", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Address")
                         .HasMaxLength(500)
@@ -123,15 +127,17 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Driver", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("DefaultVehicleId")
-                        .HasColumnType("uuid");
+                    b.Property<long?>("DefaultVehicleId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -158,8 +164,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("VehicleOwnerId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("VehicleOwnerId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("WhatsAppPhone")
                         .HasMaxLength(20)
@@ -176,15 +182,17 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Invoice", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("CustomerId")
+                        .HasColumnType("bigint");
 
                     b.Property<decimal>("GrandTotal")
                         .HasPrecision(18, 2)
@@ -237,9 +245,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.InvoiceItem", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
@@ -253,14 +263,14 @@ namespace LiventaTransfer.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<Guid>("InvoiceId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("InvoiceId")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("JobId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("JobId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -276,9 +286,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Job", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<Guid?>("AssignedByUserId")
                         .HasColumnType("uuid");
@@ -289,18 +301,18 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<Guid>("CreatedByUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("CustomerId")
+                        .HasColumnType("bigint");
 
-                    b.Property<Guid?>("DriverId")
-                        .HasColumnType("uuid");
+                    b.Property<long?>("DriverId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("DropoffAddress")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<Guid?>("DropoffLocationId")
-                        .HasColumnType("uuid");
+                    b.Property<long?>("DropoffLocationId")
+                        .HasColumnType("bigint");
 
                     b.Property<decimal?>("ExtraCost")
                         .HasPrecision(18, 2)
@@ -340,15 +352,15 @@ namespace LiventaTransfer.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(1);
 
-                    b.Property<Guid?>("PassengerId")
-                        .HasColumnType("uuid");
+                    b.Property<long?>("PassengerId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("PickupAddress")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<Guid?>("PickupLocationId")
-                        .HasColumnType("uuid");
+                    b.Property<long?>("PickupLocationId")
+                        .HasColumnType("bigint");
 
                     b.Property<decimal?>("PurchasePrice")
                         .HasPrecision(18, 2)
@@ -372,11 +384,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("VehicleId")
-                        .HasColumnType("uuid");
+                    b.Property<long?>("VehicleId")
+                        .HasColumnType("bigint");
 
-                    b.Property<Guid?>("VehicleOwnerId")
-                        .HasColumnType("uuid");
+                    b.Property<long?>("VehicleOwnerId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -410,9 +422,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.JobNote", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -423,8 +437,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("JobId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("JobId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("NoteText")
                         .IsRequired()
@@ -445,9 +459,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.JobStatusHistory", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("ChangeReason")
                         .HasMaxLength(500)
@@ -465,8 +481,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("JobId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("JobId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("NewStatus")
                         .HasColumnType("integer");
@@ -488,9 +504,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Location", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Address")
                         .HasMaxLength(500)
@@ -537,9 +555,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Notification", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Channel")
                         .HasColumnType("integer");
@@ -556,8 +576,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<bool>("IsDelivered")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid?>("JobId")
-                        .HasColumnType("uuid");
+                    b.Property<long?>("JobId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Message")
                         .IsRequired()
@@ -591,15 +611,17 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Passenger", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("CustomerId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Email")
                         .HasMaxLength(200)
@@ -638,15 +660,17 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.TripLog", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("DriverId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("DriverId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("DriverNotes")
                         .HasMaxLength(2000)
@@ -666,8 +690,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("JobId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("JobId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("PickupTime")
                         .HasColumnType("timestamp with time zone");
@@ -697,8 +721,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("BranchId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("BranchId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -748,9 +772,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Vehicle", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("Brand")
                         .HasMaxLength(100)
@@ -784,8 +810,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("VehicleOwnerId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("VehicleOwnerId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("VehicleType")
                         .HasColumnType("integer");
@@ -802,9 +828,11 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.VehicleOwner", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("ContactPerson")
                         .HasMaxLength(200)

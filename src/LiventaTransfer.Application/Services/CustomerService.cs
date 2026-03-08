@@ -48,7 +48,7 @@ public sealed class CustomerService
         }, "Müşteriler listelendi.");
     }
 
-    public async Task<ApiResult<CustomerDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<CustomerDetailDto>> GetByIdAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Customers
             .AsNoTracking()
@@ -83,7 +83,7 @@ public sealed class CustomerService
         return ApiResult<CustomerDetailDto>.Ok(CustomerDetailDto.FromEntity(entity), "Müşteri oluşturuldu.", 201);
     }
 
-    public async Task<ApiResult<CustomerDetailDto>> UpdateAsync(Guid id, UpdateCustomerRequest request, CancellationToken ct)
+    public async Task<ApiResult<CustomerDetailDto>> UpdateAsync(long id, UpdateCustomerRequest request, CancellationToken ct)
     {
         var entity = await _db.Customers.FirstOrDefaultAsync(c => c.Id == id, ct);
         if (entity is null)
@@ -105,7 +105,7 @@ public sealed class CustomerService
         return ApiResult<CustomerDetailDto>.Ok(CustomerDetailDto.FromEntity(entity), "Müşteri güncellendi.");
     }
 
-    public async Task<ApiResult<bool>> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Customers.FirstOrDefaultAsync(c => c.Id == id, ct);
         if (entity is null)
@@ -117,7 +117,7 @@ public sealed class CustomerService
         return ApiResult<bool>.Ok(true, "Müşteri silindi.");
     }
 
-    public async Task<ApiResult<List<PassengerListDto>>> GetPassengersAsync(Guid customerId, CancellationToken ct)
+    public async Task<ApiResult<List<PassengerListDto>>> GetPassengersAsync(long customerId, CancellationToken ct)
     {
         if (!await _db.Customers.AnyAsync(c => c.Id == customerId, ct))
             return ApiResult<List<PassengerListDto>>.Fail("Müşteri bulunamadı.", statusCode: 404);

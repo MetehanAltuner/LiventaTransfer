@@ -48,7 +48,7 @@ public sealed class LocationService
         }, "Lokasyonlar listelendi.");
     }
 
-    public async Task<ApiResult<LocationDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<LocationDetailDto>> GetByIdAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Locations.AsNoTracking().FirstOrDefaultAsync(l => l.Id == id, ct);
         if (entity is null)
@@ -76,7 +76,7 @@ public sealed class LocationService
         return ApiResult<LocationDetailDto>.Ok(LocationDetailDto.FromEntity(entity), "Lokasyon oluşturuldu.", 201);
     }
 
-    public async Task<ApiResult<LocationDetailDto>> UpdateAsync(Guid id, UpdateLocationRequest request, CancellationToken ct)
+    public async Task<ApiResult<LocationDetailDto>> UpdateAsync(long id, UpdateLocationRequest request, CancellationToken ct)
     {
         var entity = await _db.Locations.FirstOrDefaultAsync(l => l.Id == id, ct);
         if (entity is null)
@@ -95,7 +95,7 @@ public sealed class LocationService
         return ApiResult<LocationDetailDto>.Ok(LocationDetailDto.FromEntity(entity), "Lokasyon güncellendi.");
     }
 
-    public async Task<ApiResult<bool>> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Locations.FirstOrDefaultAsync(l => l.Id == id, ct);
         if (entity is null)

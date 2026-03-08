@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,7 +16,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "Branches",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Address = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
@@ -32,7 +34,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "Customers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
                     CustomerType = table.Column<int>(type: "integer", nullable: false),
                     TaxNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
@@ -56,7 +59,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "Locations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     ShortCode = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     Address = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
@@ -77,7 +81,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "VehicleOwners",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     IsOwnFleet = table.Column<bool>(type: "boolean", nullable: false),
                     ContactPerson = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
@@ -104,7 +109,7 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
                     Role = table.Column<int>(type: "integer", nullable: false),
-                    BranchId = table.Column<Guid>(type: "uuid", nullable: false),
+                    BranchId = table.Column<long>(type: "bigint", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -125,9 +130,10 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "Invoices",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     InvoiceNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<long>(type: "bigint", nullable: false),
                     InvoiceDate = table.Column<DateOnly>(type: "date", nullable: false),
                     PeriodStart = table.Column<DateOnly>(type: "date", nullable: false),
                     PeriodEnd = table.Column<DateOnly>(type: "date", nullable: false),
@@ -155,12 +161,13 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "Passengers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     FullName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Phone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     Email = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     Notes = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<long>(type: "bigint", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -181,14 +188,15 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "Vehicles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Plate = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     VehicleType = table.Column<int>(type: "integer", nullable: false),
                     Brand = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Model = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     Year = table.Column<int>(type: "integer", nullable: true),
                     Capacity = table.Column<int>(type: "integer", nullable: false, defaultValue: 4),
-                    VehicleOwnerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    VehicleOwnerId = table.Column<long>(type: "bigint", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -209,13 +217,14 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "Drivers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     FullName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Phone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     WhatsAppPhone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     LicenseNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    VehicleOwnerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    DefaultVehicleId = table.Column<Guid>(type: "uuid", nullable: true),
+                    VehicleOwnerId = table.Column<long>(type: "bigint", nullable: false),
+                    DefaultVehicleId = table.Column<long>(type: "bigint", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -242,17 +251,18 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "Jobs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     JobNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     JobDate = table.Column<DateOnly>(type: "date", nullable: false),
                     JobTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
                     JobType = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PassengerId = table.Column<Guid>(type: "uuid", nullable: true),
+                    CustomerId = table.Column<long>(type: "bigint", nullable: false),
+                    PassengerId = table.Column<long>(type: "bigint", nullable: true),
                     PassengerCount = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
-                    PickupLocationId = table.Column<Guid>(type: "uuid", nullable: true),
-                    DropoffLocationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    PickupLocationId = table.Column<long>(type: "bigint", nullable: true),
+                    DropoffLocationId = table.Column<long>(type: "bigint", nullable: true),
                     PickupAddress = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     DropoffAddress = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     RouteDescription = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
@@ -260,9 +270,9 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     ExtraInfo = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
                     Notes = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
                     SourceEmail = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    VehicleOwnerId = table.Column<Guid>(type: "uuid", nullable: true),
-                    VehicleId = table.Column<Guid>(type: "uuid", nullable: true),
-                    DriverId = table.Column<Guid>(type: "uuid", nullable: true),
+                    VehicleOwnerId = table.Column<long>(type: "bigint", nullable: true),
+                    VehicleId = table.Column<long>(type: "bigint", nullable: true),
+                    DriverId = table.Column<long>(type: "bigint", nullable: true),
                     SalePrice = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
                     PurchasePrice = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
                     ExtraCost = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
@@ -335,9 +345,10 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "InvoiceItems",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    InvoiceId = table.Column<Guid>(type: "uuid", nullable: false),
-                    JobId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    InvoiceId = table.Column<long>(type: "bigint", nullable: false),
+                    JobId = table.Column<long>(type: "bigint", nullable: false),
                     Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -365,8 +376,9 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "JobNotes",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    JobId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    JobId = table.Column<long>(type: "bigint", nullable: false),
                     NoteText = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
                     CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -394,8 +406,9 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "JobStatusHistories",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    JobId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    JobId = table.Column<long>(type: "bigint", nullable: false),
                     OldStatus = table.Column<int>(type: "integer", nullable: true),
                     NewStatus = table.Column<int>(type: "integer", nullable: false),
                     ChangedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
@@ -426,8 +439,9 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "Notifications",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    JobId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    JobId = table.Column<long>(type: "bigint", nullable: true),
                     RecipientType = table.Column<int>(type: "integer", nullable: false),
                     RecipientPhone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     RecipientUserId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -461,9 +475,10 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 name: "TripLogs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    JobId = table.Column<Guid>(type: "uuid", nullable: false),
-                    DriverId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    JobId = table.Column<long>(type: "bigint", nullable: false),
+                    DriverId = table.Column<long>(type: "bigint", nullable: false),
                     PickupTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DropoffTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     StartKm = table.Column<decimal>(type: "numeric(10,2)", precision: 10, scale: 2, nullable: true),

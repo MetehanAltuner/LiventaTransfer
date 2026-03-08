@@ -14,7 +14,7 @@ public sealed class JobService
     public JobService(IAppDbContext db) => _db = db;
 
     public async Task<ApiResult<PagedResult<JobListDto>>> GetPagedAsync(
-        PagedQuery query, JobStatus? status, Guid? customerId, Guid? driverId,
+        PagedQuery query, JobStatus? status, long? customerId, long? driverId,
         DateOnly? dateFrom, DateOnly? dateTo, CancellationToken ct)
     {
         var page = Math.Max(1, query.Page);
@@ -69,7 +69,7 @@ public sealed class JobService
         }, "İşler listelendi.");
     }
 
-    public async Task<ApiResult<JobDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<JobDetailDto>> GetByIdAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Jobs.AsNoTracking()
             .Include(j => j.Customer)
@@ -140,7 +140,7 @@ public sealed class JobService
         return await GetByIdAsync(entity.Id, ct);
     }
 
-    public async Task<ApiResult<JobDetailDto>> UpdateAsync(Guid id, UpdateJobRequest request, CancellationToken ct)
+    public async Task<ApiResult<JobDetailDto>> UpdateAsync(long id, UpdateJobRequest request, CancellationToken ct)
     {
         var entity = await _db.Jobs.FirstOrDefaultAsync(j => j.Id == id, ct);
         if (entity is null)
@@ -176,7 +176,7 @@ public sealed class JobService
         return await GetByIdAsync(entity.Id, ct);
     }
 
-    public async Task<ApiResult<bool>> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Jobs.FirstOrDefaultAsync(j => j.Id == id, ct);
         if (entity is null)
@@ -188,7 +188,7 @@ public sealed class JobService
         return ApiResult<bool>.Ok(true, "İş silindi.");
     }
 
-    public async Task<ApiResult<JobDetailDto>> UpdateStatusAsync(Guid id, UpdateJobStatusRequest request, Guid userId, CancellationToken ct)
+    public async Task<ApiResult<JobDetailDto>> UpdateStatusAsync(long id, UpdateJobStatusRequest request, Guid userId, CancellationToken ct)
     {
         var entity = await _db.Jobs.FirstOrDefaultAsync(j => j.Id == id, ct);
         if (entity is null)
@@ -215,7 +215,7 @@ public sealed class JobService
         return await GetByIdAsync(entity.Id, ct);
     }
 
-    public async Task<ApiResult<List<JobStatusHistoryDto>>> GetStatusHistoryAsync(Guid jobId, CancellationToken ct)
+    public async Task<ApiResult<List<JobStatusHistoryDto>>> GetStatusHistoryAsync(long jobId, CancellationToken ct)
     {
         if (!await _db.Jobs.AnyAsync(j => j.Id == jobId, ct))
             return ApiResult<List<JobStatusHistoryDto>>.Fail("İş bulunamadı.", statusCode: 404);

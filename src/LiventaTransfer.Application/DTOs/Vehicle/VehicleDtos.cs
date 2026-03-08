@@ -4,13 +4,13 @@ namespace LiventaTransfer.Application.DTOs.Vehicle;
 
 public record VehicleListDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string Plate { get; init; } = string.Empty;
     public VehicleType VehicleType { get; init; }
     public string? Brand { get; init; }
     public string? Model { get; init; }
     public int Capacity { get; init; }
-    public Guid VehicleOwnerId { get; init; }
+    public long VehicleOwnerId { get; init; }
     public string VehicleOwnerName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
 
@@ -30,14 +30,14 @@ public record VehicleListDto
 
 public record VehicleDetailDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string Plate { get; init; } = string.Empty;
     public VehicleType VehicleType { get; init; }
     public string? Brand { get; init; }
     public string? Model { get; init; }
     public int? Year { get; init; }
     public int Capacity { get; init; }
-    public Guid VehicleOwnerId { get; init; }
+    public long VehicleOwnerId { get; init; }
     public string VehicleOwnerName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
@@ -68,7 +68,7 @@ public record CreateVehicleRequest
     public string? Model { get; init; }
     public int? Year { get; init; }
     public int Capacity { get; init; } = 4;
-    public Guid VehicleOwnerId { get; init; }
+    public long VehicleOwnerId { get; init; }
 }
 
 public record UpdateVehicleRequest
@@ -79,6 +79,6 @@ public record UpdateVehicleRequest
     public string? Model { get; init; }
     public int? Year { get; init; }
     public int Capacity { get; init; } = 4;
-    public Guid VehicleOwnerId { get; init; }
+    public long VehicleOwnerId { get; init; }
     public bool IsActive { get; init; }
 }

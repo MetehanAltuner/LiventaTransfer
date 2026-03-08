@@ -15,14 +15,14 @@ public sealed class PassengersController : ControllerBase
     public PassengersController(PassengerService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] Guid? customerId, CancellationToken ct)
+    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] long? customerId, CancellationToken ct)
     {
         var r = await _svc.GetPagedAsync(query, customerId, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    [HttpGet("{id:long}")]
+    public async Task<IActionResult> GetById(long id, CancellationToken ct)
     {
         var r = await _svc.GetByIdAsync(id, ct);
         return StatusCode(r.StatusCode, r);
@@ -35,15 +35,15 @@ public sealed class PassengersController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePassengerRequest request, CancellationToken ct)
+    [HttpPut("{id:long}")]
+    public async Task<IActionResult> Update(long id, [FromBody] UpdatePassengerRequest request, CancellationToken ct)
     {
         var r = await _svc.UpdateAsync(id, request, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    [HttpDelete("{id:long}")]
+    public async Task<IActionResult> Delete(long id, CancellationToken ct)
     {
         var r = await _svc.DeleteAsync(id, ct);
         return StatusCode(r.StatusCode, r);

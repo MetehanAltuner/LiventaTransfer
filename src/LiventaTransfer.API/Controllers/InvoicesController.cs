@@ -18,7 +18,7 @@ public sealed class InvoicesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetPaged(
         [FromQuery] PagedQuery query,
-        [FromQuery] Guid? customerId,
+        [FromQuery] long? customerId,
         [FromQuery] InvoiceStatus? status,
         [FromQuery] DateOnly? dateFrom,
         [FromQuery] DateOnly? dateTo,
@@ -28,8 +28,8 @@ public sealed class InvoicesController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    [HttpGet("{id:long}")]
+    public async Task<IActionResult> GetById(long id, CancellationToken ct)
     {
         var r = await _svc.GetByIdAsync(id, ct);
         return StatusCode(r.StatusCode, r);
@@ -42,29 +42,29 @@ public sealed class InvoicesController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateInvoiceRequest request, CancellationToken ct)
+    [HttpPut("{id:long}")]
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateInvoiceRequest request, CancellationToken ct)
     {
         var r = await _svc.UpdateAsync(id, request, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    [HttpDelete("{id:long}")]
+    public async Task<IActionResult> Delete(long id, CancellationToken ct)
     {
         var r = await _svc.DeleteAsync(id, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpPost("{id:guid}/items")]
-    public async Task<IActionResult> AddItem(Guid id, [FromBody] CreateInvoiceItemRequest request, CancellationToken ct)
+    [HttpPost("{id:long}/items")]
+    public async Task<IActionResult> AddItem(long id, [FromBody] CreateInvoiceItemRequest request, CancellationToken ct)
     {
         var r = await _svc.AddItemAsync(id, request, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpDelete("items/{itemId:guid}")]
-    public async Task<IActionResult> DeleteItem(Guid itemId, CancellationToken ct)
+    [HttpDelete("items/{itemId:long}")]
+    public async Task<IActionResult> DeleteItem(long itemId, CancellationToken ct)
     {
         var r = await _svc.DeleteItemAsync(itemId, ct);
         return StatusCode(r.StatusCode, r);

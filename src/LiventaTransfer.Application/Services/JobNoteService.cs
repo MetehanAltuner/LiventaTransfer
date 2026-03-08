@@ -10,7 +10,7 @@ public sealed class JobNoteService
     private readonly IAppDbContext _db;
     public JobNoteService(IAppDbContext db) => _db = db;
 
-    public async Task<ApiResult<List<JobNoteDto>>> GetByJobIdAsync(Guid jobId, CancellationToken ct)
+    public async Task<ApiResult<List<JobNoteDto>>> GetByJobIdAsync(long jobId, CancellationToken ct)
     {
         if (!await _db.Jobs.AnyAsync(j => j.Id == jobId, ct))
             return ApiResult<List<JobNoteDto>>.Fail("İş bulunamadı.", statusCode: 404);
@@ -26,7 +26,7 @@ public sealed class JobNoteService
         return ApiResult<List<JobNoteDto>>.Ok(items, "Notlar listelendi.");
     }
 
-    public async Task<ApiResult<JobNoteDto>> CreateAsync(Guid jobId, CreateJobNoteRequest request, Guid userId, CancellationToken ct)
+    public async Task<ApiResult<JobNoteDto>> CreateAsync(long jobId, CreateJobNoteRequest request, Guid userId, CancellationToken ct)
     {
         if (!await _db.Jobs.AnyAsync(j => j.Id == jobId, ct))
             return ApiResult<JobNoteDto>.Fail("İş bulunamadı.", statusCode: 404);
@@ -49,7 +49,7 @@ public sealed class JobNoteService
         return ApiResult<JobNoteDto>.Ok(JobNoteDto.FromEntity(created), "Not eklendi.", 201);
     }
 
-    public async Task<ApiResult<JobNoteDto>> UpdateAsync(Guid id, UpdateJobNoteRequest request, CancellationToken ct)
+    public async Task<ApiResult<JobNoteDto>> UpdateAsync(long id, UpdateJobNoteRequest request, CancellationToken ct)
     {
         var entity = await _db.JobNotes.FirstOrDefaultAsync(n => n.Id == id, ct);
         if (entity is null)
@@ -66,7 +66,7 @@ public sealed class JobNoteService
         return ApiResult<JobNoteDto>.Ok(JobNoteDto.FromEntity(updated), "Not güncellendi.");
     }
 
-    public async Task<ApiResult<bool>> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await _db.JobNotes.FirstOrDefaultAsync(n => n.Id == id, ct);
         if (entity is null)

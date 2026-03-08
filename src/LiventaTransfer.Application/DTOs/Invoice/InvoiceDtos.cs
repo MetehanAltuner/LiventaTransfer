@@ -4,7 +4,7 @@ namespace LiventaTransfer.Application.DTOs.Invoice;
 
 public record InvoiceListDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string InvoiceNumber { get; init; } = string.Empty;
     public string CustomerName { get; init; } = string.Empty;
     public DateOnly InvoiceDate { get; init; }
@@ -28,9 +28,9 @@ public record InvoiceListDto
 
 public record InvoiceDetailDto
 {
-    public Guid Id { get; init; }
+    public long Id { get; init; }
     public string InvoiceNumber { get; init; } = string.Empty;
-    public Guid CustomerId { get; init; }
+    public long CustomerId { get; init; }
     public string CustomerName { get; init; } = string.Empty;
     public DateOnly InvoiceDate { get; init; }
     public DateOnly PeriodStart { get; init; }
@@ -46,8 +46,8 @@ public record InvoiceDetailDto
 
     public record InvoiceItemDto
     {
-        public Guid Id { get; init; }
-        public Guid JobId { get; init; }
+        public long Id { get; init; }
+        public long JobId { get; init; }
         public string JobNumber { get; init; } = string.Empty;
         public string Description { get; init; } = string.Empty;
         public decimal Amount { get; init; }
@@ -84,7 +84,7 @@ public record InvoiceDetailDto
 
 public record CreateInvoiceRequest
 {
-    public Guid CustomerId { get; init; }
+    public long CustomerId { get; init; }
     public DateOnly InvoiceDate { get; init; }
     public DateOnly PeriodStart { get; init; }
     public DateOnly PeriodEnd { get; init; }
@@ -108,7 +108,7 @@ public record UpdateInvoiceRequest
 
 public record CreateInvoiceItemRequest
 {
-    public Guid JobId { get; init; }
+    public long JobId { get; init; }
     public string Description { get; init; } = string.Empty;
     public decimal Amount { get; init; }
 }

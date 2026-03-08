@@ -12,7 +12,7 @@ public sealed class InvoiceService
     public InvoiceService(IAppDbContext db) => _db = db;
 
     public async Task<ApiResult<PagedResult<InvoiceListDto>>> GetPagedAsync(
-        PagedQuery query, Guid? customerId, InvoiceStatus? status,
+        PagedQuery query, long? customerId, InvoiceStatus? status,
         DateOnly? dateFrom, DateOnly? dateTo, CancellationToken ct)
     {
         var page = Math.Max(1, query.Page);
@@ -60,7 +60,7 @@ public sealed class InvoiceService
         }, "Faturalar listelendi.");
     }
 
-    public async Task<ApiResult<InvoiceDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<InvoiceDetailDto>> GetByIdAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Invoices.AsNoTracking()
             .Include(i => i.Customer)
@@ -100,7 +100,7 @@ public sealed class InvoiceService
         return await GetByIdAsync(entity.Id, ct);
     }
 
-    public async Task<ApiResult<InvoiceDetailDto>> UpdateAsync(Guid id, UpdateInvoiceRequest request, CancellationToken ct)
+    public async Task<ApiResult<InvoiceDetailDto>> UpdateAsync(long id, UpdateInvoiceRequest request, CancellationToken ct)
     {
         var entity = await _db.Invoices.FirstOrDefaultAsync(i => i.Id == id, ct);
         if (entity is null)
@@ -120,7 +120,7 @@ public sealed class InvoiceService
         return await GetByIdAsync(entity.Id, ct);
     }
 
-    public async Task<ApiResult<bool>> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Invoices.FirstOrDefaultAsync(i => i.Id == id, ct);
         if (entity is null)
@@ -132,7 +132,7 @@ public sealed class InvoiceService
         return ApiResult<bool>.Ok(true, "Fatura silindi.");
     }
 
-    public async Task<ApiResult<InvoiceDetailDto>> AddItemAsync(Guid invoiceId, CreateInvoiceItemRequest request, CancellationToken ct)
+    public async Task<ApiResult<InvoiceDetailDto>> AddItemAsync(long invoiceId, CreateInvoiceItemRequest request, CancellationToken ct)
     {
         if (!await _db.Invoices.AnyAsync(i => i.Id == invoiceId, ct))
             return ApiResult<InvoiceDetailDto>.Fail("Fatura bulunamadı.", statusCode: 404);
@@ -154,7 +154,7 @@ public sealed class InvoiceService
         return await GetByIdAsync(invoiceId, ct);
     }
 
-    public async Task<ApiResult<bool>> DeleteItemAsync(Guid itemId, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteItemAsync(long itemId, CancellationToken ct)
     {
         var item = await _db.InvoiceItems.FirstOrDefaultAsync(i => i.Id == itemId, ct);
         if (item is null)

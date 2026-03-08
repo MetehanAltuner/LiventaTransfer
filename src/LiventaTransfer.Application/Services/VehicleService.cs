@@ -11,7 +11,7 @@ public sealed class VehicleService
     private readonly IAppDbContext _db;
     public VehicleService(IAppDbContext db) => _db = db;
 
-    public async Task<ApiResult<PagedResult<VehicleListDto>>> GetPagedAsync(PagedQuery query, VehicleType? vehicleType, Guid? vehicleOwnerId, CancellationToken ct)
+    public async Task<ApiResult<PagedResult<VehicleListDto>>> GetPagedAsync(PagedQuery query, VehicleType? vehicleType, long? vehicleOwnerId, CancellationToken ct)
     {
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
@@ -51,7 +51,7 @@ public sealed class VehicleService
         }, "Araçlar listelendi.");
     }
 
-    public async Task<ApiResult<VehicleDetailDto>> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<VehicleDetailDto>> GetByIdAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Vehicles
             .AsNoTracking()
@@ -91,7 +91,7 @@ public sealed class VehicleService
         return ApiResult<VehicleDetailDto>.Ok(VehicleDetailDto.FromEntity(entity), "Araç oluşturuldu.", 201);
     }
 
-    public async Task<ApiResult<VehicleDetailDto>> UpdateAsync(Guid id, UpdateVehicleRequest request, CancellationToken ct)
+    public async Task<ApiResult<VehicleDetailDto>> UpdateAsync(long id, UpdateVehicleRequest request, CancellationToken ct)
     {
         var entity = await _db.Vehicles.FirstOrDefaultAsync(v => v.Id == id, ct);
         if (entity is null)
@@ -118,7 +118,7 @@ public sealed class VehicleService
         return ApiResult<VehicleDetailDto>.Ok(VehicleDetailDto.FromEntity(entity), "Araç güncellendi.");
     }
 
-    public async Task<ApiResult<bool>> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ApiResult<bool>> DeleteAsync(long id, CancellationToken ct)
     {
         var entity = await _db.Vehicles.FirstOrDefaultAsync(v => v.Id == id, ct);
         if (entity is null)

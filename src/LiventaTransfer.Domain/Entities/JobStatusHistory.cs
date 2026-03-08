@@ -4,7 +4,7 @@ namespace LiventaTransfer.Domain.Entities;
 
 public class JobStatusHistory : BaseEntity
 {
-    public Guid JobId { get; set; }
+    public long JobId { get; set; }
     public JobStatus? OldStatus { get; set; }
     public JobStatus NewStatus { get; set; }
     public Guid ChangedByUserId { get; set; }

@@ -19,8 +19,8 @@ public sealed class JobsController : ControllerBase
     public async Task<IActionResult> GetPaged(
         [FromQuery] PagedQuery query,
         [FromQuery] JobStatus? status,
-        [FromQuery] Guid? customerId,
-        [FromQuery] Guid? driverId,
+        [FromQuery] long? customerId,
+        [FromQuery] long? driverId,
         [FromQuery] DateOnly? dateFrom,
         [FromQuery] DateOnly? dateTo,
         CancellationToken ct)
@@ -29,8 +29,8 @@ public sealed class JobsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id, CancellationToken ct)
+    [HttpGet("{id:long}")]
+    public async Task<IActionResult> GetById(long id, CancellationToken ct)
     {
         var r = await _svc.GetByIdAsync(id, ct);
         return StatusCode(r.StatusCode, r);
@@ -43,44 +43,44 @@ public sealed class JobsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateJobRequest request, CancellationToken ct)
+    [HttpPut("{id:long}")]
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateJobRequest request, CancellationToken ct)
     {
         var r = await _svc.UpdateAsync(id, request, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    [HttpDelete("{id:long}")]
+    public async Task<IActionResult> Delete(long id, CancellationToken ct)
     {
         var r = await _svc.DeleteAsync(id, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpPatch("{id:guid}/status")]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateJobStatusRequest request, [FromQuery] Guid userId, CancellationToken ct)
+    [HttpPatch("{id:long}/status")]
+    public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateJobStatusRequest request, [FromQuery] Guid userId, CancellationToken ct)
     {
         var r = await _svc.UpdateStatusAsync(id, request, userId, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpGet("{id:guid}/notes")]
-    public async Task<IActionResult> GetNotes(Guid id, CancellationToken ct)
+    [HttpGet("{id:long}/notes")]
+    public async Task<IActionResult> GetNotes(long id, CancellationToken ct)
     {
         var noteSvc = HttpContext.RequestServices.GetRequiredService<JobNoteService>();
         var r = await noteSvc.GetByJobIdAsync(id, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpGet("{id:guid}/status-history")]
-    public async Task<IActionResult> GetStatusHistory(Guid id, CancellationToken ct)
+    [HttpGet("{id:long}/status-history")]
+    public async Task<IActionResult> GetStatusHistory(long id, CancellationToken ct)
     {
         var r = await _svc.GetStatusHistoryAsync(id, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpGet("{id:guid}/trip-log")]
-    public async Task<IActionResult> GetTripLog(Guid id, CancellationToken ct)
+    [HttpGet("{id:long}/trip-log")]
+    public async Task<IActionResult> GetTripLog(long id, CancellationToken ct)
     {
         var tripSvc = HttpContext.RequestServices.GetRequiredService<TripLogService>();
         var r = await tripSvc.GetByJobIdAsync(id, ct);
