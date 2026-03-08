@@ -1,4 +1,3 @@
-using System.Text;
 using FluentValidation;
 using LiventaTransfer.API.Filters;
 using LiventaTransfer.API.Middleware;
@@ -8,10 +7,8 @@ using LiventaTransfer.Application.Interfaces.Services;
 using LiventaTransfer.Application.Services;
 using LiventaTransfer.Application.Validators;
 using LiventaTransfer.Infrastructure.Data;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -72,32 +69,6 @@ builder.Services.AddScoped<InvoiceService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<UserService>();
 
-// JWT Authentication
-var jwtKey = cfg["Jwt:Key"]!;
-var jwtIssuer = cfg["Jwt:Issuer"]!;
-var jwtAudience = cfg["Jwt:Audience"]!;
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.MapInboundClaims = false;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = jwtIssuer,
-            ValidateAudience = true,
-            ValidAudience = jwtAudience,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero,
-            RoleClaimType = "role"
-        };
-    });
-
-builder.Services.AddAuthorization();
-
 // OpenAPI
 builder.Services.AddOpenApi();
 
@@ -123,16 +94,9 @@ app.UseSerilogRequestLogging();
 // CORS
 app.UseCors();
 
-// Auth
-app.UseAuthentication();
-app.UseAuthorization();
-
 // OpenAPI + Scalar
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
+app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.MapControllers();
 

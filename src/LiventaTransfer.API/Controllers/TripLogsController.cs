@@ -1,6 +1,5 @@
 using LiventaTransfer.Application.DTOs.TripLog;
 using LiventaTransfer.Application.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -8,7 +7,6 @@ namespace LiventaTransfer.API.Controllers;
 /// <summary>Sefer Kayıtları</summary>
 [ApiController]
 [Route("api")]
-[Authorize]
 [Tags("Sefer Kayıtları")]
 public sealed class TripLogsController : ControllerBase
 {

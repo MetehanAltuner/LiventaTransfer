@@ -1,7 +1,6 @@
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.VehicleOwner;
 using LiventaTransfer.Application.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -9,7 +8,6 @@ namespace LiventaTransfer.API.Controllers;
 /// <summary>Araç Sahipleri</summary>
 [ApiController]
 [Route("api/vehicle-owners")]
-[Authorize]
 [Tags("Araç Sahipleri")]
 public sealed class VehicleOwnersController : ControllerBase
 {

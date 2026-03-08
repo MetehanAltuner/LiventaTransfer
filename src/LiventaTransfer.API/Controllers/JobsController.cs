@@ -1,9 +1,7 @@
-using System.IdentityModel.Tokens.Jwt;
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Job;
 using LiventaTransfer.Application.Services;
 using LiventaTransfer.Domain.Enums;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -11,7 +9,6 @@ namespace LiventaTransfer.API.Controllers;
 /// <summary>Transfer İşleri</summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 [Tags("Transfer İşleri")]
 public sealed class JobsController : ControllerBase
 {
@@ -40,12 +37,9 @@ public sealed class JobsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateJobRequest request, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] CreateJobRequest request, [FromQuery] Guid userId, CancellationToken ct)
     {
-        var userId = GetCurrentUserId();
-        if (userId is null) return Unauthorized();
-
-        var r = await _svc.CreateAsync(request, userId.Value, ct);
+        var r = await _svc.CreateAsync(request, userId, ct);
         return StatusCode(r.StatusCode, r);
     }
 
@@ -64,12 +58,9 @@ public sealed class JobsController : ControllerBase
     }
 
     [HttpPatch("{id:guid}/status")]
-    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateJobStatusRequest request, CancellationToken ct)
+    public async Task<IActionResult> UpdateStatus(Guid id, [FromBody] UpdateJobStatusRequest request, [FromQuery] Guid userId, CancellationToken ct)
     {
-        var userId = GetCurrentUserId();
-        if (userId is null) return Unauthorized();
-
-        var r = await _svc.UpdateStatusAsync(id, request, userId.Value, ct);
+        var r = await _svc.UpdateStatusAsync(id, request, userId, ct);
         return StatusCode(r.StatusCode, r);
     }
 
@@ -96,10 +87,4 @@ public sealed class JobsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    private Guid? GetCurrentUserId()
-    {
-        var sub = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
-                  ?? User.FindFirst("sub")?.Value;
-        return Guid.TryParse(sub, out var id) ? id : null;
-    }
 }

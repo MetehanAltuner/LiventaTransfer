@@ -1,7 +1,5 @@
-using System.IdentityModel.Tokens.Jwt;
 using LiventaTransfer.Application.DTOs.JobNote;
 using LiventaTransfer.Application.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -9,7 +7,6 @@ namespace LiventaTransfer.API.Controllers;
 /// <summary>İş Notları</summary>
 [ApiController]
 [Route("api")]
-[Authorize]
 [Tags("İş Notları")]
 public sealed class JobNotesController : ControllerBase
 {
@@ -17,12 +14,9 @@ public sealed class JobNotesController : ControllerBase
     public JobNotesController(JobNoteService svc) => _svc = svc;
 
     [HttpPost("jobs/{jobId:guid}/notes")]
-    public async Task<IActionResult> Create(Guid jobId, [FromBody] CreateJobNoteRequest request, CancellationToken ct)
+    public async Task<IActionResult> Create(Guid jobId, [FromBody] CreateJobNoteRequest request, [FromQuery] Guid userId, CancellationToken ct)
     {
-        var userId = GetCurrentUserId();
-        if (userId is null) return Unauthorized();
-
-        var r = await _svc.CreateAsync(jobId, request, userId.Value, ct);
+        var r = await _svc.CreateAsync(jobId, request, userId, ct);
         return StatusCode(r.StatusCode, r);
     }
 
@@ -38,12 +32,5 @@ public sealed class JobNotesController : ControllerBase
     {
         var r = await _svc.DeleteAsync(id, ct);
         return StatusCode(r.StatusCode, r);
-    }
-
-    private Guid? GetCurrentUserId()
-    {
-        var sub = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
-                  ?? User.FindFirst("sub")?.Value;
-        return Guid.TryParse(sub, out var id) ? id : null;
     }
 }

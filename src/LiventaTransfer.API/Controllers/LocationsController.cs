@@ -2,7 +2,6 @@ using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Location;
 using LiventaTransfer.Application.Services;
 using LiventaTransfer.Domain.Enums;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -10,7 +9,6 @@ namespace LiventaTransfer.API.Controllers;
 /// <summary>Lokasyonlar</summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 [Tags("Lokasyonlar")]
 public sealed class LocationsController : ControllerBase
 {

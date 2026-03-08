@@ -1,7 +1,6 @@
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Lookup;
 using LiventaTransfer.Application.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +9,6 @@ namespace LiventaTransfer.API.Controllers;
 /// <summary>Lookup'lar</summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 [Tags("Lookup'lar")]
 public sealed class LookupsController : ControllerBase
 {

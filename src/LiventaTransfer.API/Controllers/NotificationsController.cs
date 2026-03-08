@@ -2,7 +2,6 @@ using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Notification;
 using LiventaTransfer.Application.Services;
 using LiventaTransfer.Domain.Enums;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -10,7 +9,6 @@ namespace LiventaTransfer.API.Controllers;
 /// <summary>Bildirimler</summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 [Tags("Bildirimler")]
 public sealed class NotificationsController : ControllerBase
 {

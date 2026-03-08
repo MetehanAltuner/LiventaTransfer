@@ -1,7 +1,6 @@
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.User;
 using LiventaTransfer.Application.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -9,7 +8,6 @@ namespace LiventaTransfer.API.Controllers;
 /// <summary>Kullanıcı Yönetimi</summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin")]
 [Tags("Kullanıcı Yönetimi")]
 public sealed class UsersController : ControllerBase
 {

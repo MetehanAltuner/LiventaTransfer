@@ -1,7 +1,6 @@
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Branch;
 using LiventaTransfer.Application.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -9,7 +8,6 @@ namespace LiventaTransfer.API.Controllers;
 /// <summary>Şubeler</summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 [Tags("Şubeler")]
 public sealed class BranchesController : ControllerBase
 {
