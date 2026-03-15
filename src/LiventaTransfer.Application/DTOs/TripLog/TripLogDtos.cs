@@ -4,6 +4,7 @@ public record TripLogDto
 {
     public long Id { get; init; }
     public long JobId { get; init; }
+    public string JobNumber { get; init; } = string.Empty;
     public long DriverId { get; init; }
     public string DriverName { get; init; } = string.Empty;
     public DateTime? PickupTime { get; init; }
@@ -20,6 +21,7 @@ public record TripLogDto
     {
         Id = e.Id,
         JobId = e.JobId,
+        JobNumber = e.Job?.JobNumber ?? string.Empty,
         DriverId = e.DriverId,
         DriverName = e.Driver != null ? e.Driver.FullName : string.Empty,
         PickupTime = e.PickupTime,

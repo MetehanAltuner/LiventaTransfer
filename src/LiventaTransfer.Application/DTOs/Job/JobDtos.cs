@@ -1,3 +1,4 @@
+using LiventaTransfer.Application.Common;
 using LiventaTransfer.Domain.Enums;
 
 namespace LiventaTransfer.Application.DTOs.Job;
@@ -9,7 +10,9 @@ public record JobListDto
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
+    public string JobTypeLabel { get; init; } = string.Empty;
     public JobStatus Status { get; init; }
+    public string StatusLabel { get; init; } = string.Empty;
     public string CustomerName { get; init; } = string.Empty;
     public string? PassengerName { get; init; }
     public string? DriverName { get; init; }
@@ -25,7 +28,9 @@ public record JobListDto
         JobDate = e.JobDate,
         JobTime = e.JobTime,
         JobType = e.JobType,
+        JobTypeLabel = EnumLabelHelper.GetLabel(e.JobType),
         Status = e.Status,
+        StatusLabel = EnumLabelHelper.GetLabel(e.Status),
         CustomerName = e.Customer?.Name ?? string.Empty,
         PassengerName = e.Passenger?.FullName,
         DriverName = e.Driver?.FullName,
@@ -43,7 +48,9 @@ public record JobDetailDto
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
+    public string JobTypeLabel { get; init; } = string.Empty;
     public JobStatus Status { get; init; }
+    public string StatusLabel { get; init; } = string.Empty;
     public long CustomerId { get; init; }
     public string CustomerName { get; init; } = string.Empty;
     public long? PassengerId { get; init; }
@@ -81,7 +88,9 @@ public record JobDetailDto
         JobDate = e.JobDate,
         JobTime = e.JobTime,
         JobType = e.JobType,
+        JobTypeLabel = EnumLabelHelper.GetLabel(e.JobType),
         Status = e.Status,
+        StatusLabel = EnumLabelHelper.GetLabel(e.Status),
         CustomerId = e.CustomerId,
         CustomerName = e.Customer?.Name ?? string.Empty,
         PassengerId = e.PassengerId,

@@ -1,3 +1,4 @@
+using LiventaTransfer.Application.Common;
 using LiventaTransfer.Domain.Enums;
 
 namespace LiventaTransfer.Application.DTOs.Invoice;
@@ -12,6 +13,7 @@ public record InvoiceListDto
     public DateOnly PeriodEnd { get; init; }
     public decimal GrandTotal { get; init; }
     public InvoiceStatus InvoiceStatus { get; init; }
+    public string InvoiceStatusLabel { get; init; } = string.Empty;
 
     public static InvoiceListDto FromEntity(Domain.Entities.Invoice e) => new()
     {
@@ -22,7 +24,8 @@ public record InvoiceListDto
         PeriodStart = e.PeriodStart,
         PeriodEnd = e.PeriodEnd,
         GrandTotal = e.GrandTotal,
-        InvoiceStatus = e.InvoiceStatus
+        InvoiceStatus = e.InvoiceStatus,
+        InvoiceStatusLabel = EnumLabelHelper.GetLabel(e.InvoiceStatus)
     };
 }
 
@@ -39,6 +42,7 @@ public record InvoiceDetailDto
     public decimal TaxAmount { get; init; }
     public decimal GrandTotal { get; init; }
     public InvoiceStatus InvoiceStatus { get; init; }
+    public string InvoiceStatusLabel { get; init; } = string.Empty;
     public string? Notes { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
@@ -66,6 +70,7 @@ public record InvoiceDetailDto
         TaxAmount = e.TaxAmount,
         GrandTotal = e.GrandTotal,
         InvoiceStatus = e.InvoiceStatus,
+        InvoiceStatusLabel = EnumLabelHelper.GetLabel(e.InvoiceStatus),
         Notes = e.Notes,
         CreatedAt = e.CreatedAt,
         UpdatedAt = e.UpdatedAt,

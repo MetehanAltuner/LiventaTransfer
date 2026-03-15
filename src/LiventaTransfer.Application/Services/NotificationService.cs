@@ -17,7 +17,10 @@ public sealed class NotificationService
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
 
-        var q = _db.Notifications.AsNoTracking().AsQueryable();
+        var q = _db.Notifications.AsNoTracking()
+            .Include(n => n.Job)
+            .Include(n => n.RecipientUser)
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.Search))
             q = q.Where(n => n.Message.ToLower().Contains(query.Search.ToLower()));
@@ -61,7 +64,12 @@ public sealed class NotificationService
         _db.Notifications.Add(entity);
         await _db.SaveChangesAsync(ct);
 
-        return ApiResult<NotificationListDto>.Ok(NotificationListDto.FromEntity(entity), "Bildirim oluşturuldu.", 201);
+        var created = await _db.Notifications.AsNoTracking()
+            .Include(n => n.Job)
+            .Include(n => n.RecipientUser)
+            .FirstAsync(n => n.Id == entity.Id, ct);
+
+        return ApiResult<NotificationListDto>.Ok(NotificationListDto.FromEntity(created), "Bildirim oluşturuldu.", 201);
     }
 
     public async Task<ApiResult<bool>> MarkAsDeliveredAsync(long id, CancellationToken ct)

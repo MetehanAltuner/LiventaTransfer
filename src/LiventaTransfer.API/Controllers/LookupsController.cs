@@ -1,6 +1,7 @@
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Lookup;
 using LiventaTransfer.Application.Interfaces;
+using LiventaTransfer.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -111,5 +112,26 @@ public sealed class LookupsController : ControllerBase
             .ToListAsync(ct);
 
         return Ok(ApiResult<List<LookupDto>>.Ok(items, "Şubeler."));
+    }
+
+    [HttpGet("roles")]
+    public IActionResult Roles()
+    {
+        var items = Enum.GetValues<UserRole>()
+            .Select(r => new LookupDto { Id = (long)r, Name = r.ToString() })
+            .OrderBy(r => r.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "Roller."));
+    }
+
+    [HttpGet("roles/{id:int}")]
+    public IActionResult RoleById(int id)
+    {
+        if (!Enum.IsDefined(typeof(UserRole), id))
+            return Ok(ApiResult<LookupDto>.Fail("Rol bulunamadı.", statusCode: 404));
+
+        var role = (UserRole)id;
+        return Ok(ApiResult<LookupDto>.Ok(new LookupDto { Id = id, Name = role.ToString() }, "Rol bulundu."));
     }
 }

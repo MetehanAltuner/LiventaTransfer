@@ -9,6 +9,7 @@ public record UserListDto
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
     public UserRole Role { get; init; }
+    public string RoleName { get; init; } = string.Empty;
     public string BranchName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
 
@@ -19,6 +20,7 @@ public record UserListDto
         FirstName = e.FirstName,
         LastName = e.LastName,
         Role = e.Role,
+        RoleName = e.Role.ToString(),
         BranchName = e.Branch?.Name ?? string.Empty,
         IsActive = e.IsActive
     };
@@ -31,6 +33,7 @@ public record UserDetailDto
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
     public UserRole Role { get; init; }
+    public string RoleName { get; init; } = string.Empty;
     public long BranchId { get; init; }
     public string BranchName { get; init; } = string.Empty;
     public bool IsActive { get; init; }
@@ -44,6 +47,7 @@ public record UserDetailDto
         FirstName = e.FirstName,
         LastName = e.LastName,
         Role = e.Role,
+        RoleName = e.Role.ToString(),
         BranchId = e.BranchId,
         BranchName = e.Branch?.Name ?? string.Empty,
         IsActive = e.IsActive,
