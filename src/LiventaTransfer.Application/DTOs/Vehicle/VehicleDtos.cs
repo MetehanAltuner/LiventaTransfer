@@ -1,3 +1,4 @@
+using LiventaTransfer.Application.Common;
 using LiventaTransfer.Domain.Enums;
 
 namespace LiventaTransfer.Application.DTOs.Vehicle;
@@ -7,6 +8,7 @@ public record VehicleListDto
     public long Id { get; init; }
     public string Plate { get; init; } = string.Empty;
     public VehicleType VehicleType { get; init; }
+    public string VehicleTypeLabel { get; init; } = string.Empty;
     public string? Brand { get; init; }
     public string? Model { get; init; }
     public int Capacity { get; init; }
@@ -19,6 +21,7 @@ public record VehicleListDto
         Id = entity.Id,
         Plate = entity.Plate,
         VehicleType = entity.VehicleType,
+        VehicleTypeLabel = EnumLabelHelper.GetLabel(entity.VehicleType),
         Brand = entity.Brand,
         Model = entity.Model,
         Capacity = entity.Capacity,
@@ -33,6 +36,7 @@ public record VehicleDetailDto
     public long Id { get; init; }
     public string Plate { get; init; } = string.Empty;
     public VehicleType VehicleType { get; init; }
+    public string VehicleTypeLabel { get; init; } = string.Empty;
     public string? Brand { get; init; }
     public string? Model { get; init; }
     public int? Year { get; init; }
@@ -48,6 +52,7 @@ public record VehicleDetailDto
         Id = entity.Id,
         Plate = entity.Plate,
         VehicleType = entity.VehicleType,
+        VehicleTypeLabel = EnumLabelHelper.GetLabel(entity.VehicleType),
         Brand = entity.Brand,
         Model = entity.Model,
         Year = entity.Year,

@@ -109,6 +109,7 @@ public sealed class AuthService : IAuthService
             FirstName = user.FirstName,
             LastName = user.LastName,
             Role = user.Role,
+            RoleLabel = Common.EnumLabelHelper.GetLabel(user.Role),
             BranchId = user.BranchId,
             BranchName = user.Branch?.Name ?? string.Empty,
             IsActive = user.IsActive

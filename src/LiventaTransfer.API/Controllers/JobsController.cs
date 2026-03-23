@@ -87,4 +87,12 @@ public sealed class JobsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
+    [HttpPost("confirmation-table")]
+    public async Task<IActionResult> GetConfirmationTable([FromBody] List<long> jobIds, CancellationToken ct)
+    {
+        var tableSvc = HttpContext.RequestServices.GetRequiredService<ConfirmationTableService>();
+        var r = await tableSvc.GenerateHtmlAsync(jobIds, ct);
+        return StatusCode(r.StatusCode, r);
+    }
+
 }

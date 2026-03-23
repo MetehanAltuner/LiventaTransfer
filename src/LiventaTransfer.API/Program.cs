@@ -72,6 +72,7 @@ builder.Services.AddScoped<UserService>();
 // EML Import services
 builder.Services.AddScoped<TatilsepetiEmlParserService>();
 builder.Services.AddScoped<EmlImportService>();
+builder.Services.AddScoped<ConfirmationTableService>();
 
 // OpenAPI
 builder.Services.AddOpenApi();

@@ -1,3 +1,4 @@
+using LiventaTransfer.Application.Common;
 using LiventaTransfer.Domain.Enums;
 
 namespace LiventaTransfer.Application.DTOs.Auth;
@@ -9,6 +10,7 @@ public record UserInfoDto
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
     public UserRole Role { get; init; }
+    public string RoleLabel { get; init; } = string.Empty;
     public long BranchId { get; init; }
     public string BranchName { get; init; } = string.Empty;
     public bool IsActive { get; init; }

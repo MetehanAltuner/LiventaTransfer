@@ -49,4 +49,45 @@ public static class EnumLabelHelper
         NotificationChannel.InApp => "Uygulama İçi",
         _ => channel.ToString()
     };
+
+    public static string GetLabel(CustomerType type) => type switch
+    {
+        CustomerType.Corporate => "Kurumsal",
+        CustomerType.Individual => "Bireysel",
+        _ => type.ToString()
+    };
+
+    public static string GetLabel(LocationType type) => type switch
+    {
+        LocationType.Airport => "Havalimanı",
+        LocationType.TrainStation => "Tren İstasyonu",
+        LocationType.BusTerminal => "Otogar",
+        LocationType.Hotel => "Otel",
+        LocationType.Office => "Ofis",
+        LocationType.Residence => "Konut",
+        LocationType.Other => "Diğer",
+        _ => type.ToString()
+    };
+
+    public static string GetLabel(VehicleType type) => type switch
+    {
+        VehicleType.Sedan => "Sedan",
+        VehicleType.Vito => "Vito",
+        VehicleType.Sprinter => "Sprinter",
+        VehicleType.Minibus => "Minibüs",
+        VehicleType.Bus => "Otobüs",
+        _ => type.ToString()
+    };
+
+    public static string GetLabel(UserRole role) => role switch
+    {
+        UserRole.Admin => "Yönetici",
+        UserRole.Manager => "Müdür",
+        UserRole.Coordinator => "Koordinatör",
+        UserRole.Reservationist => "Rezervasyon Uzmanı",
+        UserRole.Driver => "Şoför",
+        UserRole.Accountant => "Muhasebeci",
+        UserRole.Viewer => "İzleyici",
+        _ => role.ToString()
+    };
 }
