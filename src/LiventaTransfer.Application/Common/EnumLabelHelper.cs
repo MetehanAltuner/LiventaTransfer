@@ -6,12 +6,12 @@ public static class EnumLabelHelper
 {
     public static string GetLabel(JobStatus status) => status switch
     {
-        JobStatus.Open => "Açık",
-        JobStatus.Assigned => "Atandı",
+        JobStatus.Open => "İş Açıkta",
+        JobStatus.Assigned => "Detay Gönderildi",
         JobStatus.InProgress => "Devam Ediyor",
         JobStatus.Completed => "Tamamlandı",
-        JobStatus.PendingInvoice => "Fatura Bekliyor",
-        JobStatus.Invoiced => "Faturalandı",
+        JobStatus.PendingInvoice => "Fatura Kesilecek",
+        JobStatus.Invoiced => "Fatura Kesildi",
         JobStatus.Cancelled => "İptal Edildi",
         _ => status.ToString()
     };
