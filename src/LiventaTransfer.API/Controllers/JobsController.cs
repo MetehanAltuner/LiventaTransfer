@@ -95,4 +95,49 @@ public sealed class JobsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
+    /// <summary>Konfirme tablosunu tarayıcıda görüntüler (kopyala-yapıştır için)</summary>
+    /// <remarks>GET /api/jobs/confirmation-table/html?ids=1&amp;ids=2&amp;ids=3 şeklinde kullanın</remarks>
+    [HttpGet("confirmation-table/html")]
+    [Produces("text/html")]
+    [ApiExplorerSettings(GroupName = "Transfer İşleri")]
+    public async Task<IActionResult> GetConfirmationTableHtml([FromQuery] List<long> ids, CancellationToken ct)
+    {
+        var tableSvc = HttpContext.RequestServices.GetRequiredService<ConfirmationTableService>();
+        var r = await tableSvc.GenerateHtmlAsync(ids, ct);
+        if (!r.Success)
+            return StatusCode(r.StatusCode, r.Message);
+
+        var page = $@"<!DOCTYPE html>
+<html><head><meta charset=""utf-8""><title>Konfirme Tablosu</title>
+<style>body{{font-family:Calibri,sans-serif;padding:20px}}
+#copyBtn{{margin-bottom:12px;padding:8px 20px;font-size:14px;cursor:pointer;background:#ffc000;border:1px solid #ccc;border-radius:4px}}
+#copyBtn:hover{{background:#e6ad00}}
+#msg{{margin-left:10px;color:green;font-size:14px}}</style></head>
+<body>
+<button id=""copyBtn"" onclick=""copyTable()"">📋 Tabloyu Kopyala</button><span id=""msg""></span>
+<div id=""tableContainer"">{r.Data}</div>
+<script>
+function copyTable(){{
+  var container=document.getElementById('tableContainer');
+  var range=document.createRange();
+  range.selectNodeContents(container);
+  var sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+  // clipboard API ile hem HTML hem plain text olarak kopyala
+  var html=container.innerHTML;
+  var text=container.innerText;
+  navigator.clipboard.write([new ClipboardItem({{
+    'text/html':new Blob([html],{{type:'text/html'}}),
+    'text/plain':new Blob([text],{{type:'text/plain'}})
+  }})]).then(function(){{
+    document.getElementById('msg').textContent='✓ Kopyalandı! Şimdi mail\'e yapıştırabilirsiniz.';
+    setTimeout(function(){{document.getElementById('msg').textContent='';}},3000);
+  }});
+}}
+</script></body></html>";
+
+        return Content(page, "text/html");
+    }
+
 }

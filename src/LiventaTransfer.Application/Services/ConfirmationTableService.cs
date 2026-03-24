@@ -29,16 +29,17 @@ public sealed class ConfirmationTableService
 
         var sb = new StringBuilder();
 
-        sb.Append(@"<table border=""0"" cellspacing=""0"" cellpadding=""0"" style=""border-collapse:collapse;font-family:Calibri,sans-serif"">");
+        // Outlook uyumlu tablo formatı (EML konfirme maili ile birebir aynı)
+        sb.Append(@"<table border=""0"" cellspacing=""0"" cellpadding=""0"" width=""825"" style=""width:619.0pt;border-collapse:collapse"">");
 
         // Header row - sarı arka plan (#ffc000)
-        sb.Append(@"<tr style=""height:18pt"">");
-        AppendHeaderCell(sb, "Tarih", "62pt");
-        AppendHeaderCell(sb, "saat", "40pt");
-        AppendHeaderCell(sb, "Yolcu İsmi", "184pt");
-        AppendHeaderCell(sb, "Alış Yeri", "127pt");
-        AppendHeaderCell(sb, "Bırakış Yeri", "121pt");
-        AppendHeaderCell(sb, "Tek Yön Ücreti", "85pt");
+        sb.Append(@"<tr style=""height:18.0pt"">");
+        AppendHeaderCell(sb, "Tarih", 83, "62.0pt", isFirst: true);
+        AppendHeaderCell(sb, "saat", 53, "40.0pt");
+        AppendHeaderCell(sb, "Yolcu İsmi", 245, "184.0pt");
+        AppendHeaderCell(sb, "Alış Yeri", 169, "127.0pt");
+        AppendHeaderCell(sb, "Bırakış Yeri", 161, "121.0pt");
+        AppendHeaderCell(sb, "Tek Yön Ücreti", 113, "85.0pt");
         sb.Append("</tr>");
 
         // Data rows
@@ -51,28 +52,34 @@ public sealed class ConfirmationTableService
                 ? $"₺{job.SalePrice.Value.ToString("N2", new CultureInfo("tr-TR"))}"
                 : "-";
 
-            sb.Append(@"<tr style=""height:20pt"">");
-            AppendDataCell(sb, job.JobDate.ToString("dd.MM.yyyy"), "62pt", "center");
-            AppendDataCell(sb, job.JobTime.ToString("HH:mm"), "40pt", "center");
-            AppendDataCell(sb, passengerName, "184pt", "center");
-            AppendDataCell(sb, pickup, "127pt", "center");
-            AppendDataCell(sb, dropoff, "121pt", "center");
-            AppendDataCell(sb, price, "85pt", "right");
+            sb.Append(@"<tr style=""height:19.95pt"">");
+            AppendDataCell(sb, job.JobDate.ToString("dd.MM.yyyy"), 83, "62.0pt", "center", isFirst: true);
+            AppendDataCell(sb, job.JobTime.ToString("HH:mm"), 53, "40.0pt", "center");
+            AppendDataCell(sb, passengerName, 245, "184.0pt", "center");
+            AppendDataCell(sb, pickup, 169, "127.0pt", "center");
+            AppendDataCell(sb, dropoff, 161, "121.0pt", "center");
+            AppendDataCell(sb, price, 113, "85.0pt", "right");
             sb.Append("</tr>");
         }
 
-        sb.Append("</table>");
+        sb.Append("</tbody></table>");
 
         return ApiResult<string>.Ok(sb.ToString(), "Konfirme tablosu oluşturuldu.");
     }
 
-    private static void AppendHeaderCell(StringBuilder sb, string text, string width)
+    private static void AppendHeaderCell(StringBuilder sb, string text, int widthPx, string widthPt, bool isFirst = false)
     {
-        sb.Append($@"<td style=""width:{width};border:solid #000 1pt;background:#ffc000;padding:0 3.5pt;text-align:center""><b><span style=""font-size:11pt;color:black"">{text}</span></b></td>");
+        var border = isFirst
+            ? "border:solid windowtext 1.0pt"
+            : "border:solid windowtext 1.0pt;border-left:none";
+        sb.Append($@"<td width=""{widthPx}"" nowrap style=""width:{widthPt};{border};background:#ffc000;padding:0cm 3.5pt 0cm 3.5pt;height:18.0pt""><p class=""MsoNormal"" align=""center"" style=""text-align:center""><b><span style=""font-size:11.0pt;color:black"">{text}</span></b></p></td>");
     }
 
-    private static void AppendDataCell(StringBuilder sb, string text, string width, string align)
+    private static void AppendDataCell(StringBuilder sb, string text, int widthPx, string widthPt, string align, bool isFirst = false)
     {
-        sb.Append($@"<td style=""width:{width};border:solid #000 1pt;border-top:none;background:white;padding:0 3.5pt;text-align:{align}""><span style=""font-size:10pt;font-family:Arial,sans-serif;color:black"">{text}</span></td>");
+        var border = isFirst
+            ? "border:solid windowtext 1.0pt;border-top:none"
+            : "border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt";
+        sb.Append($@"<td width=""{widthPx}"" nowrap style=""width:{widthPt};{border};background:white;padding:0cm 3.5pt 0cm 3.5pt;height:19.95pt""><p class=""MsoNormal"" align=""{align}"" style=""text-align:{align}""><span style=""font-size:10.0pt;font-family:&quot;Arial&quot;,sans-serif;color:black"">{text}</span></p></td>");
     }
 }
