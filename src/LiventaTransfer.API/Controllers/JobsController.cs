@@ -96,14 +96,19 @@ public sealed class JobsController : ControllerBase
     }
 
     /// <summary>Konfirme tablosunu tarayıcıda görüntüler (kopyala-yapıştır için)</summary>
-    /// <remarks>GET /api/jobs/confirmation-table/html?ids=1&amp;ids=2&amp;ids=3 şeklinde kullanın</remarks>
+    /// <remarks>GET /api/jobs/confirmation-table/html?ids=9,10,11 şeklinde kullanın</remarks>
     [HttpGet("confirmation-table/html")]
-    [Produces("text/html")]
-    [ApiExplorerSettings(GroupName = "Transfer İşleri")]
-    public async Task<IActionResult> GetConfirmationTableHtml([FromQuery] List<long> ids, CancellationToken ct)
+    public async Task<IActionResult> GetConfirmationTableHtml([FromQuery] string ids, CancellationToken ct)
     {
+        var jobIds = (ids ?? "")
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(s => long.TryParse(s, out var id) ? id : (long?)null)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .ToList();
+
         var tableSvc = HttpContext.RequestServices.GetRequiredService<ConfirmationTableService>();
-        var r = await tableSvc.GenerateHtmlAsync(ids, ct);
+        var r = await tableSvc.GenerateHtmlAsync(jobIds, ct);
         if (!r.Success)
             return StatusCode(r.StatusCode, r.Message);
 
@@ -124,16 +129,9 @@ function copyTable(){{
   var sel=window.getSelection();
   sel.removeAllRanges();
   sel.addRange(range);
-  // clipboard API ile hem HTML hem plain text olarak kopyala
-  var html=container.innerHTML;
-  var text=container.innerText;
-  navigator.clipboard.write([new ClipboardItem({{
-    'text/html':new Blob([html],{{type:'text/html'}}),
-    'text/plain':new Blob([text],{{type:'text/plain'}})
-  }})]).then(function(){{
-    document.getElementById('msg').textContent='✓ Kopyalandı! Şimdi mail\'e yapıştırabilirsiniz.';
-    setTimeout(function(){{document.getElementById('msg').textContent='';}},3000);
-  }});
+  document.execCommand('copy');
+  document.getElementById('msg').textContent='✓ Kopyalandı! Şimdi mail\'e yapıştırabilirsiniz.';
+  setTimeout(function(){{document.getElementById('msg').textContent='';}},3000);
 }}
 </script></body></html>";
 
