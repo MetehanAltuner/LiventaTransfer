@@ -128,7 +128,7 @@ public sealed class JobService
 
         _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
         {
-            JobId = entity.Id,
+            Job = entity,
             OldStatus = null,
             NewStatus = JobStatus.Open,
             ChangedByUserId = userId,

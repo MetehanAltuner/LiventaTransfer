@@ -118,7 +118,7 @@ public sealed class LookupsController : ControllerBase
     public IActionResult Roles()
     {
         var items = Enum.GetValues<UserRole>()
-            .Select(r => new LookupDto { Id = (long)r, Name = r.ToString() })
+            .Select(r => new LookupDto { Id = (long)r, Name = EnumLabelHelper.GetLabel(r) })
             .OrderBy(r => r.Id)
             .ToList();
 
@@ -132,6 +132,94 @@ public sealed class LookupsController : ControllerBase
             return Ok(ApiResult<LookupDto>.Fail("Rol bulunamadı.", statusCode: 404));
 
         var role = (UserRole)id;
-        return Ok(ApiResult<LookupDto>.Ok(new LookupDto { Id = id, Name = role.ToString() }, "Rol bulundu."));
+        return Ok(ApiResult<LookupDto>.Ok(new LookupDto { Id = id, Name = EnumLabelHelper.GetLabel(role) }, "Rol bulundu."));
+    }
+
+    [HttpGet("job-statuses")]
+    public IActionResult JobStatuses()
+    {
+        var items = Enum.GetValues<JobStatus>()
+            .Select(s => new LookupDto { Id = (long)s, Name = EnumLabelHelper.GetLabel(s) })
+            .OrderBy(s => s.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "İş durumları."));
+    }
+
+    [HttpGet("job-types")]
+    public IActionResult JobTypes()
+    {
+        var items = Enum.GetValues<JobType>()
+            .Select(t => new LookupDto { Id = (long)t, Name = EnumLabelHelper.GetLabel(t) })
+            .OrderBy(t => t.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "İş türleri."));
+    }
+
+    [HttpGet("invoice-statuses")]
+    public IActionResult InvoiceStatuses()
+    {
+        var items = Enum.GetValues<InvoiceStatus>()
+            .Select(s => new LookupDto { Id = (long)s, Name = EnumLabelHelper.GetLabel(s) })
+            .OrderBy(s => s.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "Fatura durumları."));
+    }
+
+    [HttpGet("location-types")]
+    public IActionResult LocationTypes()
+    {
+        var items = Enum.GetValues<LocationType>()
+            .Select(t => new LookupDto { Id = (long)t, Name = EnumLabelHelper.GetLabel(t) })
+            .OrderBy(t => t.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "Lokasyon türleri."));
+    }
+
+    [HttpGet("vehicle-types")]
+    public IActionResult VehicleTypes()
+    {
+        var items = Enum.GetValues<VehicleType>()
+            .Select(t => new LookupDto { Id = (long)t, Name = EnumLabelHelper.GetLabel(t) })
+            .OrderBy(t => t.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "Araç türleri."));
+    }
+
+    [HttpGet("customer-types")]
+    public IActionResult CustomerTypes()
+    {
+        var items = Enum.GetValues<CustomerType>()
+            .Select(t => new LookupDto { Id = (long)t, Name = EnumLabelHelper.GetLabel(t) })
+            .OrderBy(t => t.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "Müşteri türleri."));
+    }
+
+    [HttpGet("notification-channels")]
+    public IActionResult NotificationChannels()
+    {
+        var items = Enum.GetValues<NotificationChannel>()
+            .Select(c => new LookupDto { Id = (long)c, Name = EnumLabelHelper.GetLabel(c) })
+            .OrderBy(c => c.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "Bildirim kanalları."));
+    }
+
+    [HttpGet("recipient-types")]
+    public IActionResult RecipientTypes()
+    {
+        var items = Enum.GetValues<RecipientType>()
+            .Select(t => new LookupDto { Id = (long)t, Name = EnumLabelHelper.GetLabel(t) })
+            .OrderBy(t => t.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "Alıcı türleri."));
     }
 }
