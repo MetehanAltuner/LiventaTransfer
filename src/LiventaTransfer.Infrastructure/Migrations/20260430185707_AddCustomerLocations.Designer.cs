@@ -3,6 +3,7 @@ using System;
 using LiventaTransfer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LiventaTransfer.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260430185707_AddCustomerLocations")]
+    partial class AddCustomerLocations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -334,7 +337,17 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<Guid>("CreatedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<long>("CustomerId")
+                        .HasColumnType("bigint");
+
                     b.Property<long?>("DriverId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("DropoffAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<long?>("DropoffLocationId")
                         .HasColumnType("bigint");
 
                     b.Property<decimal?>("ExtraCost")
@@ -344,6 +357,10 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<string>("ExtraInfo")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("FlightCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -362,12 +379,24 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<int>("JobType")
                         .HasColumnType("integer");
 
-                    b.Property<long?>("MergedIntoJobId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Notes")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("PassengerCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
+                    b.Property<long?>("PassengerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("PickupAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<long?>("PickupLocationId")
+                        .HasColumnType("bigint");
 
                     b.Property<decimal?>("PurchasePrice")
                         .HasPrecision(18, 2)
@@ -376,6 +405,10 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<string>("RouteDescription")
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
+
+                    b.Property<decimal?>("SalePrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<string>("SourceEmail")
                         .HasMaxLength(500)
@@ -399,14 +432,20 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
+                    b.HasIndex("CustomerId");
+
                     b.HasIndex("DriverId");
+
+                    b.HasIndex("DropoffLocationId");
 
                     b.HasIndex("JobDate");
 
                     b.HasIndex("JobNumber")
                         .IsUnique();
 
-                    b.HasIndex("MergedIntoJobId");
+                    b.HasIndex("PassengerId");
+
+                    b.HasIndex("PickupLocationId");
 
                     b.HasIndex("Status");
 
@@ -497,81 +536,6 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.HasIndex("JobId");
 
                     b.ToTable("JobStatusHistories", (string)null);
-                });
-
-            modelBuilder.Entity("LiventaTransfer.Domain.Entities.JobStop", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("CustomerId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("DropoffAddress")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<long?>("DropoffLocationId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("FlightCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<long>("JobId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<int>("PassengerCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
-
-                    b.Property<long?>("PassengerId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("PickupAddress")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<long?>("PickupLocationId")
-                        .HasColumnType("bigint");
-
-                    b.Property<decimal?>("SalePrice")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<int>("Sequence")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("DropoffLocationId");
-
-                    b.HasIndex("PassengerId");
-
-                    b.HasIndex("PickupLocationId");
-
-                    b.HasIndex("JobId", "Sequence");
-
-                    b.ToTable("JobStops", (string)null);
                 });
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Location", b =>
@@ -1029,14 +993,30 @@ namespace LiventaTransfer.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("LiventaTransfer.Domain.Entities.Customer", "Customer")
+                        .WithMany("Jobs")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("LiventaTransfer.Domain.Entities.Driver", "Driver")
                         .WithMany()
                         .HasForeignKey("DriverId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("LiventaTransfer.Domain.Entities.Job", "MergedIntoJob")
-                        .WithMany("MergedJobs")
-                        .HasForeignKey("MergedIntoJobId")
+                    b.HasOne("LiventaTransfer.Domain.Entities.Location", "DropoffLocation")
+                        .WithMany()
+                        .HasForeignKey("DropoffLocationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("LiventaTransfer.Domain.Entities.Passenger", "Passenger")
+                        .WithMany()
+                        .HasForeignKey("PassengerId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("LiventaTransfer.Domain.Entities.Location", "PickupLocation")
+                        .WithMany()
+                        .HasForeignKey("PickupLocationId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("LiventaTransfer.Domain.Entities.Vehicle", "Vehicle")
@@ -1053,9 +1033,15 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
                     b.Navigation("CreatedByUser");
 
+                    b.Navigation("Customer");
+
                     b.Navigation("Driver");
 
-                    b.Navigation("MergedIntoJob");
+                    b.Navigation("DropoffLocation");
+
+                    b.Navigation("Passenger");
+
+                    b.Navigation("PickupLocation");
 
                     b.Navigation("Vehicle");
 
@@ -1098,46 +1084,6 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Navigation("ChangedByUser");
 
                     b.Navigation("Job");
-                });
-
-            modelBuilder.Entity("LiventaTransfer.Domain.Entities.JobStop", b =>
-                {
-                    b.HasOne("LiventaTransfer.Domain.Entities.Customer", "Customer")
-                        .WithMany("JobStops")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("LiventaTransfer.Domain.Entities.Location", "DropoffLocation")
-                        .WithMany()
-                        .HasForeignKey("DropoffLocationId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("LiventaTransfer.Domain.Entities.Job", "Job")
-                        .WithMany("Stops")
-                        .HasForeignKey("JobId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("LiventaTransfer.Domain.Entities.Passenger", "Passenger")
-                        .WithMany()
-                        .HasForeignKey("PassengerId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("LiventaTransfer.Domain.Entities.Location", "PickupLocation")
-                        .WithMany()
-                        .HasForeignKey("PickupLocationId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("DropoffLocation");
-
-                    b.Navigation("Job");
-
-                    b.Navigation("Passenger");
-
-                    b.Navigation("PickupLocation");
                 });
 
             modelBuilder.Entity("LiventaTransfer.Domain.Entities.Notification", b =>
@@ -1218,7 +1164,7 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 {
                     b.Navigation("CustomerLocations");
 
-                    b.Navigation("JobStops");
+                    b.Navigation("Jobs");
 
                     b.Navigation("Passengers");
                 });
@@ -1232,11 +1178,7 @@ namespace LiventaTransfer.Infrastructure.Migrations
                 {
                     b.Navigation("JobNotes");
 
-                    b.Navigation("MergedJobs");
-
                     b.Navigation("StatusHistory");
-
-                    b.Navigation("Stops");
 
                     b.Navigation("TripLogs");
                 });

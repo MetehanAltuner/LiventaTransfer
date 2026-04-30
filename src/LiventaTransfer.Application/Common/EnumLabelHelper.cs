@@ -12,6 +12,7 @@ public static class EnumLabelHelper
         JobStatus.Completed => "Tamamlandı",
         JobStatus.PendingInvoice => "Fatura Kesilecek",
         JobStatus.Invoiced => "Fatura Kesildi",
+        JobStatus.Merged => "Birleştirildi",
         JobStatus.Cancelled => "İptal Edildi",
         _ => status.ToString()
     };

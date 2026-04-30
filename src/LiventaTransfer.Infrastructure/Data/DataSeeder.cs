@@ -124,103 +124,107 @@ public static class DataSeeder
         var now = DateTime.UtcNow;
         var today = DateOnly.FromDateTime(now);
 
+        static JobStop Stop(int seq, long customerId, long? passengerId, int paxCount, long? pickupId, long? dropoffId, string? flight = null, decimal? salePrice = null) => new()
+        {
+            Sequence = seq,
+            CustomerId = customerId,
+            PassengerId = passengerId,
+            PassengerCount = paxCount,
+            PickupLocationId = pickupId,
+            DropoffLocationId = dropoffId,
+            FlightCode = flight,
+            SalePrice = salePrice
+        };
+
         var job1 = new Job
         {
             JobNumber = "JOB-20260301-0001", JobDate = today.AddDays(-4), JobTime = new TimeOnly(14, 30),
             JobType = JobType.Transfer, Status = JobStatus.Completed,
-            CustomerId = c1.Id, PassengerId = p1.Id, PassengerCount = 2,
-            PickupLocationId = locAYT.Id, DropoffLocationId = locH1.Id,
-            FlightCode = "TK2414", SalePrice = 150, PurchasePrice = 100,
+            PurchasePrice = 100,
             VehicleOwnerId = ownFleet.Id, VehicleId = v1.Id, DriverId = d1.Id,
-            CreatedByUserId = coordUser.Id
+            CreatedByUserId = coordUser.Id,
+            Stops = { Stop(1, c1.Id, p1.Id, 2, locAYT.Id, locH1.Id, "TK2414", 150) }
         };
         var job2 = new Job
         {
             JobNumber = "JOB-20260301-0002", JobDate = today.AddDays(-4), JobTime = new TimeOnly(16, 0),
             JobType = JobType.Transfer, Status = JobStatus.Completed,
-            CustomerId = c2.Id, PassengerId = p3.Id, PassengerCount = 1,
-            PickupLocationId = locAYT.Id, DropoffLocationId = locH2.Id,
-            FlightCode = "SU2138", SalePrice = 120, PurchasePrice = 80,
+            PurchasePrice = 80,
             VehicleOwnerId = ownFleet.Id, VehicleId = v2.Id, DriverId = d2.Id,
-            CreatedByUserId = coordUser.Id
+            CreatedByUserId = coordUser.Id,
+            Stops = { Stop(1, c2.Id, p3.Id, 1, locAYT.Id, locH2.Id, "SU2138", 120) }
         };
         var job3 = new Job
         {
             JobNumber = "JOB-20260302-0001", JobDate = today.AddDays(-3), JobTime = new TimeOnly(9, 0),
             JobType = JobType.Transfer, Status = JobStatus.Completed,
-            CustomerId = c1.Id, PassengerId = p2.Id, PassengerCount = 2,
-            PickupLocationId = locH1.Id, DropoffLocationId = locAYT.Id,
-            FlightCode = "TK2415", SalePrice = 150, PurchasePrice = 100,
+            PurchasePrice = 100,
             VehicleOwnerId = ownFleet.Id, VehicleId = v1.Id, DriverId = d1.Id,
-            CreatedByUserId = coordUser.Id
+            CreatedByUserId = coordUser.Id,
+            Stops = { Stop(1, c1.Id, p2.Id, 2, locH1.Id, locAYT.Id, "TK2415", 150) }
         };
         var job4 = new Job
         {
             JobNumber = "JOB-20260303-0001", JobDate = today.AddDays(-2), JobTime = new TimeOnly(11, 0),
             JobType = JobType.Transfer, Status = JobStatus.PendingInvoice,
-            CustomerId = c3.Id, PassengerId = p5.Id, PassengerCount = 4,
-            PickupLocationId = locAYT.Id, DropoffLocationId = locH3.Id,
-            FlightCode = "PC1234", SalePrice = 200, PurchasePrice = 140,
+            PurchasePrice = 140,
             VehicleOwnerId = subcon1.Id, VehicleId = v3.Id, DriverId = d3.Id,
-            CreatedByUserId = reservUser.Id
+            CreatedByUserId = reservUser.Id,
+            Stops = { Stop(1, c3.Id, p5.Id, 4, locAYT.Id, locH3.Id, "PC1234", 200) }
         };
         var job5 = new Job
         {
             JobNumber = "JOB-20260304-0001", JobDate = today.AddDays(-1), JobTime = new TimeOnly(8, 30),
             JobType = JobType.DailyAllocation, Status = JobStatus.InProgress,
-            CustomerId = c2.Id, PassengerId = p4.Id, PassengerCount = 3,
-            PickupLocationId = locH2.Id, DropoffLocationId = locOther.Id,
-            SalePrice = 300, PurchasePrice = 200,
+            PurchasePrice = 200,
             VehicleOwnerId = subcon2.Id, VehicleId = v4.Id, DriverId = d4.Id,
-            CreatedByUserId = coordUser.Id
+            CreatedByUserId = coordUser.Id,
+            Stops = { Stop(1, c2.Id, p4.Id, 3, locH2.Id, locOther.Id, salePrice: 300) }
         };
         var job6 = new Job
         {
             JobNumber = "JOB-20260305-0001", JobDate = today, JobTime = new TimeOnly(10, 0),
             JobType = JobType.Transfer, Status = JobStatus.Assigned,
-            CustomerId = c4.Id, PassengerId = p7.Id, PassengerCount = 1,
-            PickupLocationId = locAYT.Id, DropoffLocationId = locH4.Id,
-            FlightCode = "XQ1122", SalePrice = 100, PurchasePrice = 70,
+            PurchasePrice = 70,
             VehicleOwnerId = ownFleet.Id, VehicleId = v1.Id, DriverId = d1.Id,
-            CreatedByUserId = reservUser.Id, AssignedByUserId = coordUser.Id
+            CreatedByUserId = reservUser.Id, AssignedByUserId = coordUser.Id,
+            Stops = { Stop(1, c4.Id, p7.Id, 1, locAYT.Id, locH4.Id, "XQ1122", 100) }
         };
+        // job7 — toplu iş örneği: 2 farklı müşteri/yolcu aynı araçla aynı rotada (BJV → otel)
         var job7 = new Job
         {
             JobNumber = "JOB-20260305-0002", JobDate = today, JobTime = new TimeOnly(15, 0),
             JobType = JobType.Transfer, Status = JobStatus.Open,
-            CustomerId = c5.Id, PassengerId = p8.Id, PassengerCount = 2,
-            PickupLocationId = locBJV.Id, DropoffLocationId = locH5.Id,
-            FlightCode = "TK2554", SalePrice = 180,
-            CreatedByUserId = reservUser.Id
+            CreatedByUserId = reservUser.Id,
+            Stops =
+            {
+                Stop(1, c5.Id, p8.Id, 2, locBJV.Id, locH5.Id, "TK2554", 180),
+                Stop(2, c3.Id, p6.Id, 2, locBJV.Id, locH5.Id, "TK2554", 200)
+            }
         };
         var job8 = new Job
         {
             JobNumber = "JOB-20260305-0003", JobDate = today, JobTime = new TimeOnly(18, 0),
             JobType = JobType.Transfer, Status = JobStatus.Open,
-            CustomerId = c3.Id, PassengerId = p6.Id, PassengerCount = 2,
-            PickupLocationId = locAYT.Id, DropoffLocationId = locH3.Id,
-            FlightCode = "SU2140", SalePrice = 200,
-            CreatedByUserId = coordUser.Id
+            CreatedByUserId = coordUser.Id,
+            Stops = { Stop(1, c3.Id, p6.Id, 2, locAYT.Id, locH3.Id, "SU2140", 200) }
         };
         var job9 = new Job
         {
             JobNumber = "JOB-20260306-0001", JobDate = today.AddDays(1), JobTime = new TimeOnly(7, 0),
             JobType = JobType.Transfer, Status = JobStatus.Assigned,
-            CustomerId = c1.Id, PassengerId = p1.Id, PassengerCount = 2,
-            PickupLocationId = locH4.Id, DropoffLocationId = locAYT.Id,
-            FlightCode = "TK2417", SalePrice = 150, PurchasePrice = 100,
+            PurchasePrice = 100,
             VehicleOwnerId = ownFleet.Id, VehicleId = v2.Id, DriverId = d2.Id,
-            CreatedByUserId = coordUser.Id, AssignedByUserId = coordUser.Id
+            CreatedByUserId = coordUser.Id, AssignedByUserId = coordUser.Id,
+            Stops = { Stop(1, c1.Id, p1.Id, 2, locH4.Id, locAYT.Id, "TK2417", 150) }
         };
         var job10 = new Job
         {
             JobNumber = "JOB-20260228-0001", JobDate = today.AddDays(-5), JobTime = new TimeOnly(12, 0),
             JobType = JobType.Transfer, Status = JobStatus.Cancelled,
-            CustomerId = c5.Id, PassengerId = p8.Id, PassengerCount = 1,
-            PickupLocationId = locDLM.Id, DropoffLocationId = locH5.Id,
-            FlightCode = "PC5678", SalePrice = 250,
             CreatedByUserId = reservUser.Id,
-            Notes = "Müşteri iptal etti - uçuş değişikliği"
+            Notes = "Müşteri iptal etti - uçuş değişikliği",
+            Stops = { Stop(1, c5.Id, p8.Id, 1, locDLM.Id, locH5.Id, "PC5678", 250) }
         };
         context.Jobs.AddRange(job1, job2, job3, job4, job5, job6, job7, job8, job9, job10);
         await context.SaveChangesAsync();

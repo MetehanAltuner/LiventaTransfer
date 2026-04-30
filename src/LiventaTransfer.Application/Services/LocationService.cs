@@ -11,7 +11,7 @@ public sealed class LocationService
     private readonly IAppDbContext _db;
     public LocationService(IAppDbContext db) => _db = db;
 
-    public async Task<ApiResult<PagedResult<LocationListDto>>> GetPagedAsync(PagedQuery query, LocationType? locationType, CancellationToken ct)
+    public async Task<ApiResult<PagedResult<LocationListDto>>> GetPagedAsync(PagedQuery query, LocationType? locationType, long? customerId, CancellationToken ct)
     {
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
@@ -27,6 +27,9 @@ public sealed class LocationService
 
         if (locationType.HasValue)
             q = q.Where(l => l.LocationType == locationType.Value);
+
+        if (customerId.HasValue)
+            q = q.Where(l => l.CustomerLocations.Any(cl => cl.CustomerId == customerId.Value));
 
         var total = await q.LongCountAsync(ct);
 

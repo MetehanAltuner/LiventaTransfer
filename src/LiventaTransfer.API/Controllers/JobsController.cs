@@ -21,11 +21,12 @@ public sealed class JobsController : ControllerBase
         [FromQuery] JobStatus? status,
         [FromQuery] long? customerId,
         [FromQuery] long? driverId,
+        [FromQuery] long? locationId,
         [FromQuery] DateOnly? dateFrom,
         [FromQuery] DateOnly? dateTo,
         CancellationToken ct)
     {
-        var r = await _svc.GetPagedAsync(query, status, customerId, driverId, dateFrom, dateTo, ct);
+        var r = await _svc.GetPagedAsync(query, status, customerId, driverId, locationId, dateFrom, dateTo, ct);
         return StatusCode(r.StatusCode, r);
     }
 
@@ -61,6 +62,15 @@ public sealed class JobsController : ControllerBase
     public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateJobStatusRequest request, [FromQuery] Guid userId, CancellationToken ct)
     {
         var r = await _svc.UpdateStatusAsync(id, request, userId, ct);
+        return StatusCode(r.StatusCode, r);
+    }
+
+    /// <summary>Birden fazla işi tek bir hedef işe birleştirir.</summary>
+    /// <remarks>Kaynak işlerin durakları hedef işe taşınır, kaynaklar 'Birleştirildi' olarak işaretlenir.</remarks>
+    [HttpPost("{id:long}/merge")]
+    public async Task<IActionResult> Merge(long id, [FromBody] MergeJobsRequest request, [FromQuery] Guid userId, CancellationToken ct)
+    {
+        var r = await _svc.MergeAsync(id, request, userId, ct);
         return StatusCode(r.StatusCode, r);
     }
 

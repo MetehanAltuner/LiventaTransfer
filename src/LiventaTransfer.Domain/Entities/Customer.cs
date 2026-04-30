@@ -16,5 +16,6 @@ public class Customer : BaseEntity
     public bool IsActive { get; set; } = true;
 
     public ICollection<Passenger> Passengers { get; set; } = new List<Passenger>();
-    public ICollection<Job> Jobs { get; set; } = new List<Job>();
+    public ICollection<JobStop> JobStops { get; set; } = new List<JobStop>();
+    public ICollection<CustomerLocation> CustomerLocations { get; set; } = new List<CustomerLocation>();
 }

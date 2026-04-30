@@ -11,4 +11,6 @@ public class Location : BaseEntity
     public decimal? Longitude { get; set; }
     public LocationType LocationType { get; set; }
     public bool IsActive { get; set; } = true;
+
+    public ICollection<CustomerLocation> CustomerLocations { get; set; } = new List<CustomerLocation>();
 }

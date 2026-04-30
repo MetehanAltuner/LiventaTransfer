@@ -3,6 +3,60 @@ using LiventaTransfer.Domain.Enums;
 
 namespace LiventaTransfer.Application.DTOs.Job;
 
+public record JobStopDto
+{
+    public long Id { get; init; }
+    public int Sequence { get; init; }
+    public long CustomerId { get; init; }
+    public string CustomerName { get; init; } = string.Empty;
+    public long? PassengerId { get; init; }
+    public string? PassengerName { get; init; }
+    public int PassengerCount { get; init; }
+    public long? PickupLocationId { get; init; }
+    public string? PickupLocationName { get; init; }
+    public long? DropoffLocationId { get; init; }
+    public string? DropoffLocationName { get; init; }
+    public string? PickupAddress { get; init; }
+    public string? DropoffAddress { get; init; }
+    public string? FlightCode { get; init; }
+    public string? Notes { get; init; }
+    public decimal? SalePrice { get; init; }
+
+    public static JobStopDto FromEntity(Domain.Entities.JobStop s) => new()
+    {
+        Id = s.Id,
+        Sequence = s.Sequence,
+        CustomerId = s.CustomerId,
+        CustomerName = s.Customer?.Name ?? string.Empty,
+        PassengerId = s.PassengerId,
+        PassengerName = s.Passenger?.FullName,
+        PassengerCount = s.PassengerCount,
+        PickupLocationId = s.PickupLocationId,
+        PickupLocationName = s.PickupLocation?.Name,
+        DropoffLocationId = s.DropoffLocationId,
+        DropoffLocationName = s.DropoffLocation?.Name,
+        PickupAddress = s.PickupAddress,
+        DropoffAddress = s.DropoffAddress,
+        FlightCode = s.FlightCode,
+        Notes = s.Notes,
+        SalePrice = s.SalePrice
+    };
+}
+
+public record JobStopRequest
+{
+    public long CustomerId { get; init; }
+    public long? PassengerId { get; init; }
+    public int PassengerCount { get; init; } = 1;
+    public long? PickupLocationId { get; init; }
+    public long? DropoffLocationId { get; init; }
+    public string? PickupAddress { get; init; }
+    public string? DropoffAddress { get; init; }
+    public string? FlightCode { get; init; }
+    public string? Notes { get; init; }
+    public decimal? SalePrice { get; init; }
+}
+
 public record JobListDto
 {
     public long Id { get; init; }
@@ -13,13 +67,12 @@ public record JobListDto
     public string JobTypeLabel { get; init; } = string.Empty;
     public JobStatus Status { get; init; }
     public string StatusLabel { get; init; } = string.Empty;
-    public string CustomerName { get; init; } = string.Empty;
-    public string? PassengerName { get; init; }
+    public int StopCount { get; init; }
+    public int TotalPassengerCount { get; init; }
+    public string CustomerNames { get; init; } = string.Empty;
     public string? DriverName { get; init; }
-    public string? PickupLocationName { get; init; }
-    public string? DropoffLocationName { get; init; }
-    public int PassengerCount { get; init; }
-    public decimal? SalePrice { get; init; }
+    public decimal? TotalSalePrice { get; init; }
+    public long? MergedIntoJobId { get; init; }
 
     public static JobListDto FromEntity(Domain.Entities.Job e) => new()
     {
@@ -31,13 +84,17 @@ public record JobListDto
         JobTypeLabel = EnumLabelHelper.GetLabel(e.JobType),
         Status = e.Status,
         StatusLabel = EnumLabelHelper.GetLabel(e.Status),
-        CustomerName = e.Customer?.Name ?? string.Empty,
-        PassengerName = e.Passenger?.FullName,
+        StopCount = e.Stops.Count,
+        TotalPassengerCount = e.Stops.Sum(s => s.PassengerCount),
+        CustomerNames = string.Join(", ", e.Stops
+            .Where(s => s.Customer != null)
+            .Select(s => s.Customer!.Name)
+            .Distinct()),
         DriverName = e.Driver?.FullName,
-        PickupLocationName = e.PickupLocation?.Name,
-        DropoffLocationName = e.DropoffLocation?.Name,
-        PassengerCount = e.PassengerCount,
-        SalePrice = e.SalePrice
+        TotalSalePrice = e.Stops.Any(s => s.SalePrice.HasValue)
+            ? e.Stops.Where(s => s.SalePrice.HasValue).Sum(s => s.SalePrice!.Value)
+            : null,
+        MergedIntoJobId = e.MergedIntoJobId
     };
 }
 
@@ -51,19 +108,7 @@ public record JobDetailDto
     public string JobTypeLabel { get; init; } = string.Empty;
     public JobStatus Status { get; init; }
     public string StatusLabel { get; init; } = string.Empty;
-    public long CustomerId { get; init; }
-    public string CustomerName { get; init; } = string.Empty;
-    public long? PassengerId { get; init; }
-    public string? PassengerName { get; init; }
-    public int PassengerCount { get; init; }
-    public long? PickupLocationId { get; init; }
-    public string? PickupLocationName { get; init; }
-    public long? DropoffLocationId { get; init; }
-    public string? DropoffLocationName { get; init; }
-    public string? PickupAddress { get; init; }
-    public string? DropoffAddress { get; init; }
     public string? RouteDescription { get; init; }
-    public string? FlightCode { get; init; }
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }
     public string? SourceEmail { get; init; }
@@ -73,11 +118,15 @@ public record JobDetailDto
     public string? VehiclePlate { get; init; }
     public long? DriverId { get; init; }
     public string? DriverName { get; init; }
-    public decimal? SalePrice { get; init; }
     public decimal? PurchasePrice { get; init; }
     public decimal? ExtraCost { get; init; }
+    public decimal? TotalSalePrice { get; init; }
     public string CreatedByUserName { get; init; } = string.Empty;
     public string? AssignedByUserName { get; init; }
+    public long? MergedIntoJobId { get; init; }
+    public string? MergedIntoJobNumber { get; init; }
+    public List<long> MergedJobIds { get; init; } = [];
+    public List<JobStopDto> Stops { get; init; } = [];
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 
@@ -91,19 +140,7 @@ public record JobDetailDto
         JobTypeLabel = EnumLabelHelper.GetLabel(e.JobType),
         Status = e.Status,
         StatusLabel = EnumLabelHelper.GetLabel(e.Status),
-        CustomerId = e.CustomerId,
-        CustomerName = e.Customer?.Name ?? string.Empty,
-        PassengerId = e.PassengerId,
-        PassengerName = e.Passenger?.FullName,
-        PassengerCount = e.PassengerCount,
-        PickupLocationId = e.PickupLocationId,
-        PickupLocationName = e.PickupLocation?.Name,
-        DropoffLocationId = e.DropoffLocationId,
-        DropoffLocationName = e.DropoffLocation?.Name,
-        PickupAddress = e.PickupAddress,
-        DropoffAddress = e.DropoffAddress,
         RouteDescription = e.RouteDescription,
-        FlightCode = e.FlightCode,
         ExtraInfo = e.ExtraInfo,
         Notes = e.Notes,
         SourceEmail = e.SourceEmail,
@@ -113,11 +150,20 @@ public record JobDetailDto
         VehiclePlate = e.Vehicle?.Plate,
         DriverId = e.DriverId,
         DriverName = e.Driver?.FullName,
-        SalePrice = e.SalePrice,
         PurchasePrice = e.PurchasePrice,
         ExtraCost = e.ExtraCost,
+        TotalSalePrice = e.Stops.Any(s => s.SalePrice.HasValue)
+            ? e.Stops.Where(s => s.SalePrice.HasValue).Sum(s => s.SalePrice!.Value)
+            : null,
         CreatedByUserName = e.CreatedByUser != null ? $"{e.CreatedByUser.FirstName} {e.CreatedByUser.LastName}" : string.Empty,
         AssignedByUserName = e.AssignedByUser != null ? $"{e.AssignedByUser.FirstName} {e.AssignedByUser.LastName}" : null,
+        MergedIntoJobId = e.MergedIntoJobId,
+        MergedIntoJobNumber = e.MergedIntoJob?.JobNumber,
+        MergedJobIds = e.MergedJobs.Select(m => m.Id).ToList(),
+        Stops = e.Stops
+            .OrderBy(s => s.Sequence)
+            .Select(JobStopDto.FromEntity)
+            .ToList(),
         CreatedAt = e.CreatedAt,
         UpdatedAt = e.UpdatedAt
     };
@@ -128,24 +174,16 @@ public record CreateJobRequest
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
-    public long CustomerId { get; init; }
-    public long? PassengerId { get; init; }
-    public int PassengerCount { get; init; } = 1;
-    public long? PickupLocationId { get; init; }
-    public long? DropoffLocationId { get; init; }
-    public string? PickupAddress { get; init; }
-    public string? DropoffAddress { get; init; }
     public string? RouteDescription { get; init; }
-    public string? FlightCode { get; init; }
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }
     public string? SourceEmail { get; init; }
     public long? VehicleOwnerId { get; init; }
     public long? VehicleId { get; init; }
     public long? DriverId { get; init; }
-    public decimal? SalePrice { get; init; }
     public decimal? PurchasePrice { get; init; }
     public decimal? ExtraCost { get; init; }
+    public List<JobStopRequest> Stops { get; init; } = [];
 }
 
 public record UpdateJobRequest
@@ -153,28 +191,25 @@ public record UpdateJobRequest
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
-    public long CustomerId { get; init; }
-    public long? PassengerId { get; init; }
-    public int PassengerCount { get; init; } = 1;
-    public long? PickupLocationId { get; init; }
-    public long? DropoffLocationId { get; init; }
-    public string? PickupAddress { get; init; }
-    public string? DropoffAddress { get; init; }
     public string? RouteDescription { get; init; }
-    public string? FlightCode { get; init; }
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }
     public string? SourceEmail { get; init; }
     public long? VehicleOwnerId { get; init; }
     public long? VehicleId { get; init; }
     public long? DriverId { get; init; }
-    public decimal? SalePrice { get; init; }
     public decimal? PurchasePrice { get; init; }
     public decimal? ExtraCost { get; init; }
+    public List<JobStopRequest> Stops { get; init; } = [];
 }
 
 public record UpdateJobStatusRequest
 {
     public JobStatus NewStatus { get; init; }
     public string? ChangeReason { get; init; }
+}
+
+public record MergeJobsRequest
+{
+    public List<long> SourceJobIds { get; init; } = [];
 }

@@ -13,7 +13,9 @@ public interface IAppDbContext
     DbSet<Vehicle> Vehicles { get; }
     DbSet<Driver> Drivers { get; }
     DbSet<Location> Locations { get; }
+    DbSet<CustomerLocation> CustomerLocations { get; }
     DbSet<Job> Jobs { get; }
+    DbSet<JobStop> JobStops { get; }
     DbSet<JobStatusHistory> JobStatusHistories { get; }
     DbSet<TripLog> TripLogs { get; }
     DbSet<JobNote> JobNotes { get; }

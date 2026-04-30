@@ -18,7 +18,9 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
     public DbSet<Driver> Drivers => Set<Driver>();
     public DbSet<Location> Locations => Set<Location>();
+    public DbSet<CustomerLocation> CustomerLocations => Set<CustomerLocation>();
     public DbSet<Job> Jobs => Set<Job>();
+    public DbSet<JobStop> JobStops => Set<JobStop>();
     public DbSet<JobStatusHistory> JobStatusHistories => Set<JobStatusHistory>();
     public DbSet<TripLog> TripLogs => Set<TripLog>();
     public DbSet<JobNote> JobNotes => Set<JobNote>();

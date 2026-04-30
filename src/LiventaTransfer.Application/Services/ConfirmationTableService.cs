@@ -17,9 +17,9 @@ public sealed class ConfirmationTableService
             return ApiResult<string>.Fail("En az bir iş ID'si gereklidir.", statusCode: 400);
 
         var jobs = await _db.Jobs.AsNoTracking()
-            .Include(j => j.Passenger)
-            .Include(j => j.PickupLocation)
-            .Include(j => j.DropoffLocation)
+            .Include(j => j.Stops).ThenInclude(s => s.Passenger)
+            .Include(j => j.Stops).ThenInclude(s => s.PickupLocation)
+            .Include(j => j.Stops).ThenInclude(s => s.DropoffLocation)
             .Where(j => jobIds.Contains(j.Id))
             .OrderBy(j => j.JobDate).ThenBy(j => j.JobTime)
             .ToListAsync(ct);
@@ -42,24 +42,27 @@ public sealed class ConfirmationTableService
         AppendHeaderCell(sb, "Tek Yön Ücreti", 113, "85.0pt");
         sb.Append("</tr>");
 
-        // Data rows
+        // Data rows — bir Job'da birden fazla durak varsa her durak ayrı satır olur
         foreach (var job in jobs)
         {
-            var passengerName = job.Passenger?.FullName ?? "-";
-            var pickup = job.PickupLocation?.Name ?? job.PickupAddress ?? "-";
-            var dropoff = job.DropoffLocation?.Name ?? job.DropoffAddress ?? "-";
-            var price = job.SalePrice.HasValue
-                ? $"₺{job.SalePrice.Value.ToString("N2", new CultureInfo("tr-TR"))}"
-                : "-";
+            foreach (var stop in job.Stops.OrderBy(s => s.Sequence))
+            {
+                var passengerName = stop.Passenger?.FullName ?? "-";
+                var pickup = stop.PickupLocation?.Name ?? stop.PickupAddress ?? "-";
+                var dropoff = stop.DropoffLocation?.Name ?? stop.DropoffAddress ?? "-";
+                var price = stop.SalePrice.HasValue
+                    ? $"₺{stop.SalePrice.Value.ToString("N2", new CultureInfo("tr-TR"))}"
+                    : "-";
 
-            sb.Append(@"<tr style=""height:19.95pt"">");
-            AppendDataCell(sb, job.JobDate.ToString("dd.MM.yyyy"), 83, "62.0pt", "center", isFirst: true);
-            AppendDataCell(sb, job.JobTime.ToString("HH:mm"), 53, "40.0pt", "center");
-            AppendDataCell(sb, passengerName, 245, "184.0pt", "center");
-            AppendDataCell(sb, pickup, 169, "127.0pt", "center");
-            AppendDataCell(sb, dropoff, 161, "121.0pt", "center");
-            AppendDataCell(sb, price, 113, "85.0pt", "right");
-            sb.Append("</tr>");
+                sb.Append(@"<tr style=""height:19.95pt"">");
+                AppendDataCell(sb, job.JobDate.ToString("dd.MM.yyyy"), 83, "62.0pt", "center", isFirst: true);
+                AppendDataCell(sb, job.JobTime.ToString("HH:mm"), 53, "40.0pt", "center");
+                AppendDataCell(sb, passengerName, 245, "184.0pt", "center");
+                AppendDataCell(sb, pickup, 169, "127.0pt", "center");
+                AppendDataCell(sb, dropoff, 161, "121.0pt", "center");
+                AppendDataCell(sb, price, 113, "85.0pt", "right");
+                sb.Append("</tr>");
+            }
         }
 
         sb.Append("</tbody></table>");

@@ -79,14 +79,20 @@ public sealed class EmlImportService
                 JobDate = transfer.JobDate,
                 JobTime = transfer.JobTime,
                 JobType = JobType.Transfer,
-                CustomerId = request.CustomerId,
-                PassengerId = passengerId,
-                PassengerCount = 1,
-                PickupAddress = transfer.PickupAddress,
-                DropoffAddress = transfer.DropoffAddress,
-                FlightCode = transfer.FlightCode,
-                Notes = transfer.Notes,
-                SourceEmail = request.SourceEmail
+                SourceEmail = request.SourceEmail,
+                Stops =
+                [
+                    new JobStopRequest
+                    {
+                        CustomerId = request.CustomerId,
+                        PassengerId = passengerId,
+                        PassengerCount = 1,
+                        PickupAddress = transfer.PickupAddress,
+                        DropoffAddress = transfer.DropoffAddress,
+                        FlightCode = transfer.FlightCode,
+                        Notes = transfer.Notes
+                    }
+                ]
             };
 
             var result = await _jobService.CreateAsync(createRequest, request.UserId, ct);

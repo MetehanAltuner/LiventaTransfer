@@ -8,5 +8,6 @@ public enum JobStatus
     Completed = 4,
     PendingInvoice = 5,
     Invoiced = 6,
+    Merged = 50,
     Cancelled = 99
 }
