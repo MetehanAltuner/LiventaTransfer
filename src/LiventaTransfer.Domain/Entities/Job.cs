@@ -4,6 +4,7 @@ namespace LiventaTransfer.Domain.Entities;
 
 public class Job : BaseEntity
 {
+    public Guid PublicId { get; set; }
     public string JobNumber { get; set; } = null!;
     public DateOnly JobDate { get; set; }
     public TimeOnly JobTime { get; set; }
@@ -13,6 +14,8 @@ public class Job : BaseEntity
     public string? ExtraInfo { get; set; }
     public string? Notes { get; set; }
     public string? SourceEmail { get; set; }
+    public DateTime? ContactedAt { get; set; }
+    public DateTime? DepartedAt { get; set; }
     public long? VehicleOwnerId { get; set; }
     public long? VehicleId { get; set; }
     public long? DriverId { get; set; }

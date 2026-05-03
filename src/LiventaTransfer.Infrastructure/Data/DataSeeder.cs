@@ -33,20 +33,71 @@ public static class DataSeeder
         // ── Users (Id stays Guid) ──
         var adminUser = new User
         {
-            Id = Guid.NewGuid(), Username = "admin", FirstName = "Admin", LastName = "User",
-            PasswordHash = BCryptHash("admin123"), Role = UserRole.Admin, BranchId = branchAntalya.Id, IsActive = true
+            Id = Guid.NewGuid(), Username = "admin", FirstName = "Genel", LastName = "Müdür",
+            PasswordHash = BCryptHash("admin123"), Role = UserRole.GeneralManager, BranchId = branchAntalya.Id, IsActive = true
         };
         var coordUser = new User
         {
-            Id = Guid.NewGuid(), Username = "koordinator", FirstName = "Ayşe", LastName = "Yılmaz",
-            PasswordHash = BCryptHash("coord123"), Role = UserRole.Coordinator, BranchId = branchAntalya.Id, IsActive = true
+            Id = Guid.NewGuid(), Username = "operasyon", FirstName = "Ayşe", LastName = "Yılmaz",
+            PasswordHash = BCryptHash("coord123"), Role = UserRole.Operations, BranchId = branchAntalya.Id, IsActive = true
         };
         var reservUser = new User
         {
             Id = Guid.NewGuid(), Username = "rezervasyon", FirstName = "Mehmet", LastName = "Kaya",
-            PasswordHash = BCryptHash("reserv123"), Role = UserRole.Reservationist, BranchId = branchBodrum.Id, IsActive = true
+            PasswordHash = BCryptHash("reserv123"), Role = UserRole.Reservation, BranchId = branchBodrum.Id, IsActive = true
         };
-        context.Users.AddRange(adminUser, coordUser, reservUser);
+        var devUser = new User
+        {
+            Id = Guid.NewGuid(), Username = "developer", FirstName = "Dev", LastName = "User",
+            PasswordHash = BCryptHash("dev123"), Role = UserRole.Developer, BranchId = branchAntalya.Id, IsActive = true
+        };
+        context.Users.AddRange(adminUser, coordUser, reservUser, devUser);
+        await context.SaveChangesAsync();
+
+        // ── Permissions (sidebar tab'ları) ──
+        var permHome = new Permission { Code = "HOME", Label = "Anasayfa", Icon = "home", SortOrder = 1, IsActive = true };
+        var permJobs = new Permission { Code = "JOBS", Label = "İşler", Icon = "list", SortOrder = 2, IsActive = true };
+        var permDetail = new Permission { Code = "DETAIL", Label = "Detay", Icon = "bar-chart", SortOrder = 3, IsActive = true };
+        var permReports = new Permission { Code = "REPORTS", Label = "Rapor", Icon = "bar-chart", SortOrder = 4, IsActive = true };
+        var permAdmin = new Permission { Code = "ADMIN", Label = "Admin", Icon = "settings", SortOrder = 5, IsActive = true };
+        context.Permissions.AddRange(permHome, permJobs, permDetail, permReports, permAdmin);
+        await context.SaveChangesAsync();
+
+        // ── Role → Permission default haritası ──
+        // Note: GeneralManager ve Developer hard-coded olarak tüm permission'lara sahiptir (servis tarafında).
+        // Bu satırlar sadece UI'da default olarak görünmesi için.
+        var rolePerms = new List<RolePermission>
+        {
+            // Operations
+            new() { Role = UserRole.Operations, PermissionId = permHome.Id },
+            new() { Role = UserRole.Operations, PermissionId = permJobs.Id },
+            new() { Role = UserRole.Operations, PermissionId = permDetail.Id },
+            // Reservation
+            new() { Role = UserRole.Reservation, PermissionId = permHome.Id },
+            new() { Role = UserRole.Reservation, PermissionId = permJobs.Id },
+            new() { Role = UserRole.Reservation, PermissionId = permDetail.Id },
+            // Driver
+            new() { Role = UserRole.Driver, PermissionId = permHome.Id },
+            new() { Role = UserRole.Driver, PermissionId = permDetail.Id },
+            // Manager
+            new() { Role = UserRole.Manager, PermissionId = permHome.Id },
+            new() { Role = UserRole.Manager, PermissionId = permJobs.Id },
+            new() { Role = UserRole.Manager, PermissionId = permDetail.Id },
+            new() { Role = UserRole.Manager, PermissionId = permReports.Id },
+            // GeneralManager (görünürlük için yine de seed)
+            new() { Role = UserRole.GeneralManager, PermissionId = permHome.Id },
+            new() { Role = UserRole.GeneralManager, PermissionId = permJobs.Id },
+            new() { Role = UserRole.GeneralManager, PermissionId = permDetail.Id },
+            new() { Role = UserRole.GeneralManager, PermissionId = permReports.Id },
+            new() { Role = UserRole.GeneralManager, PermissionId = permAdmin.Id },
+            // Developer (görünürlük için yine de seed)
+            new() { Role = UserRole.Developer, PermissionId = permHome.Id },
+            new() { Role = UserRole.Developer, PermissionId = permJobs.Id },
+            new() { Role = UserRole.Developer, PermissionId = permDetail.Id },
+            new() { Role = UserRole.Developer, PermissionId = permReports.Id },
+            new() { Role = UserRole.Developer, PermissionId = permAdmin.Id }
+        };
+        context.RolePermissions.AddRange(rolePerms);
         await context.SaveChangesAsync();
 
         // ── Vehicle Owners ──

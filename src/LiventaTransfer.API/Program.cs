@@ -68,6 +68,7 @@ builder.Services.AddScoped<TripLogService>();
 builder.Services.AddScoped<InvoiceService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<PermissionService>();
 
 // EML Import services
 builder.Services.AddScoped<TatilsepetiEmlParserService>();

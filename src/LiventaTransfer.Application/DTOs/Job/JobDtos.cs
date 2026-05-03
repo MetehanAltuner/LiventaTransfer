@@ -60,6 +60,7 @@ public record JobStopRequest
 public record JobListDto
 {
     public long Id { get; init; }
+    public Guid PublicId { get; init; }
     public string JobNumber { get; init; } = string.Empty;
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
@@ -67,6 +68,8 @@ public record JobListDto
     public string JobTypeLabel { get; init; } = string.Empty;
     public JobStatus Status { get; init; }
     public string StatusLabel { get; init; } = string.Empty;
+    public DriverStage DriverStage { get; init; }
+    public string DriverStageLabel { get; init; } = string.Empty;
     public int StopCount { get; init; }
     public int TotalPassengerCount { get; init; }
     public string CustomerNames { get; init; } = string.Empty;
@@ -77,6 +80,7 @@ public record JobListDto
     public static JobListDto FromEntity(Domain.Entities.Job e) => new()
     {
         Id = e.Id,
+        PublicId = e.PublicId,
         JobNumber = e.JobNumber,
         JobDate = e.JobDate,
         JobTime = e.JobTime,
@@ -84,6 +88,8 @@ public record JobListDto
         JobTypeLabel = EnumLabelHelper.GetLabel(e.JobType),
         Status = e.Status,
         StatusLabel = EnumLabelHelper.GetLabel(e.Status),
+        DriverStage = DriverStageHelper.Resolve(e),
+        DriverStageLabel = EnumLabelHelper.GetLabel(DriverStageHelper.Resolve(e)),
         StopCount = e.Stops.Count,
         TotalPassengerCount = e.Stops.Sum(s => s.PassengerCount),
         CustomerNames = string.Join(", ", e.Stops
@@ -101,6 +107,7 @@ public record JobListDto
 public record JobDetailDto
 {
     public long Id { get; init; }
+    public Guid PublicId { get; init; }
     public string JobNumber { get; init; } = string.Empty;
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
@@ -133,6 +140,7 @@ public record JobDetailDto
     public static JobDetailDto FromEntity(Domain.Entities.Job e) => new()
     {
         Id = e.Id,
+        PublicId = e.PublicId,
         JobNumber = e.JobNumber,
         JobDate = e.JobDate,
         JobTime = e.JobTime,

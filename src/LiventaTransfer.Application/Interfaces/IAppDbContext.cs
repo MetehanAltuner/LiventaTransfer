@@ -22,6 +22,8 @@ public interface IAppDbContext
     DbSet<Invoice> Invoices { get; }
     DbSet<InvoiceItem> InvoiceItems { get; }
     DbSet<Notification> Notifications { get; }
+    DbSet<Permission> Permissions { get; }
+    DbSet<RolePermission> RolePermissions { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

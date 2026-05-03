@@ -10,6 +10,13 @@ public class JobConfiguration : IEntityTypeConfiguration<Job>
     {
         builder.ToTable("Jobs");
 
+        builder.Property(j => j.PublicId)
+            .HasDefaultValueSql("gen_random_uuid()")
+            .ValueGeneratedOnAdd();
+
+        builder.HasIndex(j => j.PublicId)
+            .IsUnique();
+
         builder.Property(j => j.JobNumber)
             .IsRequired()
             .HasMaxLength(50);

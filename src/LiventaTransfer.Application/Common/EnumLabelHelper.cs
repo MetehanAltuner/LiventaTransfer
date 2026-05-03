@@ -80,15 +80,24 @@ public static class EnumLabelHelper
         _ => type.ToString()
     };
 
+    public static string GetLabel(DriverStage stage) => stage switch
+    {
+        DriverStage.NotStarted => "Başlanmadı",
+        DriverStage.Contacted => "Yolcu ile İletişime Geçildi",
+        DriverStage.Departed => "Yola Çıkıldı",
+        DriverStage.PickedUp => "Yolcu Alındı",
+        DriverStage.DroppedOff => "Yolcu Bırakıldı",
+        _ => stage.ToString()
+    };
+
     public static string GetLabel(UserRole role) => role switch
     {
-        UserRole.Admin => "Yönetici",
-        UserRole.Manager => "Müdür",
-        UserRole.Coordinator => "Koordinatör",
-        UserRole.Reservationist => "Rezervasyon Uzmanı",
+        UserRole.Operations => "Operasyon Personeli",
+        UserRole.Reservation => "Rezervasyon Personeli",
         UserRole.Driver => "Şoför",
-        UserRole.Accountant => "Muhasebeci",
-        UserRole.Viewer => "İzleyici",
+        UserRole.Manager => "Müdür",
+        UserRole.GeneralManager => "Genel Müdür",
+        UserRole.Developer => "Developer",
         _ => role.ToString()
     };
 }

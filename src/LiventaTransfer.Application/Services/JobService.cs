@@ -291,6 +291,171 @@ public sealed class JobService
         return await GetByIdAsync(target.Id, ct);
     }
 
+    public async Task<ApiResult<TransferDetailDto>> GetTransferDetailAsync(Guid publicId, CancellationToken ct)
+    {
+        var id = await ResolveJobIdAsync(publicId, ct);
+        if (id is null)
+            return ApiResult<TransferDetailDto>.Fail("İş bulunamadı.", statusCode: 404);
+        return await GetTransferDetailByIdAsync(id.Value, ct);
+    }
+
+    private async Task<ApiResult<TransferDetailDto>> GetTransferDetailByIdAsync(long id, CancellationToken ct)
+    {
+        var entity = await LoadDetailAsync(id, asNoTracking: true, ct);
+        if (entity is null)
+            return ApiResult<TransferDetailDto>.Fail("İş bulunamadı.", statusCode: 404);
+
+        return ApiResult<TransferDetailDto>.Ok(TransferDetailDto.FromEntity(entity), "Transfer detayı.");
+    }
+
+    public async Task<ApiResult<TransferDetailDto>> MarkContactedAsync(Guid publicId, Guid userId, CancellationToken ct)
+        => await MarkJobLevelAsync(publicId, userId, isDepart: false, ct);
+
+    public async Task<ApiResult<TransferDetailDto>> MarkDepartedAsync(Guid publicId, Guid userId, CancellationToken ct)
+        => await MarkJobLevelAsync(publicId, userId, isDepart: true, ct);
+
+    private async Task<long?> ResolveJobIdAsync(Guid publicId, CancellationToken ct)
+        => await _db.Jobs.AsNoTracking()
+            .Where(j => j.PublicId == publicId)
+            .Select(j => (long?)j.Id)
+            .FirstOrDefaultAsync(ct);
+
+    private async Task<ApiResult<TransferDetailDto>> MarkJobLevelAsync(Guid publicId, Guid userId, bool isDepart, CancellationToken ct)
+    {
+        var entity = await _db.Jobs
+            .Include(j => j.Stops)
+            .FirstOrDefaultAsync(j => j.PublicId == publicId, ct);
+        if (entity is null)
+            return ApiResult<TransferDetailDto>.Fail("İş bulunamadı.", statusCode: 404);
+
+        if (entity.Status is JobStatus.Cancelled or JobStatus.Merged or JobStatus.Completed
+            or JobStatus.PendingInvoice or JobStatus.Invoiced)
+            return ApiResult<TransferDetailDto>.Fail(
+                $"İş bu durumda güncellenemez: {EnumLabelHelper.GetLabel(entity.Status)}", statusCode: 400);
+
+        if (!entity.DriverId.HasValue)
+            return ApiResult<TransferDetailDto>.Fail("İşe atanmış sürücü yok.", statusCode: 400);
+
+        var now = DateTime.UtcNow;
+
+        // Idempotency
+        if (isDepart && entity.DepartedAt.HasValue)
+            return await GetTransferDetailByIdAsync(entity.Id, ct);
+        if (!isDepart && entity.ContactedAt.HasValue)
+            return await GetTransferDetailByIdAsync(entity.Id, ct);
+
+        // Always set Contacted (monotonic auto-fill)
+        if (!entity.ContactedAt.HasValue)
+            entity.ContactedAt = now;
+
+        if (isDepart)
+            entity.DepartedAt = now;
+
+        // First action that takes job operational → JobStatus.InProgress
+        if (isDepart && entity.Status != JobStatus.InProgress)
+        {
+            var oldStatus = entity.Status;
+            entity.Status = JobStatus.InProgress;
+            _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+            {
+                JobId = entity.Id,
+                OldStatus = oldStatus,
+                NewStatus = JobStatus.InProgress,
+                ChangedByUserId = userId,
+                ChangeReason = "Sürücü yola çıktı.",
+                ChangedAt = now
+            });
+        }
+
+        await _db.SaveChangesAsync(ct);
+        return await GetTransferDetailByIdAsync(entity.Id, ct);
+    }
+
+    public async Task<ApiResult<TransferDetailDto>> MarkStopPickedUpAsync(Guid jobPublicId, long stopId, Guid userId, CancellationToken ct)
+        => await UpdateStopProgressAsync(jobPublicId, stopId, userId, isPickup: true, ct);
+
+    public async Task<ApiResult<TransferDetailDto>> MarkStopDroppedOffAsync(Guid jobPublicId, long stopId, Guid userId, CancellationToken ct)
+        => await UpdateStopProgressAsync(jobPublicId, stopId, userId, isPickup: false, ct);
+
+    private async Task<ApiResult<TransferDetailDto>> UpdateStopProgressAsync(Guid jobPublicId, long stopId, Guid userId, bool isPickup, CancellationToken ct)
+    {
+        var entity = await _db.Jobs
+            .Include(j => j.Stops)
+            .FirstOrDefaultAsync(j => j.PublicId == jobPublicId, ct);
+        if (entity is null)
+            return ApiResult<TransferDetailDto>.Fail("İş bulunamadı.", statusCode: 404);
+
+        if (entity.Status is JobStatus.Cancelled or JobStatus.Merged or JobStatus.Completed
+            or JobStatus.PendingInvoice or JobStatus.Invoiced)
+            return ApiResult<TransferDetailDto>.Fail(
+                $"İş bu durumda güncellenemez: {EnumLabelHelper.GetLabel(entity.Status)}", statusCode: 400);
+
+        if (!entity.DriverId.HasValue)
+            return ApiResult<TransferDetailDto>.Fail("İşe atanmış sürücü yok.", statusCode: 400);
+
+        var stop = entity.Stops.FirstOrDefault(s => s.Id == stopId);
+        if (stop is null)
+            return ApiResult<TransferDetailDto>.Fail("Durak bu işe ait değil.", statusCode: 404);
+
+        var now = DateTime.UtcNow;
+
+        if (isPickup)
+        {
+            if (stop.PickedUpAt.HasValue)
+                return await GetTransferDetailByIdAsync(entity.Id, ct);
+            stop.PickedUpAt = now;
+        }
+        else
+        {
+            if (!stop.PickedUpAt.HasValue)
+                return ApiResult<TransferDetailDto>.Fail("Yolcu önce alınmadan bırakılamaz.", statusCode: 400);
+            if (stop.DroppedOffAt.HasValue)
+                return await GetTransferDetailByIdAsync(entity.Id, ct);
+            stop.DroppedOffAt = now;
+        }
+
+        // Auto-set Contacted + Departed (monotonic) on first stop action
+        if (!entity.ContactedAt.HasValue)
+            entity.ContactedAt = now;
+        if (!entity.DepartedAt.HasValue)
+            entity.DepartedAt = now;
+
+        if (entity.Status != JobStatus.InProgress
+            && entity.Status != JobStatus.Completed)
+        {
+            var oldStatus = entity.Status;
+            entity.Status = JobStatus.InProgress;
+            _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+            {
+                JobId = entity.Id,
+                OldStatus = oldStatus,
+                NewStatus = JobStatus.InProgress,
+                ChangedByUserId = userId,
+                ChangeReason = isPickup ? "Yolcu alındı." : "Yolcu bırakıldı.",
+                ChangedAt = now
+            });
+        }
+
+        // All stops dropped off → Completed
+        if (!isPickup && entity.Stops.All(s => s.DroppedOffAt.HasValue))
+        {
+            var oldStatus = entity.Status;
+            entity.Status = JobStatus.Completed;
+            _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+            {
+                JobId = entity.Id,
+                OldStatus = oldStatus,
+                NewStatus = JobStatus.Completed,
+                ChangedByUserId = userId,
+                ChangeReason = "Tüm duraklar tamamlandı.",
+                ChangedAt = now
+            });
+        }
+
+        await _db.SaveChangesAsync(ct);
+        return await GetTransferDetailByIdAsync(entity.Id, ct);
+    }
+
     public async Task<ApiResult<List<JobStatusHistoryDto>>> GetStatusHistoryAsync(long jobId, CancellationToken ct)
     {
         if (!await _db.Jobs.AnyAsync(j => j.Id == jobId, ct))

@@ -146,6 +146,17 @@ public sealed class LookupsController : ControllerBase
         return Ok(ApiResult<List<LookupDto>>.Ok(items, "İş durumları."));
     }
 
+    [HttpGet("driver-stages")]
+    public IActionResult DriverStages()
+    {
+        var items = Enum.GetValues<DriverStage>()
+            .Select(s => new LookupDto { Id = (long)s, Name = EnumLabelHelper.GetLabel(s) })
+            .OrderBy(s => s.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "Sürücü aşamaları."));
+    }
+
     [HttpGet("job-types")]
     public IActionResult JobTypes()
     {
