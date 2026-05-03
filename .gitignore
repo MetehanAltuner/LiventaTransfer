@@ -84,3 +84,9 @@ $RECYCLE.BIN/
 *.bak
 *.log
 *.cache
+
+# Editor / IDE
+.cursor/
+
+# Local archive dumps
+*.tar

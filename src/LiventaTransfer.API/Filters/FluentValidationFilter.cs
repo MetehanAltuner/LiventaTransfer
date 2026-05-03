@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using FluentValidation;
 using LiventaTransfer.Application.Common;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,7 @@ public sealed class FluentValidationFilter : IAsyncActionFilter
 
             if (!result.IsValid)
             {
-                var errors = result.Errors.Select(e => e.ErrorMessage).ToList();
+                var errors = result.Errors.Select(FormatError).ToList();
                 var payload = ApiResult<object>.Fail("Doğrulama hatası.", errors, statusCode: 400);
                 context.Result = new BadRequestObjectResult(payload);
                 return;
@@ -39,5 +40,19 @@ public sealed class FluentValidationFilter : IAsyncActionFilter
         }
 
         await next();
+    }
+
+    private static readonly Regex StopsPathRegex = new(@"^Stops\[(\d+)\]", RegexOptions.Compiled);
+
+    private static string FormatError(FluentValidation.Results.ValidationFailure e)
+    {
+        if (string.IsNullOrEmpty(e.PropertyName))
+            return e.ErrorMessage;
+
+        var match = StopsPathRegex.Match(e.PropertyName);
+        if (match.Success && int.TryParse(match.Groups[1].Value, out var idx))
+            return $"Durak {idx + 1}: {e.ErrorMessage}";
+
+        return e.ErrorMessage;
     }
 }
