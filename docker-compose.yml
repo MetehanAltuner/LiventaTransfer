@@ -1,5 +1,8 @@
 services:
   transfer-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: transferapi:latest
     container_name: transfer-api
     restart: unless-stopped
