@@ -192,7 +192,9 @@ public sealed class JobService
 
     public async Task<ApiResult<JobDetailDto>> UpdateStatusAsync(long id, UpdateJobStatusRequest request, Guid userId, CancellationToken ct)
     {
-        var entity = await _db.Jobs.FirstOrDefaultAsync(j => j.Id == id, ct);
+        var entity = await _db.Jobs
+            .Include(j => j.Stops)
+            .FirstOrDefaultAsync(j => j.Id == id, ct);
         if (entity is null)
             return ApiResult<JobDetailDto>.Fail("İş bulunamadı.", statusCode: 404);
 
@@ -202,21 +204,30 @@ public sealed class JobService
         if (request.NewStatus == JobStatus.Merged)
             return ApiResult<JobDetailDto>.Fail("'Birleştirildi' durumu yalnızca birleştirme işlemi ile atanabilir.", statusCode: 400);
 
+        var stageGuard = ValidateStatusAgainstDriverStage(entity, request.NewStatus);
+        if (stageGuard is not null)
+            return ApiResult<JobDetailDto>.Fail(stageGuard, statusCode: 400);
+
+        var userExists = await UserExistsAsync(userId, ct);
+
         var oldStatus = entity.Status;
         entity.Status = request.NewStatus;
 
-        if (request.NewStatus == JobStatus.Assigned && entity.DriverId.HasValue)
+        if (request.NewStatus == JobStatus.Assigned && entity.DriverId.HasValue && userExists)
             entity.AssignedByUserId = userId;
 
-        _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+        if (userExists)
         {
-            JobId = entity.Id,
-            OldStatus = oldStatus,
-            NewStatus = request.NewStatus,
-            ChangedByUserId = userId,
-            ChangeReason = request.ChangeReason?.Trim(),
-            ChangedAt = DateTime.UtcNow
-        });
+            _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+            {
+                JobId = entity.Id,
+                OldStatus = oldStatus,
+                NewStatus = request.NewStatus,
+                ChangedByUserId = userId,
+                ChangeReason = request.ChangeReason?.Trim(),
+                ChangedAt = DateTime.UtcNow
+            });
+        }
 
         await _db.SaveChangesAsync(ct);
 
@@ -262,6 +273,7 @@ public sealed class JobService
 
         var nextSeq = (target.Stops.Count == 0 ? 0 : target.Stops.Max(s => s.Sequence)) + 1;
         var now = DateTime.UtcNow;
+        var userExists = await UserExistsAsync(userId, ct);
 
         foreach (var source in sources)
         {
@@ -275,15 +287,18 @@ public sealed class JobService
             source.Status = JobStatus.Merged;
             source.MergedIntoJobId = target.Id;
 
-            _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+            if (userExists)
             {
-                JobId = source.Id,
-                OldStatus = oldStatus,
-                NewStatus = JobStatus.Merged,
-                ChangedByUserId = userId,
-                ChangeReason = $"{target.JobNumber} ile birleştirildi.",
-                ChangedAt = now
-            });
+                _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+                {
+                    JobId = source.Id,
+                    OldStatus = oldStatus,
+                    NewStatus = JobStatus.Merged,
+                    ChangedByUserId = userId,
+                    ChangeReason = $"{target.JobNumber} ile birleştirildi.",
+                    ChangedAt = now
+                });
+            }
         }
 
         await _db.SaveChangesAsync(ct);
@@ -314,6 +329,14 @@ public sealed class JobService
     public async Task<ApiResult<TransferDetailDto>> MarkDepartedAsync(Guid publicId, Guid userId, CancellationToken ct)
         => await MarkJobLevelAsync(publicId, userId, isDepart: true, ct);
 
+    /// <summary>
+    /// Verilen userId'nin Users tablosunda gerçekten var olup olmadığını döner.
+    /// JobStatusHistory ve benzeri FK kayıtlarını oluşturmadan önce kullanılır;
+    /// kullanıcı yoksa kayıt atlanır ve FK ihlalinden dolayı 500 dönmez.
+    /// </summary>
+    private async Task<bool> UserExistsAsync(Guid userId, CancellationToken ct)
+        => userId != Guid.Empty && await _db.Users.AnyAsync(u => u.Id == userId, ct);
+
     private async Task<long?> ResolveJobIdAsync(Guid publicId, CancellationToken ct)
         => await _db.Jobs.AsNoTracking()
             .Where(j => j.PublicId == publicId)
@@ -336,6 +359,7 @@ public sealed class JobService
         if (!entity.DriverId.HasValue)
             return ApiResult<TransferDetailDto>.Fail("İşe atanmış sürücü yok.", statusCode: 400);
 
+        var userExists = await UserExistsAsync(userId, ct);
         var now = DateTime.UtcNow;
 
         // Idempotency
@@ -356,15 +380,18 @@ public sealed class JobService
         {
             var oldStatus = entity.Status;
             entity.Status = JobStatus.InProgress;
-            _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+            if (userExists)
             {
-                JobId = entity.Id,
-                OldStatus = oldStatus,
-                NewStatus = JobStatus.InProgress,
-                ChangedByUserId = userId,
-                ChangeReason = "Sürücü yola çıktı.",
-                ChangedAt = now
-            });
+                _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+                {
+                    JobId = entity.Id,
+                    OldStatus = oldStatus,
+                    NewStatus = JobStatus.InProgress,
+                    ChangedByUserId = userId,
+                    ChangeReason = "Sürücü yola çıktı.",
+                    ChangedAt = now
+                });
+            }
         }
 
         await _db.SaveChangesAsync(ct);
@@ -392,6 +419,8 @@ public sealed class JobService
 
         if (!entity.DriverId.HasValue)
             return ApiResult<TransferDetailDto>.Fail("İşe atanmış sürücü yok.", statusCode: 400);
+
+        var userExists = await UserExistsAsync(userId, ct);
 
         var stop = entity.Stops.FirstOrDefault(s => s.Id == stopId);
         if (stop is null)
@@ -425,15 +454,18 @@ public sealed class JobService
         {
             var oldStatus = entity.Status;
             entity.Status = JobStatus.InProgress;
-            _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+            if (userExists)
             {
-                JobId = entity.Id,
-                OldStatus = oldStatus,
-                NewStatus = JobStatus.InProgress,
-                ChangedByUserId = userId,
-                ChangeReason = isPickup ? "Yolcu alındı." : "Yolcu bırakıldı.",
-                ChangedAt = now
-            });
+                _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+                {
+                    JobId = entity.Id,
+                    OldStatus = oldStatus,
+                    NewStatus = JobStatus.InProgress,
+                    ChangedByUserId = userId,
+                    ChangeReason = isPickup ? "Yolcu alındı." : "Yolcu bırakıldı.",
+                    ChangedAt = now
+                });
+            }
         }
 
         // All stops dropped off → Completed
@@ -441,15 +473,18 @@ public sealed class JobService
         {
             var oldStatus = entity.Status;
             entity.Status = JobStatus.Completed;
-            _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+            if (userExists)
             {
-                JobId = entity.Id,
-                OldStatus = oldStatus,
-                NewStatus = JobStatus.Completed,
-                ChangedByUserId = userId,
-                ChangeReason = "Tüm duraklar tamamlandı.",
-                ChangedAt = now
-            });
+                _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+                {
+                    JobId = entity.Id,
+                    OldStatus = oldStatus,
+                    NewStatus = JobStatus.Completed,
+                    ChangedByUserId = userId,
+                    ChangeReason = "Tüm duraklar tamamlandı.",
+                    ChangedAt = now
+                });
+            }
         }
 
         await _db.SaveChangesAsync(ct);
@@ -553,6 +588,37 @@ public sealed class JobService
         Notes = s.Notes?.Trim(),
         SalePrice = s.SalePrice
     };
+
+    /// <summary>
+    /// JobStatus geçişinin DriverStage ile tutarlı olup olmadığını doğrular.
+    /// "Tamamlandı / Fatura Kesilecek / Faturalandı" durumlarına geçmek için
+    /// tüm durakların bırakılmış olması (DriverStage == DroppedOff) gerekir.
+    /// "Devam Ediyor" durumuna geçmek için işin bir sürücüsü olmalıdır.
+    /// </summary>
+    private static string? ValidateStatusAgainstDriverStage(Domain.Entities.Job entity, JobStatus newStatus)
+    {
+        var stage = DriverStageHelper.Resolve(entity);
+        var allDroppedOff = entity.Stops.Count > 0 && entity.Stops.All(s => s.DroppedOffAt.HasValue);
+
+        switch (newStatus)
+        {
+            case JobStatus.Completed:
+            case JobStatus.PendingInvoice:
+            case JobStatus.Invoiced:
+                if (!allDroppedOff)
+                    return $"İş '{EnumLabelHelper.GetLabel(newStatus)}' durumuna alınamaz: " +
+                           $"sürücü aşaması '{EnumLabelHelper.GetLabel(stage)}'. " +
+                           $"Tüm duraklar bırakılmadan iş ilerletilemez, durum 'Devam Ediyor' olarak kalmalı.";
+                break;
+
+            case JobStatus.InProgress:
+                if (!entity.DriverId.HasValue)
+                    return "İş 'Devam Ediyor' durumuna alınamaz: atanmış sürücü yok.";
+                break;
+        }
+
+        return null;
+    }
 
     private async Task<string> GenerateJobNumberAsync(CancellationToken ct)
     {
