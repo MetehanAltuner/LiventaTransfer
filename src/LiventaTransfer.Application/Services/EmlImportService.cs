@@ -35,8 +35,7 @@ public sealed class EmlImportService
 
             // Passenger'ı bul veya oluştur
             var passengerId = await FindOrCreatePassengerAsync(
-                parsed.Passenger.FullName, parsed.Passenger.Phone, parsed.Passenger.Email,
-                customerId, ct);
+                parsed.Passenger.FullName, parsed.Passenger.Phone, parsed.Passenger.Email, ct);
 
             var result = parsed with
             {
@@ -66,8 +65,7 @@ public sealed class EmlImportService
         if (!passengerId.HasValue && !string.IsNullOrWhiteSpace(request.PassengerName))
         {
             passengerId = await FindOrCreatePassengerAsync(
-                request.PassengerName, request.PassengerPhone, request.PassengerEmail,
-                request.CustomerId, ct);
+                request.PassengerName, request.PassengerPhone, request.PassengerEmail, ct);
         }
 
         var createdJobs = new List<JobDetailDto>();
@@ -133,14 +131,13 @@ public sealed class EmlImportService
     }
 
     private async Task<long> FindOrCreatePassengerAsync(
-        string fullName, string? phone, string? email, long customerId, CancellationToken ct)
+        string fullName, string? phone, string? email, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(fullName))
             throw new InvalidOperationException("Yolcu adı boş olamaz.");
 
         var existing = await _db.Passengers
-            .FirstOrDefaultAsync(p => p.CustomerId == customerId &&
-                                      p.FullName.ToLower() == fullName.ToLower().Trim(), ct);
+            .FirstOrDefaultAsync(p => p.FullName.ToLower() == fullName.ToLower().Trim(), ct);
 
         if (existing != null)
             return existing.Id;
@@ -150,7 +147,6 @@ public sealed class EmlImportService
             FullName = fullName.Trim(),
             Phone = phone?.Trim(),
             Email = email?.Trim(),
-            CustomerId = customerId,
             IsActive = true
         };
 

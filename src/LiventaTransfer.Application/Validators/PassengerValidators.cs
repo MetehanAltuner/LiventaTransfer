@@ -11,7 +11,6 @@ public sealed class CreatePassengerRequestValidator : AbstractValidator<CreatePa
         RuleFor(x => x.Phone).MaximumLength(20);
         RuleFor(x => x.Email).MaximumLength(200);
         RuleFor(x => x.Notes).MaximumLength(1000);
-        RuleFor(x => x.CustomerId).NotEmpty().WithMessage("Müşteri zorunludur.");
     }
 }
 
@@ -23,6 +22,5 @@ public sealed class UpdatePassengerRequestValidator : AbstractValidator<UpdatePa
         RuleFor(x => x.Phone).MaximumLength(20);
         RuleFor(x => x.Email).MaximumLength(200);
         RuleFor(x => x.Notes).MaximumLength(1000);
-        RuleFor(x => x.CustomerId).NotEmpty().WithMessage("Müşteri zorunludur.");
     }
 }

@@ -15,7 +15,6 @@ public class Customer : BaseEntity
     public string? Notes { get; set; }
     public bool IsActive { get; set; } = true;
 
-    public ICollection<Passenger> Passengers { get; set; } = new List<Passenger>();
     public ICollection<JobStop> JobStops { get; set; } = new List<JobStop>();
     public ICollection<CustomerLocation> CustomerLocations { get; set; } = new List<CustomerLocation>();
 }

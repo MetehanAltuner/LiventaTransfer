@@ -86,14 +86,11 @@ public sealed class LookupsController : ControllerBase
     }
 
     [HttpGet("passengers")]
-    public async Task<IActionResult> Passengers([FromQuery] long? customerId, CancellationToken ct)
+    public async Task<IActionResult> Passengers(CancellationToken ct)
     {
-        var q = _db.Passengers.AsNoTracking().Where(p => p.IsActive);
-
-        if (customerId.HasValue)
-            q = q.Where(p => p.CustomerId == customerId.Value);
-
-        var items = await q
+        var items = await _db.Passengers
+            .AsNoTracking()
+            .Where(p => p.IsActive)
             .OrderBy(p => p.FullName)
             .Select(p => new LookupDto { Id = p.Id, Name = p.FullName })
             .ToListAsync(ct);

@@ -90,6 +90,14 @@ public sealed class JobService
         if (request.Stops is null || request.Stops.Count == 0)
             return ApiResult<JobDetailDto>.Fail("En az bir durak (stop) gereklidir.", statusCode: 400);
 
+        var userValidation = await ValidateUserAsync(userId, ct);
+        if (userValidation is not null)
+            return ApiResult<JobDetailDto>.Fail(userValidation, statusCode: 400);
+
+        var refValidation = await ValidateJobReferencesAsync(request.VehicleOwnerId, request.VehicleId, request.DriverId, ct);
+        if (refValidation is not null)
+            return ApiResult<JobDetailDto>.Fail(refValidation, statusCode: 400);
+
         var validation = await ValidateStopsAsync(request.Stops, ct);
         if (validation is not null)
             return ApiResult<JobDetailDto>.Fail(validation, statusCode: 400);
@@ -149,6 +157,10 @@ public sealed class JobService
         if (entity.Status == JobStatus.Merged)
             return ApiResult<JobDetailDto>.Fail("Birleştirilmiş iş güncellenemez.", statusCode: 400);
 
+        var refValidation = await ValidateJobReferencesAsync(request.VehicleOwnerId, request.VehicleId, request.DriverId, ct);
+        if (refValidation is not null)
+            return ApiResult<JobDetailDto>.Fail(refValidation, statusCode: 400);
+
         var validation = await ValidateStopsAsync(request.Stops, ct);
         if (validation is not null)
             return ApiResult<JobDetailDto>.Fail(validation, statusCode: 400);
@@ -192,6 +204,10 @@ public sealed class JobService
 
     public async Task<ApiResult<JobDetailDto>> UpdateStatusAsync(long id, UpdateJobStatusRequest request, Guid userId, CancellationToken ct)
     {
+        var userValidation = await ValidateUserAsync(userId, ct);
+        if (userValidation is not null)
+            return ApiResult<JobDetailDto>.Fail(userValidation, statusCode: 400);
+
         var entity = await _db.Jobs
             .Include(j => j.Stops)
             .FirstOrDefaultAsync(j => j.Id == id, ct);
@@ -236,6 +252,10 @@ public sealed class JobService
 
     public async Task<ApiResult<JobDetailDto>> MergeAsync(long targetId, MergeJobsRequest request, Guid userId, CancellationToken ct)
     {
+        var userValidation = await ValidateUserAsync(userId, ct);
+        if (userValidation is not null)
+            return ApiResult<JobDetailDto>.Fail(userValidation, statusCode: 400);
+
         var sourceIds = request.SourceJobIds?.Distinct().ToList() ?? [];
         if (sourceIds.Count == 0)
             return ApiResult<JobDetailDto>.Fail("En az bir kaynak iş seçilmelidir.", statusCode: 400);
@@ -525,6 +545,34 @@ public sealed class JobService
             .Include(j => j.Stops).ThenInclude(s => s.PickupLocation)
             .Include(j => j.Stops).ThenInclude(s => s.DropoffLocation)
             .FirstOrDefaultAsync(j => j.Id == id, ct);
+    }
+
+    private async Task<string?> ValidateUserAsync(Guid userId, CancellationToken ct)
+    {
+        if (userId == Guid.Empty)
+            return "Geçerli bir kullanıcı kimliği (userId) gönderilmelidir.";
+
+        if (!await _db.Users.AnyAsync(u => u.Id == userId, ct))
+            return $"Kullanıcı bulunamadı: {userId}";
+
+        return null;
+    }
+
+    private async Task<string?> ValidateJobReferencesAsync(long? vehicleOwnerId, long? vehicleId, long? driverId, CancellationToken ct)
+    {
+        if (vehicleOwnerId.HasValue &&
+            !await _db.VehicleOwners.AnyAsync(v => v.Id == vehicleOwnerId.Value, ct))
+            return $"Araç sahibi bulunamadı: {vehicleOwnerId.Value}";
+
+        if (vehicleId.HasValue &&
+            !await _db.Vehicles.AnyAsync(v => v.Id == vehicleId.Value, ct))
+            return $"Araç bulunamadı: {vehicleId.Value}";
+
+        if (driverId.HasValue &&
+            !await _db.Drivers.AnyAsync(d => d.Id == driverId.Value, ct))
+            return $"Sürücü bulunamadı: {driverId.Value}";
+
+        return null;
     }
 
     private async Task<string?> ValidateStopsAsync(List<JobStopRequest> stops, CancellationToken ct)

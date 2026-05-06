@@ -50,13 +50,6 @@ public sealed class CustomersController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpGet("{id:long}/passengers")]
-    public async Task<IActionResult> GetPassengers(long id, CancellationToken ct)
-    {
-        var r = await _svc.GetPassengersAsync(id, ct);
-        return StatusCode(r.StatusCode, r);
-    }
-
     [HttpGet("{id:long}/locations")]
     public async Task<IActionResult> GetLocations(long id, CancellationToken ct)
     {

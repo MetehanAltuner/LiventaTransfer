@@ -10,21 +10,18 @@ public sealed class PassengerService
     private readonly IAppDbContext _db;
     public PassengerService(IAppDbContext db) => _db = db;
 
-    public async Task<ApiResult<PagedResult<PassengerListDto>>> GetPagedAsync(PagedQuery query, long? customerId, CancellationToken ct)
+    public async Task<ApiResult<PagedResult<PassengerListDto>>> GetPagedAsync(PagedQuery query, CancellationToken ct)
     {
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
 
-        var q = _db.Passengers.AsNoTracking().Include(p => p.Customer).AsQueryable();
+        var q = _db.Passengers.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.Search))
             q = q.Where(p => p.FullName.ToLower().Contains(query.Search.ToLower()));
 
         if (query.IsActive.HasValue)
             q = q.Where(p => p.IsActive == query.IsActive.Value);
-
-        if (customerId.HasValue)
-            q = q.Where(p => p.CustomerId == customerId.Value);
 
         var total = await q.LongCountAsync(ct);
 
@@ -50,7 +47,6 @@ public sealed class PassengerService
     {
         var entity = await _db.Passengers
             .AsNoTracking()
-            .Include(p => p.Customer)
             .FirstOrDefaultAsync(p => p.Id == id, ct);
 
         if (entity is null)
@@ -61,16 +57,12 @@ public sealed class PassengerService
 
     public async Task<ApiResult<PassengerDetailDto>> CreateAsync(CreatePassengerRequest request, CancellationToken ct)
     {
-        if (!await _db.Customers.AnyAsync(c => c.Id == request.CustomerId, ct))
-            return ApiResult<PassengerDetailDto>.Fail("Müşteri bulunamadı.", statusCode: 400);
-
         var entity = new Domain.Entities.Passenger
         {
             FullName = request.FullName.Trim(),
             Phone = request.Phone?.Trim(),
             Email = request.Email?.Trim(),
             Notes = request.Notes?.Trim(),
-            CustomerId = request.CustomerId,
             IsActive = true
         };
 
@@ -86,14 +78,10 @@ public sealed class PassengerService
         if (entity is null)
             return ApiResult<PassengerDetailDto>.Fail("Yolcu bulunamadı.", statusCode: 404);
 
-        if (!await _db.Customers.AnyAsync(c => c.Id == request.CustomerId, ct))
-            return ApiResult<PassengerDetailDto>.Fail("Müşteri bulunamadı.", statusCode: 400);
-
         entity.FullName = request.FullName.Trim();
         entity.Phone = request.Phone?.Trim();
         entity.Email = request.Email?.Trim();
         entity.Notes = request.Notes?.Trim();
-        entity.CustomerId = request.CustomerId;
         entity.IsActive = request.IsActive;
 
         await _db.SaveChangesAsync(ct);

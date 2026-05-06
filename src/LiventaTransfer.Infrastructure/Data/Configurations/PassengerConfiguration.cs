@@ -25,10 +25,5 @@ public class PassengerConfiguration : IEntityTypeConfiguration<Passenger>
 
         builder.Property(p => p.IsActive)
             .HasDefaultValue(true);
-
-        builder.HasOne(p => p.Customer)
-            .WithMany(c => c.Passengers)
-            .HasForeignKey(p => p.CustomerId)
-            .OnDelete(DeleteBehavior.Restrict);
     }
 }

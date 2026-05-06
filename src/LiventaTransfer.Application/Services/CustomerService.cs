@@ -1,7 +1,6 @@
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Customer;
 using LiventaTransfer.Application.DTOs.Location;
-using LiventaTransfer.Application.DTOs.Passenger;
 using LiventaTransfer.Application.Interfaces;
 using LiventaTransfer.Domain.Entities;
 using LiventaTransfer.Domain.Enums;
@@ -57,7 +56,6 @@ public sealed class CustomerService
     {
         var entity = await _db.Customers
             .AsNoTracking()
-            .Include(c => c.Passengers)
             .FirstOrDefaultAsync(c => c.Id == id, ct);
 
         if (entity is null)
@@ -183,18 +181,4 @@ public sealed class CustomerService
         return await GetLocationsAsync(customerId, ct);
     }
 
-    public async Task<ApiResult<List<PassengerListDto>>> GetPassengersAsync(long customerId, CancellationToken ct)
-    {
-        if (!await _db.Customers.AnyAsync(c => c.Id == customerId, ct))
-            return ApiResult<List<PassengerListDto>>.Fail("Müşteri bulunamadı.", statusCode: 404);
-
-        var passengers = await _db.Passengers
-            .AsNoTracking()
-            .Include(p => p.Customer)
-            .Where(p => p.CustomerId == customerId)
-            .Select(p => PassengerListDto.FromEntity(p))
-            .ToListAsync(ct);
-
-        return ApiResult<List<PassengerListDto>>.Ok(passengers, "Yolcular listelendi.");
-    }
 }

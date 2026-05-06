@@ -41,15 +41,6 @@ public record CustomerDetailDto
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
-    public List<PassengerBrief> Passengers { get; init; } = [];
-
-    public record PassengerBrief
-    {
-        public long Id { get; init; }
-        public string FullName { get; init; } = string.Empty;
-        public string? Phone { get; init; }
-        public bool IsActive { get; init; }
-    }
 
     public static CustomerDetailDto FromEntity(Domain.Entities.Customer entity) => new()
     {
@@ -66,16 +57,7 @@ public record CustomerDetailDto
         Notes = entity.Notes,
         IsActive = entity.IsActive,
         CreatedAt = entity.CreatedAt,
-        UpdatedAt = entity.UpdatedAt,
-        Passengers = entity.Passengers
-            .Where(p => !p.IsDeleted)
-            .Select(p => new PassengerBrief
-            {
-                Id = p.Id,
-                FullName = p.FullName,
-                Phone = p.Phone,
-                IsActive = p.IsActive
-            }).ToList()
+        UpdatedAt = entity.UpdatedAt
     };
 }
 

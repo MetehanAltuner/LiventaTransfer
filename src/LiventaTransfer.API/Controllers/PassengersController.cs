@@ -15,9 +15,9 @@ public sealed class PassengersController : ControllerBase
     public PassengersController(PassengerService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] long? customerId, CancellationToken ct)
+    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, CancellationToken ct)
     {
-        var r = await _svc.GetPagedAsync(query, customerId, ct);
+        var r = await _svc.GetPagedAsync(query, ct);
         return StatusCode(r.StatusCode, r);
     }
 

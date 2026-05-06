@@ -146,14 +146,14 @@ public static class DataSeeder
         await context.SaveChangesAsync();
 
         // ── Passengers ──
-        var p1 = new Passenger { FullName = "Hans Müller", Phone = "+491761234567", CustomerId = c1.Id, IsActive = true };
-        var p2 = new Passenger { FullName = "Anna Schmidt", Phone = "+491769876543", CustomerId = c1.Id, IsActive = true };
-        var p3 = new Passenger { FullName = "Ivan Petrov", Phone = "+79161234567", CustomerId = c2.Id, IsActive = true };
-        var p4 = new Passenger { FullName = "Olga Ivanova", Phone = "+79169876543", CustomerId = c2.Id, IsActive = true };
-        var p5 = new Passenger { FullName = "Sergei Volkov", Phone = "+79171112233", CustomerId = c3.Id, IsActive = true };
-        var p6 = new Passenger { FullName = "Maria Sokolova", Phone = "+79172223344", CustomerId = c3.Id, IsActive = true };
-        var p7 = new Passenger { FullName = "Fatih Çetin", Phone = "05551112233", CustomerId = c4.Id, IsActive = true };
-        var p8 = new Passenger { FullName = "Elif Arslan", Phone = "05552223344", CustomerId = c5.Id, IsActive = true };
+        var p1 = new Passenger { FullName = "Hans Müller", Phone = "+491761234567", IsActive = true };
+        var p2 = new Passenger { FullName = "Anna Schmidt", Phone = "+491769876543", IsActive = true };
+        var p3 = new Passenger { FullName = "Ivan Petrov", Phone = "+79161234567", IsActive = true };
+        var p4 = new Passenger { FullName = "Olga Ivanova", Phone = "+79169876543", IsActive = true };
+        var p5 = new Passenger { FullName = "Sergei Volkov", Phone = "+79171112233", IsActive = true };
+        var p6 = new Passenger { FullName = "Maria Sokolova", Phone = "+79172223344", IsActive = true };
+        var p7 = new Passenger { FullName = "Fatih Çetin", Phone = "05551112233", IsActive = true };
+        var p8 = new Passenger { FullName = "Elif Arslan", Phone = "05552223344", IsActive = true };
         context.Passengers.AddRange(p1, p2, p3, p4, p5, p6, p7, p8);
         await context.SaveChangesAsync();
 
