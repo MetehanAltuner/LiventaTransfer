@@ -30,17 +30,20 @@ public sealed class EmlImportService
                 return ApiResult<EmlParseResultDto>.Fail(
                     "Mail içeriğinden geçerli transfer bilgisi bulunamadı. Lokasyonları dolu olan en az bir transfer gereklidir.");
 
-            // Customer'ı bul veya oluştur
-            var customerId = await FindOrCreateCustomerAsync(parsed.CustomerName, ct);
+            // Müşteri: varsa mevcudu kullan, yoksa kayıt aç. İsim boşsa atla.
+            var (customerId, customerIsExisting, customerName) =
+                await FindOrCreateCustomerAsync(parsed.CustomerName, ct);
 
-            // Passenger'ı bul veya oluştur
-            var passengerId = await FindOrCreatePassengerAsync(
+            // Yolcu: varsa mevcudu kullan, yoksa kayıt aç. Ad boşsa atla.
+            var passenger = await FindOrCreatePassengerAsync(
                 parsed.Passenger.FullName, parsed.Passenger.Phone, parsed.Passenger.Email, ct);
 
             var result = parsed with
             {
                 CustomerId = customerId,
-                Passenger = parsed.Passenger with { Id = passengerId }
+                CustomerName = customerName,
+                IsExistingCustomer = customerIsExisting,
+                Passenger = passenger
             };
 
             return ApiResult<EmlParseResultDto>.Ok(result, $"{result.Transfers.Count} adet transfer bilgisi bulundu.");
@@ -64,8 +67,9 @@ public sealed class EmlImportService
         var passengerId = request.PassengerId;
         if (!passengerId.HasValue && !string.IsNullOrWhiteSpace(request.PassengerName))
         {
-            passengerId = await FindOrCreatePassengerAsync(
+            var p = await FindOrCreatePassengerAsync(
                 request.PassengerName, request.PassengerPhone, request.PassengerEmail, ct);
+            passengerId = p.Id == 0 ? null : p.Id;
         }
 
         var createdJobs = new List<JobDetailDto>();
@@ -106,20 +110,25 @@ public sealed class EmlImportService
             $"{createdJobs.Count} adet iş başarıyla oluşturuldu.");
     }
 
-    private async Task<long> FindOrCreateCustomerAsync(string name, CancellationToken ct)
+    /// <summary>
+    /// Müşteriyi adına göre arar; varsa mevcudu, yoksa yeni kaydı döner.
+    /// İsim boşsa hiç dokunmaz (Id = 0).
+    /// </summary>
+    private async Task<(long Id, bool IsExisting, string Name)> FindOrCreateCustomerAsync(string name, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new InvalidOperationException("Müşteri adı boş olamaz.");
+            return (0, false, string.Empty);
 
+        var trimmed = name.Trim();
         var existing = await _db.Customers
-            .FirstOrDefaultAsync(c => c.Name.ToLower() == name.ToLower().Trim(), ct);
+            .FirstOrDefaultAsync(c => c.Name.ToLower() == trimmed.ToLower(), ct);
 
         if (existing != null)
-            return existing.Id;
+            return (existing.Id, true, existing.Name);
 
         var customer = new Domain.Entities.Customer
         {
-            Name = name.Trim(),
+            Name = trimmed,
             CustomerType = CustomerType.Corporate,
             IsActive = true
         };
@@ -127,24 +136,47 @@ public sealed class EmlImportService
         _db.Customers.Add(customer);
         await _db.SaveChangesAsync(ct);
 
-        return customer.Id;
+        return (customer.Id, false, customer.Name);
     }
 
-    private async Task<long> FindOrCreatePassengerAsync(
+    /// <summary>
+    /// Yolcuyu adına göre arar; varsa mevcudu (gerçek alanlarıyla), yoksa yeni kaydı döner.
+    /// Ad boşsa hiç dokunmaz (Id = 0).
+    /// </summary>
+    private async Task<EmlPassengerDto> FindOrCreatePassengerAsync(
         string fullName, string? phone, string? email, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(fullName))
-            throw new InvalidOperationException("Yolcu adı boş olamaz.");
+        {
+            return new EmlPassengerDto
+            {
+                Id = 0,
+                FullName = string.Empty,
+                Phone = phone?.Trim(),
+                Email = email?.Trim(),
+                IsExisting = false
+            };
+        }
 
+        var trimmed = fullName.Trim();
         var existing = await _db.Passengers
-            .FirstOrDefaultAsync(p => p.FullName.ToLower() == fullName.ToLower().Trim(), ct);
+            .FirstOrDefaultAsync(p => p.FullName.ToLower() == trimmed.ToLower(), ct);
 
         if (existing != null)
-            return existing.Id;
+        {
+            return new EmlPassengerDto
+            {
+                Id = existing.Id,
+                FullName = existing.FullName,
+                Phone = existing.Phone,
+                Email = existing.Email,
+                IsExisting = true
+            };
+        }
 
         var passenger = new Domain.Entities.Passenger
         {
-            FullName = fullName.Trim(),
+            FullName = trimmed,
             Phone = phone?.Trim(),
             Email = email?.Trim(),
             IsActive = true
@@ -153,6 +185,13 @@ public sealed class EmlImportService
         _db.Passengers.Add(passenger);
         await _db.SaveChangesAsync(ct);
 
-        return passenger.Id;
+        return new EmlPassengerDto
+        {
+            Id = passenger.Id,
+            FullName = passenger.FullName,
+            Phone = passenger.Phone,
+            Email = passenger.Email,
+            IsExisting = false
+        };
     }
 }

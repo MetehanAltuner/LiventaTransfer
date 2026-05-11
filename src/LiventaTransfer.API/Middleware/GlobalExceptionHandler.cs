@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using LiventaTransfer.Application.Common;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -104,8 +105,26 @@ public class GlobalExceptionHandler
                 return (400, msg, pg.ConstraintName is null ? null : new List<string> { pg.ConstraintName });
             }
             case "23505": // unique_violation
-                return (409, "Bu kayıt zaten mevcut (benzersizlik kısıtı ihlali).",
-                    pg.ConstraintName is null ? null : new List<string> { pg.ConstraintName });
+            {
+                var entity = ExtractEntityFromUniqueConstraint(pg.ConstraintName, pg.TableName);
+                var detail = ParseUniqueDetail(pg.Detail);
+
+                string msg;
+                if (detail is not null && entity is not null)
+                    msg = $"{entity} kaydı zaten mevcut: {detail.Value.Field} = '{detail.Value.Value}'";
+                else if (detail is not null)
+                    msg = $"Bu değere sahip bir kayıt zaten mevcut: {detail.Value.Field} = '{detail.Value.Value}'";
+                else if (entity is not null)
+                    msg = $"{entity} kaydı zaten mevcut.";
+                else
+                    msg = "Bu kayıt zaten mevcut (benzersizlik kısıtı ihlali).";
+
+                var errors = new List<string>();
+                if (!string.IsNullOrWhiteSpace(pg.ConstraintName)) errors.Add(pg.ConstraintName);
+                if (!string.IsNullOrWhiteSpace(pg.Detail)) errors.Add(pg.Detail);
+
+                return (409, msg, errors.Count == 0 ? null : errors);
+            }
             case "23502": // not_null_violation
                 return (400, $"Zorunlu alan boş bırakılamaz: {pg.ColumnName ?? "(bilinmiyor)"}", null);
             case "23514": // check_violation
@@ -132,5 +151,41 @@ public class GlobalExceptionHandler
             return $"{parts[2]} ({parts[^1]})";
 
         return constraintName;
+    }
+
+    /// <summary>
+    /// Unique constraint adı ya da tablo adından insan-okur tablo adını çıkarır.
+    /// Örn: "IX_Customers_TaxNumber" → "Customers", tablo adı "Users" → "Users".
+    /// </summary>
+    private static string? ExtractEntityFromUniqueConstraint(string? constraintName, string? tableName)
+    {
+        if (!string.IsNullOrWhiteSpace(constraintName))
+        {
+            var parts = constraintName.Split('_', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length >= 2 &&
+                (parts[0].Equals("IX", StringComparison.OrdinalIgnoreCase) ||
+                 parts[0].Equals("UX", StringComparison.OrdinalIgnoreCase) ||
+                 parts[0].Equals("AK", StringComparison.OrdinalIgnoreCase)))
+                return parts[1];
+        }
+
+        return string.IsNullOrWhiteSpace(tableName) ? null : tableName;
+    }
+
+    /// <summary>
+    /// PostgreSQL "Key (column)=(value) already exists." formatındaki Detail string'inden
+    /// kolon ve değer çıkarır.
+    /// </summary>
+    private static (string Field, string Value)? ParseUniqueDetail(string? detail)
+    {
+        if (string.IsNullOrWhiteSpace(detail))
+            return null;
+
+        var m = Regex.Match(detail, @"Key \(""?(?<col>[^""\)]+)""?\)=\((?<val>.*?)\) already exists",
+            RegexOptions.IgnoreCase);
+        if (!m.Success)
+            return null;
+
+        return (m.Groups["col"].Value, m.Groups["val"].Value);
     }
 }

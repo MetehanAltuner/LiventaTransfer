@@ -8,6 +8,7 @@ public record EmlPassengerDto
     public string FullName { get; init; } = string.Empty;
     public string? Phone { get; init; }
     public string? Email { get; init; }
+    public bool IsExisting { get; init; }
 }
 
 public record EmlTransferDto
@@ -28,6 +29,7 @@ public record EmlParseResultDto
     public string Subject { get; init; } = string.Empty;
     public string CustomerName { get; init; } = string.Empty;
     public long CustomerId { get; init; }
+    public bool IsExistingCustomer { get; init; }
     public EmlPassengerDto Passenger { get; init; } = new();
     public List<EmlTransferDto> Transfers { get; init; } = [];
     public string RawEmailBody { get; init; } = string.Empty;

@@ -102,6 +102,8 @@ public sealed class JobService
         if (validation is not null)
             return ApiResult<JobDetailDto>.Fail(validation, statusCode: 400);
 
+        var resolvedStops = await ResolveStopLocationsAsync(request.Stops, ct);
+
         var jobNumber = await GenerateJobNumberAsync(ct);
 
         var entity = new Domain.Entities.Job
@@ -124,7 +126,7 @@ public sealed class JobService
         };
 
         var seq = 1;
-        foreach (var s in request.Stops)
+        foreach (var s in resolvedStops)
             entity.Stops.Add(BuildStop(s, seq++));
 
         _db.Jobs.Add(entity);
@@ -178,11 +180,13 @@ public sealed class JobService
         entity.PurchasePrice = request.PurchasePrice;
         entity.ExtraCost = request.ExtraCost;
 
+        var resolvedStops = await ResolveStopLocationsAsync(request.Stops, ct);
+
         _db.JobStops.RemoveRange(entity.Stops);
         entity.Stops.Clear();
 
         var seq = 1;
-        foreach (var s in request.Stops)
+        foreach (var s in resolvedStops)
             entity.Stops.Add(BuildStop(s, seq++));
 
         await _db.SaveChangesAsync(ct);
@@ -620,6 +624,71 @@ public sealed class JobService
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Sadece adres verilen (lokasyon ID'si verilmeyen) duraklar için Locations tablosuna
+    /// kayıt açar veya aynı adrese sahip mevcut bir lokasyonu yeniden kullanır,
+    /// ardından ilgili stop request'i çözümlenmiş ID'lerle döner.
+    /// </summary>
+    private async Task<List<JobStopRequest>> ResolveStopLocationsAsync(List<JobStopRequest> stops, CancellationToken ct)
+    {
+        var result = new List<JobStopRequest>(stops.Count);
+        var addressCache = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var s in stops)
+        {
+            var pickupId = s.PickupLocationId;
+            var dropoffId = s.DropoffLocationId;
+            var pickupAddress = s.PickupAddress?.Trim();
+            var dropoffAddress = s.DropoffAddress?.Trim();
+
+            if (!pickupId.HasValue && !string.IsNullOrWhiteSpace(pickupAddress))
+                pickupId = await GetOrCreateLocationByAddressAsync(pickupAddress, addressCache, ct);
+
+            if (!dropoffId.HasValue && !string.IsNullOrWhiteSpace(dropoffAddress))
+                dropoffId = await GetOrCreateLocationByAddressAsync(dropoffAddress, addressCache, ct);
+
+            result.Add(s with
+            {
+                PickupLocationId = pickupId,
+                DropoffLocationId = dropoffId
+            });
+        }
+
+        return result;
+    }
+
+    private async Task<long> GetOrCreateLocationByAddressAsync(string address, Dictionary<string, long> cache, CancellationToken ct)
+    {
+        if (cache.TryGetValue(address, out var cachedId))
+            return cachedId;
+
+        var existing = await _db.Locations
+            .Where(l => l.Address != null && l.Address.ToLower() == address.ToLower())
+            .Select(l => (long?)l.Id)
+            .FirstOrDefaultAsync(ct);
+
+        if (existing.HasValue)
+        {
+            cache[address] = existing.Value;
+            return existing.Value;
+        }
+
+        var name = address.Length > 200 ? address[..200] : address;
+        var location = new Domain.Entities.Location
+        {
+            Name = name,
+            Address = address,
+            LocationType = LocationType.Other,
+            IsActive = true
+        };
+
+        _db.Locations.Add(location);
+        await _db.SaveChangesAsync(ct);
+
+        cache[address] = location.Id;
+        return location.Id;
     }
 
     private static JobStop BuildStop(JobStopRequest s, int sequence) => new()
