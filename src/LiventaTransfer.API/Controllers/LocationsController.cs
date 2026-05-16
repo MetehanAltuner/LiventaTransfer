@@ -16,9 +16,9 @@ public sealed class LocationsController : ControllerBase
     public LocationsController(LocationService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] LocationType? locationType, [FromQuery] long? customerId, CancellationToken ct)
+    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] LocationType? locationType, [FromQuery] long? passengerId, CancellationToken ct)
     {
-        var r = await _svc.GetPagedAsync(query, locationType, customerId, ct);
+        var r = await _svc.GetPagedAsync(query, locationType, passengerId, ct);
         return StatusCode(r.StatusCode, r);
     }
 

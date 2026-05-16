@@ -12,5 +12,5 @@ public class Location : BaseEntity
     public LocationType LocationType { get; set; }
     public bool IsActive { get; set; } = true;
 
-    public ICollection<CustomerLocation> CustomerLocations { get; set; } = new List<CustomerLocation>();
+    public ICollection<PassengerLocation> PassengerLocations { get; set; } = new List<PassengerLocation>();
 }

@@ -12,6 +12,14 @@ public sealed class DriverController : ControllerBase
     private readonly JobService _svc;
     public DriverController(JobService svc) => _svc = svc;
 
+    /// <summary>Sürücünün tamamlanmamış (status != Tamamlandı) işlerini döner.</summary>
+    [HttpGet("{driverId:long}/active-jobs")]
+    public async Task<IActionResult> GetActiveJobs(long driverId, CancellationToken ct)
+    {
+        var r = await _svc.GetActiveJobsForDriverAsync(driverId, ct);
+        return StatusCode(r.StatusCode, r);
+    }
+
     /// <summary>Transfer Detayı sayfasını besler.</summary>
     [HttpGet("jobs/{publicId:guid}")]
     public async Task<IActionResult> GetTransferDetail(Guid publicId, CancellationToken ct)

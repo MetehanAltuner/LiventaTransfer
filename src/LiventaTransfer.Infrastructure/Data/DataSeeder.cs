@@ -189,7 +189,7 @@ public static class DataSeeder
 
         var job1 = new Job
         {
-            JobNumber = "JOB-20260301-0001", JobDate = today.AddDays(-4), JobTime = new TimeOnly(14, 30),
+            JobNumber = "ERT-20260301-0001", JobDate = today.AddDays(-4), JobTime = new TimeOnly(14, 30),
             JobType = JobType.Transfer, Status = JobStatus.Completed,
             PurchasePrice = 100,
             VehicleOwnerId = ownFleet.Id, VehicleId = v1.Id, DriverId = d1.Id,
@@ -198,7 +198,7 @@ public static class DataSeeder
         };
         var job2 = new Job
         {
-            JobNumber = "JOB-20260301-0002", JobDate = today.AddDays(-4), JobTime = new TimeOnly(16, 0),
+            JobNumber = "ERT-20260301-0002", JobDate = today.AddDays(-4), JobTime = new TimeOnly(16, 0),
             JobType = JobType.Transfer, Status = JobStatus.Completed,
             PurchasePrice = 80,
             VehicleOwnerId = ownFleet.Id, VehicleId = v2.Id, DriverId = d2.Id,
@@ -207,7 +207,7 @@ public static class DataSeeder
         };
         var job3 = new Job
         {
-            JobNumber = "JOB-20260302-0001", JobDate = today.AddDays(-3), JobTime = new TimeOnly(9, 0),
+            JobNumber = "ERT-20260302-0001", JobDate = today.AddDays(-3), JobTime = new TimeOnly(9, 0),
             JobType = JobType.Transfer, Status = JobStatus.Completed,
             PurchasePrice = 100,
             VehicleOwnerId = ownFleet.Id, VehicleId = v1.Id, DriverId = d1.Id,
@@ -216,7 +216,7 @@ public static class DataSeeder
         };
         var job4 = new Job
         {
-            JobNumber = "JOB-20260303-0001", JobDate = today.AddDays(-2), JobTime = new TimeOnly(11, 0),
+            JobNumber = "ERT-20260303-0001", JobDate = today.AddDays(-2), JobTime = new TimeOnly(11, 0),
             JobType = JobType.Transfer, Status = JobStatus.PendingInvoice,
             PurchasePrice = 140,
             VehicleOwnerId = subcon1.Id, VehicleId = v3.Id, DriverId = d3.Id,
@@ -225,7 +225,7 @@ public static class DataSeeder
         };
         var job5 = new Job
         {
-            JobNumber = "JOB-20260304-0001", JobDate = today.AddDays(-1), JobTime = new TimeOnly(8, 30),
+            JobNumber = "ERT-20260304-0001", JobDate = today.AddDays(-1), JobTime = new TimeOnly(8, 30),
             JobType = JobType.DailyAllocation, Status = JobStatus.InProgress,
             PurchasePrice = 200,
             VehicleOwnerId = subcon2.Id, VehicleId = v4.Id, DriverId = d4.Id,
@@ -234,7 +234,7 @@ public static class DataSeeder
         };
         var job6 = new Job
         {
-            JobNumber = "JOB-20260305-0001", JobDate = today, JobTime = new TimeOnly(10, 0),
+            JobNumber = "ERT-20260305-0001", JobDate = today, JobTime = new TimeOnly(10, 0),
             JobType = JobType.Transfer, Status = JobStatus.Assigned,
             PurchasePrice = 70,
             VehicleOwnerId = ownFleet.Id, VehicleId = v1.Id, DriverId = d1.Id,
@@ -244,7 +244,7 @@ public static class DataSeeder
         // job7 — toplu iş örneği: 2 farklı müşteri/yolcu aynı araçla aynı rotada (BJV → otel)
         var job7 = new Job
         {
-            JobNumber = "JOB-20260305-0002", JobDate = today, JobTime = new TimeOnly(15, 0),
+            JobNumber = "ERT-20260305-0002", JobDate = today, JobTime = new TimeOnly(15, 0),
             JobType = JobType.Transfer, Status = JobStatus.Open,
             CreatedByUserId = reservUser.Id,
             Stops =
@@ -255,14 +255,14 @@ public static class DataSeeder
         };
         var job8 = new Job
         {
-            JobNumber = "JOB-20260305-0003", JobDate = today, JobTime = new TimeOnly(18, 0),
+            JobNumber = "ERT-20260305-0003", JobDate = today, JobTime = new TimeOnly(18, 0),
             JobType = JobType.Transfer, Status = JobStatus.Open,
             CreatedByUserId = coordUser.Id,
             Stops = { Stop(1, c3.Id, p6.Id, 2, locAYT.Id, locH3.Id, "SU2140", 200) }
         };
         var job9 = new Job
         {
-            JobNumber = "JOB-20260306-0001", JobDate = today.AddDays(1), JobTime = new TimeOnly(7, 0),
+            JobNumber = "ERT-20260306-0001", JobDate = today.AddDays(1), JobTime = new TimeOnly(7, 0),
             JobType = JobType.Transfer, Status = JobStatus.Assigned,
             PurchasePrice = 100,
             VehicleOwnerId = ownFleet.Id, VehicleId = v2.Id, DriverId = d2.Id,
@@ -271,7 +271,7 @@ public static class DataSeeder
         };
         var job10 = new Job
         {
-            JobNumber = "JOB-20260228-0001", JobDate = today.AddDays(-5), JobTime = new TimeOnly(12, 0),
+            JobNumber = "ERT-20260228-0001", JobDate = today.AddDays(-5), JobTime = new TimeOnly(12, 0),
             JobType = JobType.Transfer, Status = JobStatus.Cancelled,
             CreatedByUserId = reservUser.Id,
             Notes = "Müşteri iptal etti - uçuş değişikliği",
@@ -405,7 +405,7 @@ public static class DataSeeder
             new Notification
             {
                 JobId = job4.Id, RecipientType = RecipientType.Accountant, RecipientUserId = adminUser.Id,
-                Channel = NotificationChannel.InApp, Message = "JOB-20260303-0001 fatura bekliyor.",
+                Channel = NotificationChannel.InApp, Message = "ERT-20260303-0001 fatura bekliyor.",
                 SentAt = now.AddDays(-1), IsDelivered = false
             }
         );

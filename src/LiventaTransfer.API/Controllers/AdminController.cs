@@ -21,7 +21,7 @@ public sealed class AdminController : ControllerBase
         "JobStatusHistories",
         "JobStops",
         "Jobs",
-        "CustomerLocations",
+        "PassengerLocations",
         "Locations",
         "Drivers",
         "Vehicles",

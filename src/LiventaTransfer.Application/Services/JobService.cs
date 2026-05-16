@@ -330,6 +330,17 @@ public sealed class JobService
         return await GetByIdAsync(target.Id, ct);
     }
 
+    public async Task<ApiResult<List<DriverActiveJobDto>>> GetActiveJobsForDriverAsync(long driverId, CancellationToken ct)
+    {
+        var items = await _db.Jobs.AsNoTracking()
+            .Where(j => j.DriverId == driverId && (int)j.Status < (int)JobStatus.Completed)
+            .OrderBy(j => j.JobDate).ThenBy(j => j.JobTime)
+            .Select(j => new DriverActiveJobDto { JobNumber = j.JobNumber, PublicId = j.PublicId })
+            .ToListAsync(ct);
+
+        return ApiResult<List<DriverActiveJobDto>>.Ok(items, "Sürücünün aktif işleri listelendi.");
+    }
+
     public async Task<ApiResult<TransferDetailDto>> GetTransferDetailAsync(Guid publicId, CancellationToken ct)
     {
         var id = await ResolveJobIdAsync(publicId, ct);
@@ -740,7 +751,7 @@ public sealed class JobService
     private async Task<string> GenerateJobNumberAsync(CancellationToken ct)
     {
         var today = DateTime.UtcNow;
-        var prefix = $"JOB-{today:yyyyMMdd}";
+        var prefix = $"ERT-{today:yyyyMMdd}";
         var count = await _db.Jobs.CountAsync(j => j.JobNumber.StartsWith(prefix), ct);
         return $"{prefix}-{(count + 1):D4}";
     }

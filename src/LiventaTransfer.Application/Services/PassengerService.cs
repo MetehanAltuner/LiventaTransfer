@@ -1,6 +1,8 @@
 using LiventaTransfer.Application.Common;
+using LiventaTransfer.Application.DTOs.Location;
 using LiventaTransfer.Application.DTOs.Passenger;
 using LiventaTransfer.Application.Interfaces;
+using LiventaTransfer.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace LiventaTransfer.Application.Services;
@@ -99,5 +101,66 @@ public sealed class PassengerService
         await _db.SaveChangesAsync(ct);
 
         return ApiResult<bool>.Ok(true, "Yolcu silindi.");
+    }
+
+    public async Task<ApiResult<List<LocationListDto>>> GetLocationsAsync(long passengerId, CancellationToken ct)
+    {
+        if (!await _db.Passengers.AnyAsync(p => p.Id == passengerId, ct))
+            return ApiResult<List<LocationListDto>>.Fail("Yolcu bulunamadı.", statusCode: 404);
+
+        var locations = await _db.PassengerLocations
+            .AsNoTracking()
+            .Where(pl => pl.PassengerId == passengerId)
+            .Select(pl => pl.Location)
+            .OrderBy(l => l.Name)
+            .Select(l => LocationListDto.FromEntity(l))
+            .ToListAsync(ct);
+
+        return ApiResult<List<LocationListDto>>.Ok(locations, "Lokasyonlar listelendi.");
+    }
+
+    public async Task<ApiResult<List<LocationListDto>>> SetLocationsAsync(long passengerId, SetPassengerLocationsRequest request, CancellationToken ct)
+    {
+        if (!await _db.Passengers.AnyAsync(p => p.Id == passengerId, ct))
+            return ApiResult<List<LocationListDto>>.Fail("Yolcu bulunamadı.", statusCode: 404);
+
+        var requestedIds = request.LocationIds.Distinct().ToList();
+
+        if (requestedIds.Count > 0)
+        {
+            var existingLocationIds = await _db.Locations
+                .Where(l => requestedIds.Contains(l.Id))
+                .Select(l => l.Id)
+                .ToListAsync(ct);
+
+            var missing = requestedIds.Except(existingLocationIds).ToList();
+            if (missing.Count > 0)
+                return ApiResult<List<LocationListDto>>.Fail(
+                    $"Lokasyon bulunamadı: {string.Join(", ", missing)}", statusCode: 404);
+        }
+
+        var current = await _db.PassengerLocations
+            .Where(pl => pl.PassengerId == passengerId)
+            .ToListAsync(ct);
+
+        var currentIds = current.Select(pl => pl.LocationId).ToHashSet();
+        var requestedSet = requestedIds.ToHashSet();
+
+        var toRemove = current.Where(pl => !requestedSet.Contains(pl.LocationId)).ToList();
+        if (toRemove.Count > 0)
+            _db.PassengerLocations.RemoveRange(toRemove);
+
+        foreach (var locationId in requestedIds.Where(id => !currentIds.Contains(id)))
+        {
+            _db.PassengerLocations.Add(new PassengerLocation
+            {
+                PassengerId = passengerId,
+                LocationId = locationId
+            });
+        }
+
+        await _db.SaveChangesAsync(ct);
+
+        return await GetLocationsAsync(passengerId, ct);
     }
 }

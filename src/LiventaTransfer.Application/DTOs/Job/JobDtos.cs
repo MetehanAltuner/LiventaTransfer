@@ -57,6 +57,12 @@ public record JobStopRequest
     public decimal? SalePrice { get; init; }
 }
 
+public record DriverActiveJobDto
+{
+    public string JobNumber { get; init; } = string.Empty;
+    public Guid PublicId { get; init; }
+}
+
 public record JobListDto
 {
     public long Id { get; init; }

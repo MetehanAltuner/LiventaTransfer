@@ -16,9 +16,9 @@ public sealed class CustomersController : ControllerBase
     public CustomersController(CustomerService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] CustomerType? customerType, [FromQuery] long? locationId, CancellationToken ct)
+    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] CustomerType? customerType, CancellationToken ct)
     {
-        var r = await _svc.GetPagedAsync(query, customerType, locationId, ct);
+        var r = await _svc.GetPagedAsync(query, customerType, ct);
         return StatusCode(r.StatusCode, r);
     }
 
@@ -50,17 +50,4 @@ public sealed class CustomersController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    [HttpGet("{id:long}/locations")]
-    public async Task<IActionResult> GetLocations(long id, CancellationToken ct)
-    {
-        var r = await _svc.GetLocationsAsync(id, ct);
-        return StatusCode(r.StatusCode, r);
-    }
-
-    [HttpPut("{id:long}/locations")]
-    public async Task<IActionResult> SetLocations(long id, [FromBody] SetCustomerLocationsRequest request, CancellationToken ct)
-    {
-        var r = await _svc.SetLocationsAsync(id, request, ct);
-        return StatusCode(r.StatusCode, r);
-    }
 }

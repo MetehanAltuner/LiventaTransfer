@@ -58,3 +58,8 @@ public record UpdatePassengerRequest
     public string? Notes { get; init; }
     public bool IsActive { get; init; }
 }
+
+public record SetPassengerLocationsRequest
+{
+    public List<long> LocationIds { get; init; } = [];
+}

@@ -74,11 +74,6 @@ public record CreateCustomerRequest
     public string? Notes { get; init; }
 }
 
-public record SetCustomerLocationsRequest
-{
-    public List<long> LocationIds { get; init; } = [];
-}
-
 public record UpdateCustomerRequest
 {
     public string Name { get; init; } = string.Empty;

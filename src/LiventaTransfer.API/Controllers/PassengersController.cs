@@ -48,4 +48,18 @@ public sealed class PassengersController : ControllerBase
         var r = await _svc.DeleteAsync(id, ct);
         return StatusCode(r.StatusCode, r);
     }
+
+    [HttpGet("{id:long}/locations")]
+    public async Task<IActionResult> GetLocations(long id, CancellationToken ct)
+    {
+        var r = await _svc.GetLocationsAsync(id, ct);
+        return StatusCode(r.StatusCode, r);
+    }
+
+    [HttpPut("{id:long}/locations")]
+    public async Task<IActionResult> SetLocations(long id, [FromBody] SetPassengerLocationsRequest request, CancellationToken ct)
+    {
+        var r = await _svc.SetLocationsAsync(id, request, ct);
+        return StatusCode(r.StatusCode, r);
+    }
 }
