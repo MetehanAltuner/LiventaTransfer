@@ -1,6 +1,8 @@
 using FluentValidation;
 using LiventaTransfer.API.Filters;
+using LiventaTransfer.API.Hubs;
 using LiventaTransfer.API.Middleware;
+using LiventaTransfer.API.Realtime;
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.Interfaces;
 using LiventaTransfer.Application.Interfaces.Services;
@@ -77,6 +79,10 @@ builder.Services.AddScoped<TatilsepetiEmlParserService>();
 builder.Services.AddScoped<EmlImportService>();
 builder.Services.AddScoped<ConfirmationTableService>();
 
+// Realtime (SignalR)
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IJobBroadcaster, JobBroadcaster>();
+
 // OpenAPI
 builder.Services.AddOpenApi(options =>
 {
@@ -128,6 +134,9 @@ app.MapOpenApi();
 app.MapScalarApiReference();
 
 app.MapControllers();
+
+// Realtime hub — clients subscribe to /hubs/jobs and listen for "JobListEvent" messages.
+app.MapHub<JobsHub>("/hubs/jobs");
 
 // Health check endpoint
 app.MapGet("/", () => Results.Ok(new { Status = "Running", Service = "LiventaTransfer API" }));

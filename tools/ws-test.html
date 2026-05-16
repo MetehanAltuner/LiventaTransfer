@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <title>LiventaTransfer — JobsHub Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.7/dist/browser/signalr.min.js"></script>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #0f1115; color: #e6e6e6; margin: 0; padding: 24px;
+    }
+    h1 { font-size: 18px; margin: 0 0 16px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    input[type=text] {
+      flex: 1; min-width: 320px; padding: 8px 10px;
+      background: #1a1d24; color: #e6e6e6; border: 1px solid #2a2f3a; border-radius: 4px;
+      font-family: inherit; font-size: 13px;
+    }
+    button {
+      padding: 8px 14px; background: #2563eb; color: #fff; border: 0; border-radius: 4px;
+      cursor: pointer; font-size: 13px;
+    }
+    button.alt { background: #374151; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { padding: 4px 10px; border-radius: 999px; font-size: 12px; }
+    .status.disconnected { background: #4b1d1d; color: #fca5a5; }
+    .status.connecting   { background: #4b3d1d; color: #fde68a; }
+    .status.connected    { background: #1d4b2a; color: #86efac; }
+    #log {
+      background: #0a0c10; border: 1px solid #2a2f3a; border-radius: 4px;
+      padding: 12px; height: 60vh; overflow-y: auto; white-space: pre-wrap;
+      font-size: 12px; line-height: 1.5;
+    }
+    .entry { border-bottom: 1px dashed #1f2330; padding: 6px 0; }
+    .entry:last-child { border-bottom: 0; }
+    .ts { color: #6b7280; }
+    .evt { color: #86efac; font-weight: 600; }
+    .meta { color: #9ca3af; }
+    .err { color: #fca5a5; }
+  </style>
+</head>
+<body>
+  <h1>JobsHub — WebSocket Test</h1>
+
+  <div class="row">
+    <label>Hub URL:</label>
+    <input id="hubUrl" type="text" value="http://localhost:5000/hubs/jobs" />
+    <span id="status" class="status disconnected">disconnected</span>
+  </div>
+  <div class="row">
+    <button id="connectBtn">Bağlan</button>
+    <button id="disconnectBtn" class="alt" disabled>Bağlantıyı kes</button>
+    <button id="clearBtn" class="alt">Logu temizle</button>
+  </div>
+
+  <div id="log"></div>
+
+  <script>
+    const urlInput = document.getElementById("hubUrl");
+    const statusEl = document.getElementById("status");
+    const connectBtn = document.getElementById("connectBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const logEl = document.getElementById("log");
+
+    let connection = null;
+
+    function setStatus(state) {
+      statusEl.className = "status " + state;
+      statusEl.textContent = state;
+    }
+
+    function log(kind, text, payload) {
+      const div = document.createElement("div");
+      div.className = "entry";
+      const ts = new Date().toISOString().substring(11, 23);
+      const cls = kind === "evt" ? "evt" : kind === "err" ? "err" : "meta";
+      div.innerHTML = `<span class="ts">[${ts}]</span> <span class="${cls}">${text}</span>`;
+      if (payload !== undefined) {
+        const pre = document.createElement("div");
+        pre.style.marginLeft = "12px";
+        pre.style.color = "#cbd5e1";
+        pre.textContent = JSON.stringify(payload, null, 2);
+        div.appendChild(pre);
+      }
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    clearBtn.addEventListener("click", () => { logEl.innerHTML = ""; });
+
+    connectBtn.addEventListener("click", async () => {
+      const url = urlInput.value.trim();
+      if (!url) return;
+
+      connection = new signalR.HubConnectionBuilder()
+        .withUrl(url)
+        .withAutomaticReconnect()
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+      // Server şu method adıyla yayın yapıyor: "JobListEvent"
+      connection.on("JobListEvent", (msg) => {
+        log("evt", "JobListEvent alındı", msg);
+      });
+
+      // Server herhangi bir method yollarsa onu da yakala
+      const originalInvoke = connection._processIncomingData?.bind(connection);
+      connection.onreconnecting(err => { setStatus("connecting"); log("meta", "reconnecting…", err?.message); });
+      connection.onreconnected(id  => { setStatus("connected");  log("meta", "reconnected " + id); });
+      connection.onclose(err       => {
+        setStatus("disconnected");
+        connectBtn.disabled = false;
+        disconnectBtn.disabled = true;
+        log("err", "bağlantı kapandı", err?.message);
+      });
+
+      try {
+        setStatus("connecting");
+        connectBtn.disabled = true;
+        await connection.start();
+        setStatus("connected");
+        disconnectBtn.disabled = false;
+        log("meta", "bağlandı: " + url + " (connectionId=" + connection.connectionId + ")");
+      } catch (e) {
+        setStatus("disconnected");
+        connectBtn.disabled = false;
+        log("err", "bağlanılamadı", { message: e?.message, stack: e?.stack });
+      }
+    });
+
+    disconnectBtn.addEventListener("click", async () => {
+      if (!connection) return;
+      try { await connection.stop(); } catch {}
+      connection = null;
+    });
+  </script>
+</body>
+</html>

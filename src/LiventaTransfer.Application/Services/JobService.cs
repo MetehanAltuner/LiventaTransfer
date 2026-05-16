@@ -2,6 +2,7 @@ using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Job;
 using LiventaTransfer.Application.DTOs.JobStatusHistory;
 using LiventaTransfer.Application.Interfaces;
+using LiventaTransfer.Application.Interfaces.Services;
 using LiventaTransfer.Domain.Entities;
 using LiventaTransfer.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,13 @@ public sealed class JobService
     private static readonly JobStatus[] MergeableStatuses = [JobStatus.Open, JobStatus.Assigned];
 
     private readonly IAppDbContext _db;
-    public JobService(IAppDbContext db) => _db = db;
+    private readonly IJobBroadcaster _broadcaster;
+
+    public JobService(IAppDbContext db, IJobBroadcaster broadcaster)
+    {
+        _db = db;
+        _broadcaster = broadcaster;
+    }
 
     public async Task<ApiResult<PagedResult<JobListDto>>> GetPagedAsync(
         PagedQuery query, JobStatus? status, long? customerId, long? driverId, long? locationId,
@@ -141,6 +148,7 @@ public sealed class JobService
         });
 
         await _db.SaveChangesAsync(ct);
+        await _broadcaster.BroadcastJobsChangedAsync(ct);
 
         return await GetByIdAsync(entity.Id, ct);
     }
@@ -190,6 +198,7 @@ public sealed class JobService
             entity.Stops.Add(BuildStop(s, seq++));
 
         await _db.SaveChangesAsync(ct);
+        await _broadcaster.BroadcastJobsChangedAsync(ct);
 
         return await GetByIdAsync(entity.Id, ct);
     }
@@ -202,6 +211,7 @@ public sealed class JobService
 
         entity.IsDeleted = true;
         await _db.SaveChangesAsync(ct);
+        await _broadcaster.BroadcastJobsChangedAsync(ct);
 
         return ApiResult<bool>.Ok(true, "İş silindi.");
     }
@@ -250,6 +260,7 @@ public sealed class JobService
         }
 
         await _db.SaveChangesAsync(ct);
+        await _broadcaster.BroadcastJobsChangedAsync(ct);
 
         return await GetByIdAsync(entity.Id, ct);
     }
@@ -326,6 +337,7 @@ public sealed class JobService
         }
 
         await _db.SaveChangesAsync(ct);
+        await _broadcaster.BroadcastJobsChangedAsync(ct);
 
         return await GetByIdAsync(target.Id, ct);
     }
@@ -430,6 +442,7 @@ public sealed class JobService
         }
 
         await _db.SaveChangesAsync(ct);
+        await _broadcaster.BroadcastJobsChangedAsync(ct);
         return await GetTransferDetailByIdAsync(entity.Id, ct);
     }
 
@@ -523,6 +536,7 @@ public sealed class JobService
         }
 
         await _db.SaveChangesAsync(ct);
+        await _broadcaster.BroadcastJobsChangedAsync(ct);
         return await GetTransferDetailByIdAsync(entity.Id, ct);
     }
 
