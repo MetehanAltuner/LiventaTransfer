@@ -6,11 +6,13 @@ services:
     image: transferapi:latest
     container_name: transfer-api
     restart: unless-stopped
-    ports:
-      - "5003:5000"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - BasePath=/backend
-      - Transferapi.ConnectionString=Host=host.docker.internal;Port=5432;Database=liventa_transfer;Username=liventa_user;Password=Liventa2025!
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - Transferapi.ConnectionString=Host=postgres;Port=5432;Database=liventa_transfer;Username=liventa_user;Password=Liventa2025!
+    networks:
+      - liventa-network
+
+networks:
+  liventa-network:
+    external: true
