@@ -15,6 +15,8 @@ namespace LiventaTransfer.Application.Services;
 
 public sealed class AuthService : IAuthService
 {
+    private static readonly UserRole[] SuperAdminRoles = [UserRole.GeneralManager, UserRole.Developer];
+
     private readonly IAppDbContext _db;
     private readonly IConfiguration _config;
 
@@ -42,7 +44,8 @@ public sealed class AuthService : IAuthService
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return ApiResult<AuthResponse>.Fail("Geçersiz kullanıcı adı veya şifre.", statusCode: 401);
 
-        var token = GenerateToken(user);
+        var permissions = await GetPermissionCodesAsync(user.Role, ct);
+        var token = GenerateToken(user, permissions);
 
         return ApiResult<AuthResponse>.Ok(token, "Giriş başarılı.");
     }
@@ -71,7 +74,8 @@ public sealed class AuthService : IAuthService
         _db.Users.Add(user);
         await _db.SaveChangesAsync(ct);
 
-        var token = GenerateToken(user);
+        var permissions = await GetPermissionCodesAsync(user.Role, ct);
+        var token = GenerateToken(user, permissions);
 
         return ApiResult<AuthResponse>.Ok(token, "Kayıt başarılı.", 201);
     }
@@ -118,7 +122,34 @@ public sealed class AuthService : IAuthService
         return ApiResult<UserInfoDto>.Ok(dto, "Kullanıcı bilgisi.");
     }
 
-    private AuthResponse GenerateToken(User user)
+    /// <summary>
+    /// Returns the permission codes available to the given role.
+    /// GeneralManager and Developer are super-admins and receive every active permission;
+    /// other roles get only what's mapped in RolePermissions.
+    /// </summary>
+    private async Task<List<string>> GetPermissionCodesAsync(UserRole role, CancellationToken ct)
+    {
+        if (SuperAdminRoles.Contains(role))
+        {
+            return await _db.Permissions.AsNoTracking()
+                .Where(p => p.IsActive)
+                .OrderBy(p => p.SortOrder)
+                .Select(p => p.Code)
+                .ToListAsync(ct);
+        }
+
+        return await _db.RolePermissions.AsNoTracking()
+            .Where(rp => rp.Role == role)
+            .Join(_db.Permissions.Where(p => p.IsActive),
+                  rp => rp.PermissionId,
+                  p => p.Id,
+                  (rp, p) => new { p.Code, p.SortOrder })
+            .OrderBy(x => x.SortOrder)
+            .Select(x => x.Code)
+            .ToListAsync(ct);
+    }
+
+    private AuthResponse GenerateToken(User user, IReadOnlyCollection<string> permissionCodes)
     {
         var key = _config["Jwt:Key"]!;
         var issuer = _config["Jwt:Issuer"]!;
@@ -142,6 +173,11 @@ public sealed class AuthService : IAuthService
             new("branch_id", user.BranchId.ToString()),
             new("is_active", user.IsActive ? "true" : "false")
         };
+
+        // Each permission added as its own "permission" claim so it round-trips
+        // through ClaimsPrincipal as multiple values (User.FindAll("permission")).
+        foreach (var code in permissionCodes)
+            claims.Add(new Claim("permission", code));
 
         var token = new JwtSecurityToken(
             issuer: issuer,

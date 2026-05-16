@@ -16,6 +16,10 @@ public static class DataSeeder
 
         await context.Database.MigrateAsync();
 
+        // Permissions/RolePermissions are seeded idempotently so existing
+        // databases (seeded before this block existed) also get backfilled.
+        await EnsurePermissionsAsync(context, logger);
+
         if (await context.Branches.AnyAsync())
         {
             logger.LogInformation("Database already seeded");
@@ -52,52 +56,6 @@ public static class DataSeeder
             PasswordHash = BCryptHash("dev123"), Role = UserRole.Developer, BranchId = branchAntalya.Id, IsActive = true
         };
         context.Users.AddRange(adminUser, coordUser, reservUser, devUser);
-        await context.SaveChangesAsync();
-
-        // ── Permissions (sidebar tab'ları) ──
-        var permHome = new Permission { Code = "HOME", Label = "Anasayfa", Icon = "home", SortOrder = 1, IsActive = true };
-        var permJobs = new Permission { Code = "JOBS", Label = "İşler", Icon = "list", SortOrder = 2, IsActive = true };
-        var permDetail = new Permission { Code = "DETAIL", Label = "Detay", Icon = "bar-chart", SortOrder = 3, IsActive = true };
-        var permReports = new Permission { Code = "REPORTS", Label = "Rapor", Icon = "bar-chart", SortOrder = 4, IsActive = true };
-        var permAdmin = new Permission { Code = "ADMIN", Label = "Admin", Icon = "settings", SortOrder = 5, IsActive = true };
-        context.Permissions.AddRange(permHome, permJobs, permDetail, permReports, permAdmin);
-        await context.SaveChangesAsync();
-
-        // ── Role → Permission default haritası ──
-        // Note: GeneralManager ve Developer hard-coded olarak tüm permission'lara sahiptir (servis tarafında).
-        // Bu satırlar sadece UI'da default olarak görünmesi için.
-        var rolePerms = new List<RolePermission>
-        {
-            // Operations
-            new() { Role = UserRole.Operations, PermissionId = permHome.Id },
-            new() { Role = UserRole.Operations, PermissionId = permJobs.Id },
-            new() { Role = UserRole.Operations, PermissionId = permDetail.Id },
-            // Reservation
-            new() { Role = UserRole.Reservation, PermissionId = permHome.Id },
-            new() { Role = UserRole.Reservation, PermissionId = permJobs.Id },
-            new() { Role = UserRole.Reservation, PermissionId = permDetail.Id },
-            // Driver
-            new() { Role = UserRole.Driver, PermissionId = permHome.Id },
-            new() { Role = UserRole.Driver, PermissionId = permDetail.Id },
-            // Manager
-            new() { Role = UserRole.Manager, PermissionId = permHome.Id },
-            new() { Role = UserRole.Manager, PermissionId = permJobs.Id },
-            new() { Role = UserRole.Manager, PermissionId = permDetail.Id },
-            new() { Role = UserRole.Manager, PermissionId = permReports.Id },
-            // GeneralManager (görünürlük için yine de seed)
-            new() { Role = UserRole.GeneralManager, PermissionId = permHome.Id },
-            new() { Role = UserRole.GeneralManager, PermissionId = permJobs.Id },
-            new() { Role = UserRole.GeneralManager, PermissionId = permDetail.Id },
-            new() { Role = UserRole.GeneralManager, PermissionId = permReports.Id },
-            new() { Role = UserRole.GeneralManager, PermissionId = permAdmin.Id },
-            // Developer (görünürlük için yine de seed)
-            new() { Role = UserRole.Developer, PermissionId = permHome.Id },
-            new() { Role = UserRole.Developer, PermissionId = permJobs.Id },
-            new() { Role = UserRole.Developer, PermissionId = permDetail.Id },
-            new() { Role = UserRole.Developer, PermissionId = permReports.Id },
-            new() { Role = UserRole.Developer, PermissionId = permAdmin.Id }
-        };
-        context.RolePermissions.AddRange(rolePerms);
         await context.SaveChangesAsync();
 
         // ── Vehicle Owners ──
@@ -417,5 +375,84 @@ public static class DataSeeder
     private static string BCryptHash(string password)
     {
         return BCrypt.Net.BCrypt.HashPassword(password);
+    }
+
+    /// <summary>
+    /// Idempotently ensures sidebar permissions and the default role→permission map exist.
+    /// Safe to run on both fresh and previously-seeded databases — adds only what is missing.
+    /// </summary>
+    private static async Task EnsurePermissionsAsync(AppDbContext context, ILogger logger)
+    {
+        var seedPerms = new (string Code, string Label, string Icon, int SortOrder)[]
+        {
+            ("HOME",    "Anasayfa", "home",      1),
+            ("JOBS",    "İşler",    "list",      2),
+            ("DETAIL",  "Detay",    "bar-chart", 3),
+            ("REPORTS", "Rapor",    "bar-chart", 4),
+            ("ADMIN",   "Admin",    "settings",  5)
+        };
+
+        var existingCodes = await context.Permissions
+            .Select(p => p.Code)
+            .ToListAsync();
+        var existingSet = new HashSet<string>(existingCodes, StringComparer.OrdinalIgnoreCase);
+
+        var addedPerms = new List<Permission>();
+        foreach (var s in seedPerms)
+        {
+            if (existingSet.Contains(s.Code)) continue;
+            addedPerms.Add(new Permission
+            {
+                Code = s.Code, Label = s.Label, Icon = s.Icon,
+                SortOrder = s.SortOrder, IsActive = true
+            });
+        }
+        if (addedPerms.Count > 0)
+        {
+            context.Permissions.AddRange(addedPerms);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Seeded {Count} missing permission(s): {Codes}",
+                addedPerms.Count, string.Join(", ", addedPerms.Select(p => p.Code)));
+        }
+
+        var permsByCode = await context.Permissions
+            .ToDictionaryAsync(p => p.Code, p => p.Id, StringComparer.OrdinalIgnoreCase);
+
+        // Default role → permission codes mapping.
+        // GeneralManager/Developer are hard-coded super-admins in the service layer;
+        // seeded here only so the UI matrix shows them ticked by default.
+        var roleMap = new Dictionary<UserRole, string[]>
+        {
+            [UserRole.Operations]     = ["HOME", "JOBS", "DETAIL"],
+            [UserRole.Reservation]    = ["HOME", "JOBS", "DETAIL"],
+            [UserRole.Driver]         = ["HOME", "DETAIL"],
+            [UserRole.Manager]        = ["HOME", "JOBS", "DETAIL", "REPORTS"],
+            [UserRole.GeneralManager] = ["HOME", "JOBS", "DETAIL", "REPORTS", "ADMIN"],
+            [UserRole.Developer]      = ["HOME", "JOBS", "DETAIL", "REPORTS", "ADMIN"]
+        };
+
+        var existingPairs = await context.RolePermissions
+            .Select(rp => new { rp.Role, rp.PermissionId })
+            .ToListAsync();
+        var existingPairSet = existingPairs
+            .Select(p => (p.Role, p.PermissionId))
+            .ToHashSet();
+
+        var addedPairs = new List<RolePermission>();
+        foreach (var (role, codes) in roleMap)
+        {
+            foreach (var code in codes)
+            {
+                if (!permsByCode.TryGetValue(code, out var permId)) continue;
+                if (existingPairSet.Contains((role, permId))) continue;
+                addedPairs.Add(new RolePermission { Role = role, PermissionId = permId });
+            }
+        }
+        if (addedPairs.Count > 0)
+        {
+            context.RolePermissions.AddRange(addedPairs);
+            await context.SaveChangesAsync();
+            logger.LogInformation("Seeded {Count} missing role-permission pair(s).", addedPairs.Count);
+        }
     }
 }
