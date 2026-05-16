@@ -126,6 +126,9 @@ app.UseMiddleware<GlobalExceptionHandler>();
 // Serilog request logging
 app.UseSerilogRequestLogging();
 
+// Static files (wwwroot — serves /ws-test.html etc.)
+app.UseStaticFiles();
+
 // CORS
 app.UseCors();
 

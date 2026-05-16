@@ -45,7 +45,7 @@
 
   <div class="row">
     <label>Hub URL:</label>
-    <input id="hubUrl" type="text" value="http://localhost:5000/hubs/jobs" />
+    <input id="hubUrl" type="text" value="" placeholder="örn: /hubs/jobs veya https://host/backend/hubs/jobs" />
     <span id="status" class="status disconnected">disconnected</span>
   </div>
   <div class="row">
@@ -65,6 +65,14 @@
     const logEl = document.getElementById("log");
 
     let connection = null;
+
+    // Sayfa sunulduğu yere göre hub URL'sini tahmin et.
+    // Örn: https://host/backend/ws-test.html → https://host/backend/hubs/jobs
+    (function defaultHubUrl() {
+      const loc = window.location;
+      let base = loc.pathname.replace(/\/[^/]*$/, ""); // strip filename
+      urlInput.value = loc.origin + base + "/hubs/jobs";
+    })();
 
     function setStatus(state) {
       statusEl.className = "status " + state;
