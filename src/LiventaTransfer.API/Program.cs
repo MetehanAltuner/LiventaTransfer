@@ -9,12 +9,14 @@ using LiventaTransfer.Application.Validators;
 using LiventaTransfer.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var cfg = builder.Configuration;
+var basePath = cfg["BasePath"];
 
 // Serilog
 builder.Host.UseSerilog((context, configuration) =>
@@ -76,7 +78,22 @@ builder.Services.AddScoped<EmlImportService>();
 builder.Services.AddScoped<ConfirmationTableService>();
 
 // OpenAPI
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        if (!string.IsNullOrWhiteSpace(basePath))
+        {
+            var normalizedBasePath = basePath.StartsWith('/') ? basePath : $"/{basePath}";
+            document.Servers = new List<OpenApiServer>
+            {
+                new() { Url = normalizedBasePath }
+            };
+        }
+
+        return Task.CompletedTask;
+    });
+});
 
 // CORS
 builder.Services.AddCors(options =>
@@ -90,6 +107,12 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+if (!string.IsNullOrWhiteSpace(basePath))
+{
+    var normalizedBasePath = basePath.StartsWith('/') ? basePath : $"/{basePath}";
+    app.UsePathBase(normalizedBasePath);
+}
 
 // Global exception handler
 app.UseMiddleware<GlobalExceptionHandler>();
