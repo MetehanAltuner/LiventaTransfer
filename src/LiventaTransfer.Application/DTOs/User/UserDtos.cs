@@ -1,3 +1,4 @@
+using LiventaTransfer.Application.Common;
 using LiventaTransfer.Domain.Enums;
 
 namespace LiventaTransfer.Application.DTOs.User;
@@ -20,7 +21,7 @@ public record UserListDto
         FirstName = e.FirstName,
         LastName = e.LastName,
         Role = e.Role,
-        RoleName = e.Role.ToString(),
+        RoleName = EnumLabelHelper.GetLabel(e.Role),
         BranchName = e.Branch?.Name ?? string.Empty,
         IsActive = e.IsActive
     };
@@ -47,7 +48,7 @@ public record UserDetailDto
         FirstName = e.FirstName,
         LastName = e.LastName,
         Role = e.Role,
-        RoleName = e.Role.ToString(),
+        RoleName = EnumLabelHelper.GetLabel(e.Role),
         BranchId = e.BranchId,
         BranchName = e.Branch?.Name ?? string.Empty,
         IsActive = e.IsActive,

@@ -14,14 +14,6 @@ public sealed class PermissionsController : ControllerBase
     private readonly PermissionService _svc;
     public PermissionsController(PermissionService svc) => _svc = svc;
 
-    /// <summary>Tüm izinler (frontend sidebar lookup'ı).</summary>
-    [HttpGet("lookups/permissions")]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
-    {
-        var r = await _svc.GetAllAsync(ct);
-        return StatusCode(r.StatusCode, r);
-    }
-
     /// <summary>Bir kullanıcının erişebileceği izinler. Frontend giriş sonrası tab'ları buradan çeker.</summary>
     [HttpGet("users/{userId:guid}/permissions")]
     public async Task<IActionResult> GetForUser(Guid userId, CancellationToken ct)

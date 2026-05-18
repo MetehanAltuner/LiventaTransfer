@@ -389,7 +389,8 @@ public static class DataSeeder
             ("JOBS",    "İşler",    "list",      2),
             ("DETAIL",  "Detay",    "bar-chart", 3),
             ("REPORTS", "Rapor",    "bar-chart", 4),
-            ("ADMIN",   "Admin",    "settings",  5)
+            ("ADMIN",   "Admin",    "settings",  5),
+            ("ROLE",    "Rol",      "shield",    6)
         };
 
         var existingCodes = await context.Permissions
@@ -427,7 +428,7 @@ public static class DataSeeder
             [UserRole.Reservation]    = ["HOME", "JOBS", "DETAIL"],
             [UserRole.Driver]         = ["HOME", "DETAIL"],
             [UserRole.Manager]        = ["HOME", "JOBS", "DETAIL", "REPORTS"],
-            [UserRole.GeneralManager] = ["HOME", "JOBS", "DETAIL", "REPORTS", "ADMIN"],
+            [UserRole.GeneralManager] = ["HOME", "JOBS", "DETAIL", "REPORTS", "ADMIN", "ROLE"],
             [UserRole.Developer]      = ["HOME", "JOBS", "DETAIL", "REPORTS", "ADMIN"]
         };
 

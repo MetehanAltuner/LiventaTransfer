@@ -1,6 +1,7 @@
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Lookup;
 using LiventaTransfer.Application.Interfaces;
+using LiventaTransfer.Application.Services;
 using LiventaTransfer.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,19 @@ namespace LiventaTransfer.API.Controllers;
 public sealed class LookupsController : ControllerBase
 {
     private readonly IAppDbContext _db;
-    public LookupsController(IAppDbContext db) => _db = db;
+    private readonly PermissionService _permissions;
+    public LookupsController(IAppDbContext db, PermissionService permissions)
+    {
+        _db = db;
+        _permissions = permissions;
+    }
+
+    [HttpGet("permissions")]
+    public async Task<IActionResult> Permissions(CancellationToken ct)
+    {
+        var r = await _permissions.GetAllAsync(ct);
+        return StatusCode(r.StatusCode, r);
+    }
 
     [HttpGet("customers")]
     public async Task<IActionResult> Customers(CancellationToken ct)

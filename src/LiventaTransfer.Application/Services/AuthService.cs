@@ -54,24 +54,45 @@ public sealed class AuthService : IAuthService
     {
         var username = request.Username.Trim().ToLowerInvariant();
 
-        if (await _db.Users.AnyAsync(u => u.Username.ToLower() == username, ct))
-            return ApiResult<AuthResponse>.Fail("Bu kullanıcı adı zaten mevcut.", statusCode: 409);
-
         if (!await _db.Branches.AnyAsync(b => b.Id == request.BranchId, ct))
             return ApiResult<AuthResponse>.Fail("Geçersiz şube.", statusCode: 400);
 
-        var user = new User
-        {
-            Username = username,
-            FirstName = request.FirstName.Trim(),
-            LastName = request.LastName.Trim(),
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            Role = request.Role,
-            BranchId = request.BranchId,
-            IsActive = true
-        };
+        // Soft-deleted kayıtları da görmek için query filter'ı bypass ediyoruz.
+        // Aynı kullanıcı adında soft-deleted bir kayıt varsa onu reaktive edip güncelliyoruz;
+        // unique index soft-delete'leri de kapsadığı için yeni satır INSERT etmek 409 üretirdi.
+        var existing = await _db.Users.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(u => u.Username.ToLower() == username, ct);
 
-        _db.Users.Add(user);
+        User user;
+        if (existing is not null)
+        {
+            if (!existing.IsDeleted)
+                return ApiResult<AuthResponse>.Fail("Bu kullanıcı adı zaten mevcut.", statusCode: 409);
+
+            existing.IsDeleted = false;
+            existing.IsActive = true;
+            existing.FirstName = request.FirstName.Trim();
+            existing.LastName = request.LastName.Trim();
+            existing.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            existing.Role = request.Role;
+            existing.BranchId = request.BranchId;
+            user = existing;
+        }
+        else
+        {
+            user = new User
+            {
+                Username = username,
+                FirstName = request.FirstName.Trim(),
+                LastName = request.LastName.Trim(),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Role = request.Role,
+                BranchId = request.BranchId,
+                IsActive = true
+            };
+            _db.Users.Add(user);
+        }
+
         await _db.SaveChangesAsync(ct);
 
         var permissions = await GetPermissionCodesAsync(user.Role, ct);

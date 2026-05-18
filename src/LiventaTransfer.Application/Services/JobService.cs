@@ -655,11 +655,14 @@ public sealed class JobService
     /// Sadece adres verilen (lokasyon ID'si verilmeyen) duraklar için Locations tablosuna
     /// kayıt açar veya aynı adrese sahip mevcut bir lokasyonu yeniden kullanır,
     /// ardından ilgili stop request'i çözümlenmiş ID'lerle döner.
+    /// Adresten üretilen lokasyonlar, stop'a bağlı yolcu varsa otomatik olarak
+    /// PassengerLocations üzerinden o yolcuya bağlanır (idempotent).
     /// </summary>
     private async Task<List<JobStopRequest>> ResolveStopLocationsAsync(List<JobStopRequest> stops, CancellationToken ct)
     {
         var result = new List<JobStopRequest>(stops.Count);
         var addressCache = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
+        var passengerLinks = new HashSet<(long PassengerId, long LocationId)>();
 
         foreach (var s in stops)
         {
@@ -667,12 +670,28 @@ public sealed class JobService
             var dropoffId = s.DropoffLocationId;
             var pickupAddress = s.PickupAddress?.Trim();
             var dropoffAddress = s.DropoffAddress?.Trim();
+            var pickupFromAddress = false;
+            var dropoffFromAddress = false;
 
             if (!pickupId.HasValue && !string.IsNullOrWhiteSpace(pickupAddress))
+            {
                 pickupId = await GetOrCreateLocationByAddressAsync(pickupAddress, addressCache, ct);
+                pickupFromAddress = true;
+            }
 
             if (!dropoffId.HasValue && !string.IsNullOrWhiteSpace(dropoffAddress))
+            {
                 dropoffId = await GetOrCreateLocationByAddressAsync(dropoffAddress, addressCache, ct);
+                dropoffFromAddress = true;
+            }
+
+            if (s.PassengerId.HasValue)
+            {
+                if (pickupFromAddress && pickupId.HasValue)
+                    passengerLinks.Add((s.PassengerId.Value, pickupId.Value));
+                if (dropoffFromAddress && dropoffId.HasValue)
+                    passengerLinks.Add((s.PassengerId.Value, dropoffId.Value));
+            }
 
             result.Add(s with
             {
@@ -681,7 +700,33 @@ public sealed class JobService
             });
         }
 
+        await LinkLocationsToPassengersAsync(passengerLinks, ct);
+
         return result;
+    }
+
+    private async Task LinkLocationsToPassengersAsync(HashSet<(long PassengerId, long LocationId)> links, CancellationToken ct)
+    {
+        if (links.Count == 0) return;
+
+        var passengerIds = links.Select(l => l.PassengerId).Distinct().ToList();
+        var existing = await _db.PassengerLocations
+            .Where(pl => passengerIds.Contains(pl.PassengerId))
+            .Select(pl => new { pl.PassengerId, pl.LocationId })
+            .ToListAsync(ct);
+
+        var existingSet = existing.Select(e => (e.PassengerId, e.LocationId)).ToHashSet();
+
+        foreach (var link in links)
+        {
+            if (existingSet.Contains(link)) continue;
+            _db.PassengerLocations.Add(new PassengerLocation
+            {
+                PassengerId = link.PassengerId,
+                LocationId = link.LocationId
+            });
+            existingSet.Add(link);
+        }
     }
 
     private async Task<long> GetOrCreateLocationByAddressAsync(string address, Dictionary<string, long> cache, CancellationToken ct)

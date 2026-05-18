@@ -59,6 +59,21 @@ public sealed class PassengerService
 
     public async Task<ApiResult<PassengerDetailDto>> CreateAsync(CreatePassengerRequest request, CancellationToken ct)
     {
+        var locationIds = request.LocationIds?.Distinct().ToList() ?? [];
+
+        if (locationIds.Count > 0)
+        {
+            var existingLocationIds = await _db.Locations
+                .Where(l => locationIds.Contains(l.Id))
+                .Select(l => l.Id)
+                .ToListAsync(ct);
+
+            var missing = locationIds.Except(existingLocationIds).ToList();
+            if (missing.Count > 0)
+                return ApiResult<PassengerDetailDto>.Fail(
+                    $"Lokasyon bulunamadı: {string.Join(", ", missing)}", statusCode: 404);
+        }
+
         var entity = new Domain.Entities.Passenger
         {
             FullName = request.FullName.Trim(),
@@ -69,6 +84,16 @@ public sealed class PassengerService
         };
 
         _db.Passengers.Add(entity);
+
+        foreach (var locationId in locationIds)
+        {
+            _db.PassengerLocations.Add(new PassengerLocation
+            {
+                Passenger = entity,
+                LocationId = locationId
+            });
+        }
+
         await _db.SaveChangesAsync(ct);
 
         return ApiResult<PassengerDetailDto>.Ok(PassengerDetailDto.FromEntity(entity), "Yolcu oluşturuldu.", 201);
