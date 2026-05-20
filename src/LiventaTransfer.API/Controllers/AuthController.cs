@@ -1,5 +1,7 @@
+using LiventaTransfer.API.Extensions;
 using LiventaTransfer.Application.DTOs.Auth;
 using LiventaTransfer.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -14,6 +16,7 @@ public sealed class AuthController : ControllerBase
     public AuthController(IAuthService auth) => _auth = auth;
 
     /// <summary>Kullanıcı girişi → token döner</summary>
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
@@ -22,6 +25,7 @@ public sealed class AuthController : ControllerBase
     }
 
     /// <summary>Yeni kullanıcı kaydı</summary>
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
     {
@@ -29,19 +33,19 @@ public sealed class AuthController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    /// <summary>Şifre değiştirme</summary>
-    [HttpPost("change-password/{userId:guid}")]
-    public async Task<IActionResult> ChangePassword(Guid userId, [FromBody] ChangePasswordRequest request, CancellationToken ct)
+    /// <summary>Şifre değiştirme — kullanıcı JWT'den alınır</summary>
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken ct)
     {
-        var r = await _auth.ChangePasswordAsync(userId, request, ct);
+        var r = await _auth.ChangePasswordAsync(User.GetUserId(), request, ct);
         return StatusCode(r.StatusCode, r);
     }
 
-    /// <summary>Kullanıcı bilgisi</summary>
-    [HttpGet("user/{userId:guid}")]
-    public async Task<IActionResult> GetUser(Guid userId, CancellationToken ct)
+    /// <summary>Oturum açan kullanıcının bilgisi</summary>
+    [HttpGet("me")]
+    public async Task<IActionResult> Me(CancellationToken ct)
     {
-        var r = await _auth.GetCurrentUserAsync(userId, ct);
+        var r = await _auth.GetCurrentUserAsync(User.GetUserId(), ct);
         return StatusCode(r.StatusCode, r);
     }
 }

@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 using FluentValidation;
 using LiventaTransfer.API.Filters;
 using LiventaTransfer.API.Hubs;
@@ -9,11 +11,17 @@ using LiventaTransfer.Application.Interfaces.Services;
 using LiventaTransfer.Application.Services;
 using LiventaTransfer.Application.Validators;
 using LiventaTransfer.Infrastructure.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
+
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +36,13 @@ builder.Host.UseSerilog((context, configuration) =>
 builder.Services.AddControllers(options =>
     {
         options.Filters.Add<FluentValidationFilter>();
+
+        // Require authentication on every endpoint by default.
+        // Opt out per-endpoint with [AllowAnonymous] (login, register, ws-test, health).
+        var requireAuth = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+        options.Filters.Add(new AuthorizeFilter(requireAuth));
     })
     .ConfigureApiBehaviorOptions(options =>
     {
@@ -57,6 +72,46 @@ builder.Services.AddScoped<IAppDbContext>(provider => provider.GetRequiredServic
 
 // Auth services
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+// JWT Bearer authentication
+var jwtKey = cfg["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is not configured.");
+var jwtIssuer = cfg["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
+var jwtAudience = cfg["Jwt:Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ClockSkew = TimeSpan.FromMinutes(1),
+            NameClaimType = JwtRegisteredClaimNames.Sub,
+            RoleClaimType = "role"
+        };
+
+        // SignalR sends the bearer token via ?access_token=... on the hub URL.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                var accessToken = ctx.Request.Query["access_token"];
+                var path = ctx.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                    ctx.Token = accessToken;
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 // CRUD services
 builder.Services.AddScoped<BranchService>();
@@ -97,6 +152,22 @@ builder.Services.AddOpenApi(options =>
             };
         }
 
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes ??= new Dictionary<string, IOpenApiSecurityScheme>();
+        document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "JWT bearer token. Format: Bearer {token}"
+        };
+
+        var bearerRef = new OpenApiSecuritySchemeReference("Bearer", document);
+        document.Security =
+        [
+            new OpenApiSecurityRequirement { [bearerRef] = new List<string>() }
+        ];
+
         return Task.CompletedTask;
     });
 });
@@ -132,6 +203,10 @@ app.UseStaticFiles();
 // CORS
 app.UseCors();
 
+// AuthN/AuthZ
+app.UseAuthentication();
+app.UseAuthorization();
+
 // OpenAPI + Scalar
 app.MapOpenApi();
 app.MapScalarApiReference();
@@ -139,10 +214,12 @@ app.MapScalarApiReference();
 app.MapControllers();
 
 // Realtime hub — clients subscribe to /hubs/jobs and listen for "JobListEvent" messages.
-app.MapHub<JobsHub>("/hubs/jobs");
+// WebSocket endpoint is intentionally anonymous (per requirement).
+app.MapHub<JobsHub>("/hubs/jobs").AllowAnonymous();
 
 // Health check endpoint
-app.MapGet("/", () => Results.Ok(new { Status = "Running", Service = "LiventaTransfer API" }));
+app.MapGet("/", () => Results.Ok(new { Status = "Running", Service = "LiventaTransfer API" }))
+    .AllowAnonymous();
 
 // Seed database
 await DataSeeder.SeedAsync(app.Services);

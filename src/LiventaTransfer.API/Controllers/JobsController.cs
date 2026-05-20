@@ -1,7 +1,9 @@
+using LiventaTransfer.API.Extensions;
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Job;
 using LiventaTransfer.Application.Services;
 using LiventaTransfer.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -38,9 +40,9 @@ public sealed class JobsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateJobRequest request, [FromQuery] Guid userId, CancellationToken ct)
+    public async Task<IActionResult> Create([FromBody] CreateJobRequest request, CancellationToken ct)
     {
-        var r = await _svc.CreateAsync(request, userId, ct);
+        var r = await _svc.CreateAsync(request, User.GetUserId(), ct);
         return StatusCode(r.StatusCode, r);
     }
 
@@ -59,18 +61,18 @@ public sealed class JobsController : ControllerBase
     }
 
     [HttpPatch("{id:long}/status")]
-    public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateJobStatusRequest request, [FromQuery] Guid userId, CancellationToken ct)
+    public async Task<IActionResult> UpdateStatus(long id, [FromBody] UpdateJobStatusRequest request, CancellationToken ct)
     {
-        var r = await _svc.UpdateStatusAsync(id, request, userId, ct);
+        var r = await _svc.UpdateStatusAsync(id, request, User.GetUserId(), ct);
         return StatusCode(r.StatusCode, r);
     }
 
     /// <summary>Birden fazla işi tek bir hedef işe birleştirir.</summary>
     /// <remarks>Kaynak işlerin durakları hedef işe taşınır, kaynaklar 'Birleştirildi' olarak işaretlenir.</remarks>
     [HttpPost("{id:long}/merge")]
-    public async Task<IActionResult> Merge(long id, [FromBody] MergeJobsRequest request, [FromQuery] Guid userId, CancellationToken ct)
+    public async Task<IActionResult> Merge(long id, [FromBody] MergeJobsRequest request, CancellationToken ct)
     {
-        var r = await _svc.MergeAsync(id, request, userId, ct);
+        var r = await _svc.MergeAsync(id, request, User.GetUserId(), ct);
         return StatusCode(r.StatusCode, r);
     }
 

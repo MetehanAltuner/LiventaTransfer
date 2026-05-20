@@ -1,3 +1,4 @@
+using LiventaTransfer.API.Extensions;
 using LiventaTransfer.Application.DTOs.JobNote;
 using LiventaTransfer.Application.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -14,9 +15,9 @@ public sealed class JobNotesController : ControllerBase
     public JobNotesController(JobNoteService svc) => _svc = svc;
 
     [HttpPost("jobs/{jobId:long}/notes")]
-    public async Task<IActionResult> Create(long jobId, [FromBody] CreateJobNoteRequest request, [FromQuery] Guid userId, CancellationToken ct)
+    public async Task<IActionResult> Create(long jobId, [FromBody] CreateJobNoteRequest request, CancellationToken ct)
     {
-        var r = await _svc.CreateAsync(jobId, request, userId, ct);
+        var r = await _svc.CreateAsync(jobId, request, User.GetUserId(), ct);
         return StatusCode(r.StatusCode, r);
     }
 
