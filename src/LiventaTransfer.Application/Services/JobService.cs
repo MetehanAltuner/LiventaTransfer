@@ -265,46 +265,39 @@ public sealed class JobService
         return await GetByIdAsync(entity.Id, ct);
     }
 
-    public async Task<ApiResult<JobDetailDto>> MergeAsync(long targetId, MergeJobsRequest request, Guid userId, CancellationToken ct)
+    public async Task<ApiResult<JobDetailDto>> MergeAsync(MergeJobsRequest request, Guid userId, CancellationToken ct)
     {
         var userValidation = await ValidateUserAsync(userId, ct);
         if (userValidation is not null)
             return ApiResult<JobDetailDto>.Fail(userValidation, statusCode: 400);
 
-        var sourceIds = request.SourceJobIds?.Distinct().ToList() ?? [];
-        if (sourceIds.Count == 0)
-            return ApiResult<JobDetailDto>.Fail("En az bir kaynak iş seçilmelidir.", statusCode: 400);
+        var jobIds = request.JobIds?.Distinct().ToList() ?? [];
+        if (jobIds.Count < 2)
+            return ApiResult<JobDetailDto>.Fail("Birleştirme için en az iki farklı iş gereklidir.", statusCode: 400);
 
-        if (sourceIds.Contains(targetId))
-            return ApiResult<JobDetailDto>.Fail("Hedef iş kaynak listesinde olamaz.", statusCode: 400);
-
-        var target = await _db.Jobs
+        var jobs = await _db.Jobs
             .Include(j => j.Stops)
-            .FirstOrDefaultAsync(j => j.Id == targetId, ct);
-        if (target is null)
-            return ApiResult<JobDetailDto>.Fail("Hedef iş bulunamadı.", statusCode: 404);
-
-        if (!MergeableStatuses.Contains(target.Status))
-            return ApiResult<JobDetailDto>.Fail(
-                $"Hedef iş yalnızca {string.Join(" / ", MergeableStatuses.Select(EnumLabelHelper.GetLabel))} durumunda birleştirilebilir.",
-                statusCode: 400);
-
-        var sources = await _db.Jobs
-            .Include(j => j.Stops)
-            .Where(j => sourceIds.Contains(j.Id))
+            .Where(j => jobIds.Contains(j.Id))
             .ToListAsync(ct);
 
-        var foundIds = sources.Select(s => s.Id).ToHashSet();
-        var missing = sourceIds.Where(id => !foundIds.Contains(id)).ToList();
+        var foundIds = jobs.Select(s => s.Id).ToHashSet();
+        var missing = jobIds.Where(id => !foundIds.Contains(id)).ToList();
         if (missing.Count > 0)
             return ApiResult<JobDetailDto>.Fail(
-                $"Kaynak iş bulunamadı: {string.Join(", ", missing)}", statusCode: 404);
+                $"İş bulunamadı: {string.Join(", ", missing)}", statusCode: 404);
 
-        var blocked = sources.Where(s => !MergeableStatuses.Contains(s.Status)).ToList();
+        var blocked = jobs.Where(s => !MergeableStatuses.Contains(s.Status)).ToList();
         if (blocked.Count > 0)
             return ApiResult<JobDetailDto>.Fail(
                 $"Şu işler birleştirilemez (durum uygun değil): {string.Join(", ", blocked.Select(b => b.JobNumber))}",
                 statusCode: 400);
+
+        var target = jobs
+            .OrderBy(j => j.JobDate)
+            .ThenBy(j => j.JobTime)
+            .ThenBy(j => j.Id)
+            .First();
+        var sources = jobs.Where(j => j.Id != target.Id).ToList();
 
         var nextSeq = (target.Stops.Count == 0 ? 0 : target.Stops.Max(s => s.Sequence)) + 1;
         var now = DateTime.UtcNow;

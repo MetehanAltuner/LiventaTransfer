@@ -67,12 +67,12 @@ public sealed class JobsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    /// <summary>Birden fazla işi tek bir hedef işe birleştirir.</summary>
-    /// <remarks>Kaynak işlerin durakları hedef işe taşınır, kaynaklar 'Birleştirildi' olarak işaretlenir.</remarks>
-    [HttpPost("{id:long}/merge")]
-    public async Task<IActionResult> Merge(long id, [FromBody] MergeJobsRequest request, CancellationToken ct)
+    /// <summary>Verilen iş listesini tek bir işte birleştirir.</summary>
+    /// <remarks>En erken JobDate+JobTime'a sahip iş host olarak seçilir; diğerlerinin durakları host'a taşınır ve diğerleri 'Birleştirildi' olarak işaretlenir.</remarks>
+    [HttpPost("merge")]
+    public async Task<IActionResult> Merge([FromBody] MergeJobsRequest request, CancellationToken ct)
     {
-        var r = await _svc.MergeAsync(id, request, User.GetUserId(), ct);
+        var r = await _svc.MergeAsync(request, User.GetUserId(), ct);
         return StatusCode(r.StatusCode, r);
     }
 

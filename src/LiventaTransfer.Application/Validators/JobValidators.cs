@@ -62,6 +62,8 @@ public sealed class MergeJobsRequestValidator : AbstractValidator<MergeJobsReque
 {
     public MergeJobsRequestValidator()
     {
-        RuleFor(x => x.SourceJobIds).NotEmpty().WithMessage("En az bir kaynak iş seçilmelidir.");
+        RuleFor(x => x.JobIds).NotEmpty().WithMessage("Birleştirilecek en az iki iş seçilmelidir.");
+        RuleFor(x => x.JobIds).Must(ids => ids != null && ids.Distinct().Count() >= 2)
+            .WithMessage("Birleştirme için en az iki farklı iş gereklidir.");
     }
 }

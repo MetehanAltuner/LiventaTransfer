@@ -429,6 +429,7 @@ public static class DataSeeder
             [UserRole.Driver]         = ["HOME", "DETAIL"],
             [UserRole.Manager]        = ["HOME", "JOBS", "DETAIL", "REPORTS"],
             [UserRole.GeneralManager] = ["HOME", "JOBS", "DETAIL", "REPORTS", "ADMIN", "ROLE"],
+            [UserRole.Accounting]     = ["JOBS"],
             [UserRole.Developer]      = ["HOME", "JOBS", "DETAIL", "REPORTS", "ADMIN"]
         };
 

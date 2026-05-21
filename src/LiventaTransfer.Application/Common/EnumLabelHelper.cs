@@ -97,6 +97,7 @@ public static class EnumLabelHelper
         UserRole.Driver => "Şoför",
         UserRole.Manager => "Müdür",
         UserRole.GeneralManager => "Genel Müdür",
+        UserRole.Accounting => "Muhasebe",
         UserRole.Developer => "Developer",
         _ => role.ToString()
     };

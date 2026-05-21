@@ -225,5 +225,5 @@ public record UpdateJobStatusRequest
 
 public record MergeJobsRequest
 {
-    public List<long> SourceJobIds { get; init; } = [];
+    public List<long> JobIds { get; init; } = [];
 }

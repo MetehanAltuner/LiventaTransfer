@@ -7,5 +7,6 @@ public enum UserRole
     Driver = 3,
     Manager = 4,
     GeneralManager = 5,
+    Accounting = 6,
     Developer = 99
 }
