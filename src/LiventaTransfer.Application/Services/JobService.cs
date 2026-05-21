@@ -11,7 +11,7 @@ namespace LiventaTransfer.Application.Services;
 
 public sealed class JobService
 {
-    private static readonly JobStatus[] MergeableStatuses = [JobStatus.Open, JobStatus.Assigned];
+    private static readonly JobStatus[] MergeableStatuses = [JobStatus.Open];
 
     private readonly IAppDbContext _db;
     private readonly IJobBroadcaster _broadcaster;
@@ -43,6 +43,8 @@ public sealed class JobService
 
         if (status.HasValue)
             q = q.Where(j => j.Status == status.Value);
+        else
+            q = q.Where(j => j.Status != JobStatus.Merged);
 
         if (customerId.HasValue)
             q = q.Where(j => j.Stops.Any(s => s.CustomerId == customerId.Value));
@@ -289,7 +291,7 @@ public sealed class JobService
         var blocked = jobs.Where(s => !MergeableStatuses.Contains(s.Status)).ToList();
         if (blocked.Count > 0)
             return ApiResult<JobDetailDto>.Fail(
-                $"Şu işler birleştirilemez (durum uygun değil): {string.Join(", ", blocked.Select(b => b.JobNumber))}",
+                $"Yalnızca 'Açık' durumundaki işler birleştirilebilir. Uygun olmayan işler: {string.Join(", ", blocked.Select(b => b.JobNumber))}",
                 statusCode: 400);
 
         var target = jobs

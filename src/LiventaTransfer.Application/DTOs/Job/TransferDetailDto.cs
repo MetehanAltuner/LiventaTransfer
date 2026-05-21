@@ -31,8 +31,9 @@ public record TransferStopDto
     public DateTime? PickedUpAt { get; init; }
     public DateTime? DroppedOffAt { get; init; }
     public StopProgress Progress { get; init; }
+    public string? Message { get; init; }
 
-    public static TransferStopDto FromEntity(JobStop s)
+    public static TransferStopDto FromEntity(JobStop s, Domain.Entities.Job job)
     {
         var progress = s.DroppedOffAt.HasValue
             ? StopProgress.DroppedOff
@@ -59,8 +60,34 @@ public record TransferStopDto
             Notes = s.Notes,
             PickedUpAt = s.PickedUpAt,
             DroppedOffAt = s.DroppedOffAt,
-            Progress = progress
+            Progress = progress,
+            Message = BuildPassengerMessage(s, job)
         };
+    }
+
+    private const string OperationPhone = "+90 543 301 8440";
+
+    private static string BuildPassengerMessage(JobStop s, Domain.Entities.Job job)
+    {
+        var passengerName = string.IsNullOrWhiteSpace(s.Passenger?.FullName) ? "Değerli Yolcumuz" : s.Passenger!.FullName;
+        var dateTime = $"{job.JobDate:dd.MM.yyyy} {job.JobTime:HH:mm}";
+        var pickup = s.PickupLocation?.Name ?? s.PickupAddress ?? s.PickupLocation?.Address ?? "-";
+        var dropoff = s.DropoffLocation?.Name ?? s.DropoffAddress ?? s.DropoffLocation?.Address ?? "-";
+        var driverName = job.Driver?.FullName ?? "-";
+        var driverPhone = job.Driver?.Phone ?? "-";
+        var plate = job.Vehicle?.Plate ?? "-";
+
+        return
+            $"Merhaba, {passengerName}\n\n" +
+            "Araç ve şoför bilgileriniz aşağıdaki gibidir:\n\n" +
+            $"Tarih/Saat: {dateTime}\n" +
+            $"Alış: {pickup}\n" +
+            $"Bırakış: {dropoff}\n" +
+            $"Şoför: {driverName}\n" +
+            $"Şoför Telefon: {driverPhone}\n" +
+            $"Operasyon Hattı: {OperationPhone}\n" +
+            $"Araç Plakası: {plate}\n\n" +
+            "İyi yolculuklar dileriz.";
     }
 }
 
@@ -98,7 +125,7 @@ public record TransferDetailDto
 
     public static TransferDetailDto FromEntity(Domain.Entities.Job e)
     {
-        var stops = e.Stops.OrderBy(s => s.Sequence).Select(TransferStopDto.FromEntity).ToList();
+        var stops = e.Stops.OrderBy(s => s.Sequence).Select(s => TransferStopDto.FromEntity(s, e)).ToList();
 
         var nextStop = stops.FirstOrDefault(s => s.Progress != StopProgress.DroppedOff);
         NavigationTargetDto? nav = null;
