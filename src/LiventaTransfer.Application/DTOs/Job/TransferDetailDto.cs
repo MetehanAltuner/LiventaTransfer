@@ -78,15 +78,15 @@ public record TransferStopDto
         var plate = job.Vehicle?.Plate ?? "-";
 
         return
-            $"Merhaba, {passengerName}. " +
-            "Araç ve şoför bilgileriniz aşağıdaki gibidir: " +
-            $"Tarih/Saat: {dateTime} | " +
-            $"Alış: {pickup} | " +
-            $"Bırakış: {dropoff} | " +
-            $"Şoför: {driverName} | " +
-            $"Şoför Telefon: {driverPhone} | " +
-            $"Operasyon Hattı: {OperationPhone} | " +
-            $"Araç Plakası: {plate}. " +
+            $"Merhaba, {passengerName}\n\n" +
+            "Araç ve şoför bilgileriniz aşağıdaki gibidir:\n\n" +
+            $"Tarih/Saat: {dateTime}\n" +
+            $"Alış: {pickup}\n" +
+            $"Bırakış: {dropoff}\n" +
+            $"Şoför: {driverName}\n" +
+            $"Şoför Telefon: {driverPhone}\n" +
+            $"Operasyon Hattı: {OperationPhone}\n" +
+            $"Araç Plakası: {plate}\n\n" +
             "İyi yolculuklar dileriz.";
     }
 }
