@@ -31,17 +31,9 @@ public record TransferStopDto
     public DateTime? PickedUpAt { get; init; }
     public DateTime? DroppedOffAt { get; init; }
     public StopProgress Progress { get; init; }
-    public string? Message { get; init; }
 
-    public static TransferStopDto FromEntity(JobStop s, Domain.Entities.Job job)
-    {
-        var progress = s.DroppedOffAt.HasValue
-            ? StopProgress.DroppedOff
-            : s.PickedUpAt.HasValue
-                ? StopProgress.PickedUp
-                : StopProgress.Pending;
-
-        return new TransferStopDto
+    public static TransferStopDto FromEntity(JobStop s) =>
+        new()
         {
             Id = s.Id,
             Sequence = s.Sequence,
@@ -49,46 +41,23 @@ public record TransferStopDto
             PassengerPhone = s.Passenger?.Phone,
             PassengerCount = s.PassengerCount,
             PickupLocationName = s.PickupLocation?.Name,
-            PickupAddress = s.PickupAddress ?? s.PickupLocation?.Address,
+            PickupAddress = s.PickupLocation?.Address ?? s.PickupAddress,
             PickupLatitude = s.PickupLocation?.Latitude,
             PickupLongitude = s.PickupLocation?.Longitude,
             DropoffLocationName = s.DropoffLocation?.Name,
-            DropoffAddress = s.DropoffAddress ?? s.DropoffLocation?.Address,
+            DropoffAddress = s.DropoffLocation?.Address ?? s.DropoffAddress,
             DropoffLatitude = s.DropoffLocation?.Latitude,
             DropoffLongitude = s.DropoffLocation?.Longitude,
             FlightCode = s.FlightCode,
             Notes = s.Notes,
             PickedUpAt = s.PickedUpAt,
             DroppedOffAt = s.DroppedOffAt,
-            Progress = progress,
-            Message = BuildPassengerMessage(s, job)
+            Progress = s.DroppedOffAt.HasValue
+                ? StopProgress.DroppedOff
+                : s.PickedUpAt.HasValue
+                    ? StopProgress.PickedUp
+                    : StopProgress.Pending
         };
-    }
-
-    private const string OperationPhone = "+90 543 301 8440";
-
-    private static string BuildPassengerMessage(JobStop s, Domain.Entities.Job job)
-    {
-        var passengerName = string.IsNullOrWhiteSpace(s.Passenger?.FullName) ? "Değerli Yolcumuz" : s.Passenger!.FullName;
-        var dateTime = $"{job.JobDate:dd.MM.yyyy} {job.JobTime:HH:mm}";
-        var pickup = s.PickupLocation?.Name ?? s.PickupAddress ?? s.PickupLocation?.Address ?? "-";
-        var dropoff = s.DropoffLocation?.Name ?? s.DropoffAddress ?? s.DropoffLocation?.Address ?? "-";
-        var driverName = job.Driver?.FullName ?? "-";
-        var driverPhone = job.Driver?.Phone ?? "-";
-        var plate = job.Vehicle?.Plate ?? "-";
-
-        return
-            $"Merhaba, {passengerName}\n\n" +
-            "Araç ve şoför bilgileriniz aşağıdaki gibidir:\n\n" +
-            $"Tarih/Saat: {dateTime}\n" +
-            $"Alış: {pickup}\n" +
-            $"Bırakış: {dropoff}\n" +
-            $"Şoför: {driverName}\n" +
-            $"Şoför Telefon: {driverPhone}\n" +
-            $"Operasyon Hattı: {OperationPhone}\n" +
-            $"Araç Plakası: {plate}\n\n" +
-            "İyi yolculuklar dileriz.";
-    }
 }
 
 public record NavigationTargetDto
@@ -117,15 +86,19 @@ public record TransferDetailDto
     public DateTime? ContactedAt { get; init; }
     public DateTime? DepartedAt { get; init; }
     public string? DriverName { get; init; }
+    public string? DriverNumber { get; init; }
+    public string OperationNumber { get; init; } = OperationPhone;
     public string? VehiclePlate { get; init; }
     public string? FlightCode { get; init; }
     public string? Notes { get; init; }
     public List<TransferStopDto> Stops { get; init; } = [];
     public NavigationTargetDto? NextNavigation { get; init; }
 
+    private const string OperationPhone = "+90 543 301 8440";
+
     public static TransferDetailDto FromEntity(Domain.Entities.Job e)
     {
-        var stops = e.Stops.OrderBy(s => s.Sequence).Select(s => TransferStopDto.FromEntity(s, e)).ToList();
+        var stops = e.Stops.OrderBy(s => s.Sequence).Select(TransferStopDto.FromEntity).ToList();
 
         var nextStop = stops.FirstOrDefault(s => s.Progress != StopProgress.DroppedOff);
         NavigationTargetDto? nav = null;
@@ -167,6 +140,8 @@ public record TransferDetailDto
             ContactedAt = e.ContactedAt,
             DepartedAt = e.DepartedAt,
             DriverName = e.Driver?.FullName,
+            DriverNumber = e.Driver?.Phone,
+            OperationNumber = OperationPhone,
             VehiclePlate = e.Vehicle?.Plate,
             FlightCode = commonFlight.Count == 1 ? commonFlight[0] : null,
             Notes = e.Notes,
