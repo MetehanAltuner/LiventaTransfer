@@ -67,6 +67,14 @@ public sealed class JobsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
+    /// <summary>İlgili duraktaki yolcuya transfer bilgisinin gönderildiğini işaretler (yolcu bazında).</summary>
+    [HttpPost("{id:long}/stops/{stopId:long}/info-sent")]
+    public async Task<IActionResult> MarkStopInfoSent(long id, long stopId, CancellationToken ct)
+    {
+        var r = await _svc.MarkStopInfoSentAsync(id, stopId, ct);
+        return StatusCode(r.StatusCode, r);
+    }
+
     /// <summary>Verilen iş listesini tek bir işte birleştirir.</summary>
     /// <remarks>En erken JobDate+JobTime'a sahip iş host olarak seçilir; diğerlerinin durakları host'a taşınır ve diğerleri 'Birleştirildi' olarak işaretlenir.</remarks>
     [HttpPost("merge")]

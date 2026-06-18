@@ -11,6 +11,7 @@ public record JobStopDto
     public string CustomerName { get; init; } = string.Empty;
     public long? PassengerId { get; init; }
     public string? PassengerName { get; init; }
+    public string? PassengerPhone { get; init; }
     public int PassengerCount { get; init; }
     public long? PickupLocationId { get; init; }
     public string? PickupLocationName { get; init; }
@@ -22,6 +23,12 @@ public record JobStopDto
     public string? Notes { get; init; }
     public decimal? SalePrice { get; init; }
 
+    /// <summary>Yolcuya transfer bilgisinin gönderilip gönderilmediği.</summary>
+    public bool InfoSent { get; init; }
+    public DateTime? InfoSentAt { get; init; }
+    /// <summary>Bilgilendirme durumunun insan-okur açıklaması.</summary>
+    public string InfoStatusLabel { get; init; } = string.Empty;
+
     public static JobStopDto FromEntity(Domain.Entities.JobStop s) => new()
     {
         Id = s.Id,
@@ -30,6 +37,7 @@ public record JobStopDto
         CustomerName = s.Customer?.Name ?? string.Empty,
         PassengerId = s.PassengerId,
         PassengerName = s.Passenger?.FullName,
+        PassengerPhone = s.Passenger?.Phone,
         PassengerCount = s.PassengerCount,
         PickupLocationId = s.PickupLocationId,
         PickupLocationName = s.PickupLocation?.Name,
@@ -39,7 +47,12 @@ public record JobStopDto
         DropoffAddress = s.DropoffAddress,
         FlightCode = s.FlightCode,
         Notes = s.Notes,
-        SalePrice = s.SalePrice
+        SalePrice = s.SalePrice,
+        InfoSent = s.InfoSentAt.HasValue,
+        InfoSentAt = s.InfoSentAt,
+        InfoStatusLabel = s.InfoSentAt.HasValue
+            ? "Müşteriye bilgi verildi."
+            : "Müşteriye henüz bilgi verilmedi."
     };
 }
 

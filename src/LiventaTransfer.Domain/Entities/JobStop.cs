@@ -29,6 +29,9 @@ public class JobStop : BaseEntity
 
     public decimal? SalePrice { get; set; }
 
+    /// <summary>Yolcuya transfer bilgisi gönderildiği an. Null ise bilgi henüz verilmemiştir. ContactedAt'tan bağımsızdır.</summary>
+    public DateTime? InfoSentAt { get; set; }
+
     public DateTime? PickedUpAt { get; set; }
     public DateTime? DroppedOffAt { get; set; }
 }

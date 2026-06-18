@@ -94,6 +94,32 @@ public sealed class JobService
         return ApiResult<JobDetailDto>.Ok(JobDetailDto.FromEntity(entity), "İş bulundu.");
     }
 
+    /// <summary>
+    /// İlgili duraktaki yolcuya transfer bilgisinin gönderildiğini işaretler (yolcu bazında).
+    /// ContactedAt'tan bağımsızdır. Idempotent: zaten işaretliyse mevcut zaman korunur.
+    /// </summary>
+    public async Task<ApiResult<JobDetailDto>> MarkStopInfoSentAsync(long jobId, long stopId, CancellationToken ct)
+    {
+        var entity = await _db.Jobs
+            .Include(j => j.Stops)
+            .FirstOrDefaultAsync(j => j.Id == jobId, ct);
+        if (entity is null)
+            return ApiResult<JobDetailDto>.Fail("İş bulunamadı.", statusCode: 404);
+
+        var stop = entity.Stops.FirstOrDefault(s => s.Id == stopId);
+        if (stop is null)
+            return ApiResult<JobDetailDto>.Fail("Durak bu işe ait değil.", statusCode: 404);
+
+        if (!stop.InfoSentAt.HasValue)
+        {
+            stop.InfoSentAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync(ct);
+            await _broadcaster.BroadcastJobsChangedAsync(ct);
+        }
+
+        return await GetByIdAsync(entity.Id, ct);
+    }
+
     public async Task<ApiResult<JobDetailDto>> CreateAsync(CreateJobRequest request, Guid userId, CancellationToken ct)
     {
         if (request.Stops is null || request.Stops.Count == 0)
