@@ -96,6 +96,13 @@ public record JobListDto
     public decimal? TotalSalePrice { get; init; }
     public long? MergedIntoJobId { get; init; }
 
+    /// <summary>
+    /// İşteki tüm duraklardaki yolculara transfer bilgisi gönderildi mi.
+    /// Yalnızca tüm duraklar bilgilendirildiyse true; en az bir durak bilgilendirilmemişse
+    /// (ya da hiç durak yoksa) false. Frontend WhatsApp ikonunu bu değere göre disable eder.
+    /// </summary>
+    public bool AllInfoSent { get; init; }
+
     public static JobListDto FromEntity(Domain.Entities.Job e) => new()
     {
         Id = e.Id,
@@ -119,7 +126,8 @@ public record JobListDto
         TotalSalePrice = e.Stops.Any(s => s.SalePrice.HasValue)
             ? e.Stops.Where(s => s.SalePrice.HasValue).Sum(s => s.SalePrice!.Value)
             : null,
-        MergedIntoJobId = e.MergedIntoJobId
+        MergedIntoJobId = e.MergedIntoJobId,
+        AllInfoSent = e.Stops.Count > 0 && e.Stops.All(s => s.InfoSentAt.HasValue)
     };
 }
 
@@ -153,6 +161,13 @@ public record JobDetailDto
     public string? MergedIntoJobNumber { get; init; }
     public List<long> MergedJobIds { get; init; } = [];
     public List<JobStopDto> Stops { get; init; } = [];
+
+    /// <summary>
+    /// İşteki tüm duraklardaki yolculara transfer bilgisi gönderildi mi.
+    /// Yalnızca tüm duraklar bilgilendirildiyse true; aksi halde (ya da hiç durak yoksa) false.
+    /// </summary>
+    public bool AllInfoSent { get; init; }
+
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 
@@ -191,6 +206,7 @@ public record JobDetailDto
             .OrderBy(s => s.Sequence)
             .Select(JobStopDto.FromEntity)
             .ToList(),
+        AllInfoSent = e.Stops.Count > 0 && e.Stops.All(s => s.InfoSentAt.HasValue),
         CreatedAt = e.CreatedAt,
         UpdatedAt = e.UpdatedAt
     };
