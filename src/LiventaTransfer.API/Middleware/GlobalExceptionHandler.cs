@@ -1,6 +1,4 @@
-using System.Net;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 using LiventaTransfer.Application.Common;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -68,8 +66,8 @@ public class GlobalExceptionHandler
             case DbUpdateConcurrencyException:
                 return (409, "Kayıt başka bir işlem tarafından değiştirilmiş. Lütfen tekrar deneyin.", null);
 
-            case DbUpdateException dbEx:
-                return (400, "Veritabanı kaydı sırasında hata oluştu.", new List<string> { dbEx.InnerException?.Message ?? dbEx.Message });
+            case DbUpdateException:
+                return (400, "Kayıt veritabanına işlenirken bir hata oluştu. Lütfen verileri kontrol edip tekrar deneyin.", null);
 
             case FluentValidation.ValidationException vex:
                 return (400, "Doğrulama hatası.", vex.Errors.Select(e => e.ErrorMessage).ToList());
@@ -78,7 +76,7 @@ public class GlobalExceptionHandler
                 return (400, aex.Message, null);
 
             case UnauthorizedAccessException:
-                return (401, "Yetkiniz yok.", null);
+                return (401, "Bu işlem için yetkiniz yok.", null);
 
             case KeyNotFoundException knf:
                 return (404, string.IsNullOrWhiteSpace(knf.Message) ? "Kayıt bulunamadı." : knf.Message, null);
@@ -87,105 +85,94 @@ public class GlobalExceptionHandler
                 return (499, "İstek iptal edildi.", null);
 
             default:
-                return (500, "Beklenmeyen bir hata oluştu.", new List<string> { ex.Message });
+                return (500, "Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.", null);
         }
     }
 
     private static (int statusCode, string message, List<string>? errors) MapPostgres(PostgresException pg)
     {
         // PostgreSQL SQLSTATE codes: https://www.postgresql.org/docs/current/errcodes-appendix.html
+        // Not: Ham constraint/detail bilgisi istemciye dönülmez (anlamsız ve hassas olabilir);
+        // tüm exception zaten sunucu loglarına yazılıyor.
         switch (pg.SqlState)
         {
             case "23503": // foreign_key_violation
             {
-                var entity = ExtractEntityFromConstraint(pg.ConstraintName);
-                var msg = entity is not null
-                    ? $"İlişkili kayıt bulunamadı: {entity}. Gönderilen ID veritabanında mevcut değil."
-                    : "İlişkili bir kayıt bulunamadı. Gönderdiğiniz ID'lerden biri veritabanında mevcut değil.";
-                return (400, msg, pg.ConstraintName is null ? null : new List<string> { pg.ConstraintName });
+                var noun = ReferencedTableNoun(pg.ConstraintName);
+                var msg = noun is not null
+                    ? $"Seçtiğiniz {noun} sistemde bulunamadı. Lütfen geçerli bir kayıt seçin."
+                    : "Seçtiğiniz ilişkili kayıtlardan biri sistemde bulunamadı. Lütfen seçimlerinizi kontrol edin.";
+                return (400, msg, null);
             }
             case "23505": // unique_violation
-            {
-                var entity = ExtractEntityFromUniqueConstraint(pg.ConstraintName, pg.TableName);
-                var detail = ParseUniqueDetail(pg.Detail);
-
-                string msg;
-                if (detail is not null && entity is not null)
-                    msg = $"{entity} kaydı zaten mevcut: {detail.Value.Field} = '{detail.Value.Value}'";
-                else if (detail is not null)
-                    msg = $"Bu değere sahip bir kayıt zaten mevcut: {detail.Value.Field} = '{detail.Value.Value}'";
-                else if (entity is not null)
-                    msg = $"{entity} kaydı zaten mevcut.";
-                else
-                    msg = "Bu kayıt zaten mevcut (benzersizlik kısıtı ihlali).";
-
-                var errors = new List<string>();
-                if (!string.IsNullOrWhiteSpace(pg.ConstraintName)) errors.Add(pg.ConstraintName);
-                if (!string.IsNullOrWhiteSpace(pg.Detail)) errors.Add(pg.Detail);
-
-                return (409, msg, errors.Count == 0 ? null : errors);
-            }
+                return (409, FriendlyUniqueMessage(pg.ConstraintName, pg.TableName), null);
             case "23502": // not_null_violation
-                return (400, $"Zorunlu alan boş bırakılamaz: {pg.ColumnName ?? "(bilinmiyor)"}", null);
+                return (400, "Zorunlu bir alan boş bırakılamaz. Lütfen tüm gerekli alanları doldurun.", null);
             case "23514": // check_violation
-                return (400, "Geçersiz değer (kontrol kısıtı ihlali).",
-                    pg.ConstraintName is null ? null : new List<string> { pg.ConstraintName });
+                return (400, "Girilen değerlerden biri geçerli değil. Lütfen kontrol edip tekrar deneyin.", null);
             case "22001": // string_data_right_truncation
-                return (400, "Bir alan veritabanında izin verilenden daha uzun.", null);
+                return (400, "Bir alan izin verilen uzunluğu aşıyor. Lütfen kısaltın.", null);
             default:
-                return (400, "Veritabanı hatası: " + pg.MessageText, null);
+                return (400, "Veritabanı işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.", null);
         }
     }
 
     /// <summary>
-    /// "FK_Jobs_Users_CreatedByUserId" gibi bir constraint adından insan-okur entity adını çıkarmaya çalışır.
+    /// Bilinen unique constraint'ler için özel Türkçe mesaj; bilinmiyorsa tablo adından üretilen
+    /// genel bir mesaj döner.
     /// </summary>
-    private static string? ExtractEntityFromConstraint(string? constraintName)
+    private static string FriendlyUniqueMessage(string? constraintName, string? tableName)
+    {
+        var known = constraintName switch
+        {
+            "IX_Jobs_JobNumber" => "Aynı iş numarasına sahip bir kayıt zaten var. Lütfen tekrar deneyin.",
+            "IX_Users_Username" => "Bu kullanıcı adı zaten kullanımda. Lütfen farklı bir ad seçin.",
+            "IX_Customers_TaxNumber" => "Bu vergi numarası başka bir müşteride kayıtlı.",
+            "IX_Customers_TcKimlikNo" => "Bu TC Kimlik No başka bir müşteride kayıtlı.",
+            "IX_JobStopPassengers_JobStopId_PassengerId" => "Aynı yolcu bu durağa zaten eklenmiş.",
+            "IX_PassengerLocations_PassengerId_LocationId" => "Bu lokasyon yolcuya zaten tanımlı.",
+            _ => null
+        };
+        if (known is not null)
+            return known;
+
+        var noun = TableNoun(tableName);
+        return noun is not null
+            ? $"Bu {noun} kaydı zaten mevcut (benzersiz alan tekrar ediyor)."
+            : "Bu kayıt zaten mevcut (benzersiz bir alan tekrar ediyor).";
+    }
+
+    /// <summary>FK constraint adından ("FK_Jobs_Drivers_DriverId") referans verilen tablonun Türkçe adını döner.</summary>
+    private static string? ReferencedTableNoun(string? constraintName)
     {
         if (string.IsNullOrWhiteSpace(constraintName))
             return null;
 
-        // Beklenen biçim: FK_<TabloA>_<TabloB>_<KolonAdı>
+        // Beklenen biçim: FK_<KaynakTablo>_<ReferansTablo>_<Kolon>
         var parts = constraintName.Split('_', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length >= 4 && parts[0].Equals("FK", StringComparison.OrdinalIgnoreCase))
-            return $"{parts[2]} ({parts[^1]})";
+            return TableNoun(parts[2]);
 
-        return constraintName;
+        return null;
     }
 
-    /// <summary>
-    /// Unique constraint adı ya da tablo adından insan-okur tablo adını çıkarır.
-    /// Örn: "IX_Customers_TaxNumber" → "Customers", tablo adı "Users" → "Users".
-    /// </summary>
-    private static string? ExtractEntityFromUniqueConstraint(string? constraintName, string? tableName)
+    /// <summary>Tablo adını insan-okur Türkçe isme çevirir.</summary>
+    private static string? TableNoun(string? tableName) => tableName switch
     {
-        if (!string.IsNullOrWhiteSpace(constraintName))
-        {
-            var parts = constraintName.Split('_', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 2 &&
-                (parts[0].Equals("IX", StringComparison.OrdinalIgnoreCase) ||
-                 parts[0].Equals("UX", StringComparison.OrdinalIgnoreCase) ||
-                 parts[0].Equals("AK", StringComparison.OrdinalIgnoreCase)))
-                return parts[1];
-        }
-
-        return string.IsNullOrWhiteSpace(tableName) ? null : tableName;
-    }
-
-    /// <summary>
-    /// PostgreSQL "Key (column)=(value) already exists." formatındaki Detail string'inden
-    /// kolon ve değer çıkarır.
-    /// </summary>
-    private static (string Field, string Value)? ParseUniqueDetail(string? detail)
-    {
-        if (string.IsNullOrWhiteSpace(detail))
-            return null;
-
-        var m = Regex.Match(detail, @"Key \(""?(?<col>[^""\)]+)""?\)=\((?<val>.*?)\) already exists",
-            RegexOptions.IgnoreCase);
-        if (!m.Success)
-            return null;
-
-        return (m.Groups["col"].Value, m.Groups["val"].Value);
-    }
+        "Jobs" => "iş",
+        "JobStops" => "durak",
+        "JobStopPassengers" => "durak yolcusu",
+        "Customers" => "müşteri",
+        "Drivers" => "şoför",
+        "Users" => "kullanıcı",
+        "Vehicles" => "araç",
+        "VehicleOwners" => "araç sahibi",
+        "Passengers" => "yolcu",
+        "Locations" => "lokasyon",
+        "PassengerLocations" => "yolcu lokasyonu",
+        "Branches" => "şube",
+        "Invoices" => "fatura",
+        "InvoiceItems" => "fatura kalemi",
+        _ => null
+    };
 }

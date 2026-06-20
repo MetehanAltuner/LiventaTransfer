@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using FluentValidation;
+using LiventaTransfer.API.Common;
 using LiventaTransfer.API.Filters;
 using LiventaTransfer.API.Hubs;
 using LiventaTransfer.API.Middleware;
@@ -48,11 +49,7 @@ builder.Services.AddControllers(options =>
     {
         options.InvalidModelStateResponseFactory = context =>
         {
-            var errors = context.ModelState.Values
-                .SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-
+            var errors = ModelBindingErrorFormatter.Format(context.ModelState);
             var payload = ApiResult<object>.Fail("Doğrulama hatası.", errors, statusCode: 400);
             return new BadRequestObjectResult(payload);
         };
