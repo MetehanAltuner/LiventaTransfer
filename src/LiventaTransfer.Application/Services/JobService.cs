@@ -39,7 +39,7 @@ public sealed class JobService
         {
             var search = query.Search.ToLower();
             q = q.Where(j => j.JobNumber.ToLower().Contains(search)
-                          || j.Stops.Any(s => s.Customer != null && s.Customer.Name.ToLower().Contains(search)));
+                          || j.Stops.Any(s => s.Customer.Name.ToLower().Contains(search)));
         }
 
         if (status.HasValue)
@@ -638,21 +638,14 @@ public sealed class JobService
 
     private async Task<string?> ValidateStopsAsync(List<JobStopRequest> stops, CancellationToken ct)
     {
-        var customerIds = stops
-            .Where(s => s.CustomerId.HasValue)
-            .Select(s => s.CustomerId!.Value)
-            .Distinct()
-            .ToList();
-        if (customerIds.Count > 0)
-        {
-            var existingCustomerIds = await _db.Customers
-                .Where(c => customerIds.Contains(c.Id))
-                .Select(c => c.Id)
-                .ToListAsync(ct);
-            var missingCustomers = customerIds.Except(existingCustomerIds).ToList();
-            if (missingCustomers.Count > 0)
-                return $"Müşteri bulunamadı: {string.Join(", ", missingCustomers)}";
-        }
+        var customerIds = stops.Select(s => s.CustomerId).Distinct().ToList();
+        var existingCustomerIds = await _db.Customers
+            .Where(c => customerIds.Contains(c.Id))
+            .Select(c => c.Id)
+            .ToListAsync(ct);
+        var missingCustomers = customerIds.Except(existingCustomerIds).ToList();
+        if (missingCustomers.Count > 0)
+            return $"Müşteri bulunamadı: {string.Join(", ", missingCustomers)}";
 
         var locationIds = stops
             .SelectMany(s => new[] { s.PickupLocationId, s.DropoffLocationId })

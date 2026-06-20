@@ -9,8 +9,8 @@ public class JobStop : BaseEntity
 
     public int Sequence { get; set; }
 
-    public long? CustomerId { get; set; }
-    public Customer? Customer { get; set; }
+    public long CustomerId { get; set; }
+    public Customer Customer { get; set; } = null!;
 
     /// <summary>Bu durağa bağlı yolcular. Bir durakta birden fazla yolcu olabilir.</summary>
     public ICollection<JobStopPassenger> Passengers { get; set; } = new List<JobStopPassenger>();

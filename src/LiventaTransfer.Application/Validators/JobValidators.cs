@@ -7,9 +7,7 @@ public sealed class JobStopRequestValidator : AbstractValidator<JobStopRequest>
 {
     public JobStopRequestValidator()
     {
-        RuleFor(x => x.CustomerId).GreaterThan(0)
-            .When(x => x.CustomerId.HasValue)
-            .WithMessage("Geçerli bir müşteri seçiniz.");
+        RuleFor(x => x.CustomerId).GreaterThan(0).WithMessage("Müşteri seçimi zorunludur.");
         RuleFor(x => x.PassengerIds)
             .Must(ids => ids == null || ids.Distinct().Count() == ids.Count)
             .WithMessage("Aynı yolcu bir durağa birden fazla eklenemez.");

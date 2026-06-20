@@ -487,7 +487,7 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long?>("CustomerId")
+                    b.Property<long>("CustomerId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("DropoffAddress")
@@ -1201,7 +1201,8 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.HasOne("LiventaTransfer.Domain.Entities.Customer", "Customer")
                         .WithMany("JobStops")
                         .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("LiventaTransfer.Domain.Entities.Location", "DropoffLocation")
                         .WithMany()
