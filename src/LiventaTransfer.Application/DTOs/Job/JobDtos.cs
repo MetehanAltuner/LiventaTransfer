@@ -34,7 +34,7 @@ public record JobStopDto
 {
     public long Id { get; init; }
     public int Sequence { get; init; }
-    public long CustomerId { get; init; }
+    public long? CustomerId { get; init; }
     public string CustomerName { get; init; } = string.Empty;
     public List<JobStopPassengerDto> Passengers { get; init; } = [];
     public int PassengerCount { get; init; }
@@ -89,7 +89,7 @@ public record JobStopDto
 
 public record JobStopRequest
 {
-    public long CustomerId { get; init; }
+    public long? CustomerId { get; init; }
     public List<long> PassengerIds { get; init; } = [];
     public long? PickupLocationId { get; init; }
     public long? DropoffLocationId { get; init; }
