@@ -14,6 +14,9 @@ public class PassengerConfiguration : IEntityTypeConfiguration<Passenger>
             .IsRequired()
             .HasMaxLength(200);
 
+        builder.Property(p => p.NationalId)
+            .HasMaxLength(11);
+
         builder.Property(p => p.Phone)
             .HasMaxLength(20);
 

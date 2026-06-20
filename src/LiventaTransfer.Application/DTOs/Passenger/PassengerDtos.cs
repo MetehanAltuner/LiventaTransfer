@@ -4,6 +4,7 @@ public record PassengerListDto
 {
     public long Id { get; init; }
     public string FullName { get; init; } = string.Empty;
+    public string? NationalId { get; init; }
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public bool IsActive { get; init; }
@@ -12,6 +13,7 @@ public record PassengerListDto
     {
         Id = entity.Id,
         FullName = entity.FullName,
+        NationalId = entity.NationalId,
         Phone = entity.Phone,
         Email = entity.Email,
         IsActive = entity.IsActive
@@ -22,6 +24,7 @@ public record PassengerDetailDto
 {
     public long Id { get; init; }
     public string FullName { get; init; } = string.Empty;
+    public string? NationalId { get; init; }
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public string? Notes { get; init; }
@@ -33,6 +36,7 @@ public record PassengerDetailDto
     {
         Id = entity.Id,
         FullName = entity.FullName,
+        NationalId = entity.NationalId,
         Phone = entity.Phone,
         Email = entity.Email,
         Notes = entity.Notes,
@@ -45,6 +49,7 @@ public record PassengerDetailDto
 public record CreatePassengerRequest
 {
     public string FullName { get; init; } = string.Empty;
+    public string? NationalId { get; init; }
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public string? Notes { get; init; }
@@ -54,6 +59,7 @@ public record CreatePassengerRequest
 public record UpdatePassengerRequest
 {
     public string FullName { get; init; } = string.Empty;
+    public string? NationalId { get; init; }
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public string? Notes { get; init; }

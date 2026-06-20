@@ -77,6 +77,7 @@ public sealed class PassengerService
         var entity = new Domain.Entities.Passenger
         {
             FullName = request.FullName.Trim(),
+            NationalId = request.NationalId?.Trim(),
             Phone = request.Phone?.Trim(),
             Email = request.Email?.Trim(),
             Notes = request.Notes?.Trim(),
@@ -106,6 +107,7 @@ public sealed class PassengerService
             return ApiResult<PassengerDetailDto>.Fail("Yolcu bulunamadı.", statusCode: 404);
 
         entity.FullName = request.FullName.Trim();
+        entity.NationalId = request.NationalId?.Trim();
         entity.Phone = request.Phone?.Trim();
         entity.Email = request.Email?.Trim();
         entity.Notes = request.Notes?.Trim();

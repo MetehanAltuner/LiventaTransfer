@@ -37,9 +37,13 @@ public sealed class JobService
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
-            var search = query.Search.ToLower();
+            // ToLower her iki tarafa uygulanarak büyük/küçük harf duyarsız eşleşme sağlanır
+            var search = query.Search.Trim().ToLower();
             q = q.Where(j => j.JobNumber.ToLower().Contains(search)
-                          || j.Stops.Any(s => s.Customer.Name.ToLower().Contains(search)));
+                          || (j.Driver != null && j.Driver.FullName.ToLower().Contains(search))
+                          || j.Stops.Any(s => s.Customer.Name.ToLower().Contains(search))
+                          || j.Stops.Any(s => s.Passengers.Any(p =>
+                                p.Passenger.FullName.ToLower().Contains(search))));
         }
 
         if (status.HasValue)
