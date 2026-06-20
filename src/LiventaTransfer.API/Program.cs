@@ -45,6 +45,12 @@ builder.Services.AddControllers(options =>
             .Build();
         options.Filters.Add(new AuthorizeFilter(requireAuth));
     })
+    .AddJsonOptions(options =>
+    {
+        // Boş string ("") gelen nullable sayısal/tarih alanlarını null sayan, string sayıları
+        // çözen hoşgörülü converter. Frontend "" gönderse bile deserializasyon patlamaz.
+        options.JsonSerializerOptions.Converters.Add(new LenientNullableConverterFactory());
+    })
     .ConfigureApiBehaviorOptions(options =>
     {
         options.InvalidModelStateResponseFactory = context =>
