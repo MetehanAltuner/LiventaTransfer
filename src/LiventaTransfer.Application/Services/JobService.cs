@@ -847,8 +847,22 @@ public sealed class JobService
     private async Task<string> GenerateJobNumberAsync(CancellationToken ct)
     {
         var today = DateTime.UtcNow;
-        var prefix = $"ERT-{today:yyyyMMdd}";
-        var count = await _db.Jobs.CountAsync(j => j.JobNumber.StartsWith(prefix), ct);
-        return $"{prefix}-{(count + 1):D4}";
+        var prefix = $"ERT-{today:yyyyMMdd}-";
+
+        // Soft-delete edilmiş işler de IX_Jobs_JobNumber unique index'inde yer kapladığı için
+        // sorgu filtresini yok say; ayrıca sayım yerine mevcut en yüksek sıra numarasını baz al
+        // ki silme sonrası numara çakışması (23505) yaşanmasın.
+        var todaysNumbers = await _db.Jobs
+            .IgnoreQueryFilters()
+            .Where(j => j.JobNumber.StartsWith(prefix))
+            .Select(j => j.JobNumber)
+            .ToListAsync(ct);
+
+        var maxSeq = todaysNumbers
+            .Select(n => int.TryParse(n[prefix.Length..], out var seq) ? seq : 0)
+            .DefaultIfEmpty(0)
+            .Max();
+
+        return $"{prefix}{(maxSeq + 1):D4}";
     }
 }
