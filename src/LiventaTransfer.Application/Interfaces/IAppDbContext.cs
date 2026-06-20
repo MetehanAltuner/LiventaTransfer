@@ -16,6 +16,7 @@ public interface IAppDbContext
     DbSet<PassengerLocation> PassengerLocations { get; }
     DbSet<Job> Jobs { get; }
     DbSet<JobStop> JobStops { get; }
+    DbSet<JobStopPassenger> JobStopPassengers { get; }
     DbSet<JobStatusHistory> JobStatusHistories { get; }
     DbSet<TripLog> TripLogs { get; }
     DbSet<JobNote> JobNotes { get; }

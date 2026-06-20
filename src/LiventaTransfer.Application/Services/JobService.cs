@@ -32,6 +32,7 @@ public sealed class JobService
         var q = _db.Jobs.AsNoTracking()
             .Include(j => j.Driver)
             .Include(j => j.Stops).ThenInclude(s => s.Customer)
+            .Include(j => j.Stops).ThenInclude(s => s.Passengers).ThenInclude(p => p.Passenger)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.Search))
@@ -95,13 +96,13 @@ public sealed class JobService
     }
 
     /// <summary>
-    /// İlgili duraktaki yolcuya transfer bilgisinin gönderildiğini işaretler (yolcu bazında).
+    /// İlgili duraktaki bir yolcuya transfer bilgisinin gönderildiğini işaretler (yolcu bazında).
     /// ContactedAt'tan bağımsızdır. Idempotent: zaten işaretliyse mevcut zaman korunur.
     /// </summary>
-    public async Task<ApiResult<JobDetailDto>> MarkStopInfoSentAsync(long jobId, long stopId, CancellationToken ct)
+    public async Task<ApiResult<JobDetailDto>> MarkStopInfoSentAsync(long jobId, long stopId, long passengerId, CancellationToken ct)
     {
         var entity = await _db.Jobs
-            .Include(j => j.Stops)
+            .Include(j => j.Stops).ThenInclude(s => s.Passengers)
             .FirstOrDefaultAsync(j => j.Id == jobId, ct);
         if (entity is null)
             return ApiResult<JobDetailDto>.Fail("İş bulunamadı.", statusCode: 404);
@@ -110,9 +111,13 @@ public sealed class JobService
         if (stop is null)
             return ApiResult<JobDetailDto>.Fail("Durak bu işe ait değil.", statusCode: 404);
 
-        if (!stop.InfoSentAt.HasValue)
+        var stopPassenger = stop.Passengers.FirstOrDefault(p => p.PassengerId == passengerId);
+        if (stopPassenger is null)
+            return ApiResult<JobDetailDto>.Fail("Yolcu bu durağa ait değil.", statusCode: 404);
+
+        if (!stopPassenger.InfoSentAt.HasValue)
         {
-            stop.InfoSentAt = DateTime.UtcNow;
+            stopPassenger.InfoSentAt = DateTime.UtcNow;
             await _db.SaveChangesAsync(ct);
             await _broadcaster.BroadcastJobsChangedAsync(ct);
         }
@@ -597,7 +602,7 @@ public sealed class JobService
             .Include(j => j.MergedIntoJob)
             .Include(j => j.MergedJobs)
             .Include(j => j.Stops).ThenInclude(s => s.Customer)
-            .Include(j => j.Stops).ThenInclude(s => s.Passenger)
+            .Include(j => j.Stops).ThenInclude(s => s.Passengers).ThenInclude(p => p.Passenger)
             .Include(j => j.Stops).ThenInclude(s => s.PickupLocation)
             .Include(j => j.Stops).ThenInclude(s => s.DropoffLocation)
             .FirstOrDefaultAsync(j => j.Id == id, ct);
@@ -660,8 +665,7 @@ public sealed class JobService
         }
 
         var passengerIds = stops
-            .Where(s => s.PassengerId.HasValue)
-            .Select(s => s.PassengerId!.Value)
+            .SelectMany(s => s.PassengerIds ?? [])
             .Distinct()
             .ToList();
         if (passengerIds.Count > 0)
@@ -712,12 +716,12 @@ public sealed class JobService
                 dropoffFromAddress = true;
             }
 
-            if (s.PassengerId.HasValue)
+            foreach (var passengerId in (s.PassengerIds ?? []).Distinct())
             {
                 if (pickupFromAddress && pickupId.HasValue)
-                    passengerLinks.Add((s.PassengerId.Value, pickupId.Value));
+                    passengerLinks.Add((passengerId, pickupId.Value));
                 if (dropoffFromAddress && dropoffId.HasValue)
-                    passengerLinks.Add((s.PassengerId.Value, dropoffId.Value));
+                    passengerLinks.Add((passengerId, dropoffId.Value));
             }
 
             result.Add(s with
@@ -788,20 +792,26 @@ public sealed class JobService
         return location.Id;
     }
 
-    private static JobStop BuildStop(JobStopRequest s, int sequence) => new()
+    private static JobStop BuildStop(JobStopRequest s, int sequence)
     {
-        Sequence = sequence,
-        CustomerId = s.CustomerId,
-        PassengerId = s.PassengerId,
-        PassengerCount = s.PassengerCount <= 0 ? 1 : s.PassengerCount,
-        PickupLocationId = s.PickupLocationId,
-        DropoffLocationId = s.DropoffLocationId,
-        PickupAddress = s.PickupAddress?.Trim(),
-        DropoffAddress = s.DropoffAddress?.Trim(),
-        FlightCode = s.FlightCode?.Trim(),
-        Notes = s.Notes?.Trim(),
-        SalePrice = s.SalePrice
-    };
+        var stop = new JobStop
+        {
+            Sequence = sequence,
+            CustomerId = s.CustomerId,
+            PickupLocationId = s.PickupLocationId,
+            DropoffLocationId = s.DropoffLocationId,
+            PickupAddress = s.PickupAddress?.Trim(),
+            DropoffAddress = s.DropoffAddress?.Trim(),
+            FlightCode = s.FlightCode?.Trim(),
+            Notes = s.Notes?.Trim(),
+            SalePrice = s.SalePrice
+        };
+
+        foreach (var passengerId in (s.PassengerIds ?? []).Distinct())
+            stop.Passengers.Add(new JobStopPassenger { PassengerId = passengerId });
+
+        return stop;
+    }
 
     /// <summary>
     /// JobStatus geçişinin DriverStage ile tutarlı olup olmadığını doğrular.

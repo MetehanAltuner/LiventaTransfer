@@ -8,7 +8,9 @@ public sealed class JobStopRequestValidator : AbstractValidator<JobStopRequest>
     public JobStopRequestValidator()
     {
         RuleFor(x => x.CustomerId).GreaterThan(0).WithMessage("Müşteri seçimi zorunludur.");
-        RuleFor(x => x.PassengerCount).GreaterThan(0).WithMessage("Yolcu sayısı en az 1 olmalıdır.");
+        RuleFor(x => x.PassengerIds)
+            .Must(ids => ids == null || ids.Distinct().Count() == ids.Count)
+            .WithMessage("Aynı yolcu bir durağa birden fazla eklenemez.");
         RuleFor(x => x.PickupAddress).MaximumLength(500);
         RuleFor(x => x.DropoffAddress).MaximumLength(500);
         RuleFor(x => x.FlightCode).MaximumLength(20);

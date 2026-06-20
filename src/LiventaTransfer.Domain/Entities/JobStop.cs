@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace LiventaTransfer.Domain.Entities;
 
 public class JobStop : BaseEntity
@@ -10,10 +12,12 @@ public class JobStop : BaseEntity
     public long CustomerId { get; set; }
     public Customer Customer { get; set; } = null!;
 
-    public long? PassengerId { get; set; }
-    public Passenger? Passenger { get; set; }
+    /// <summary>Bu durağa bağlı yolcular. Bir durakta birden fazla yolcu olabilir.</summary>
+    public ICollection<JobStopPassenger> Passengers { get; set; } = new List<JobStopPassenger>();
 
-    public int PassengerCount { get; set; } = 1;
+    /// <summary>Yolcu sayısı, durağa eklenen yolcu adedinden türetilir.</summary>
+    [NotMapped]
+    public int PassengerCount => Passengers?.Count ?? 0;
 
     public long? PickupLocationId { get; set; }
     public Location? PickupLocation { get; set; }
@@ -28,9 +32,6 @@ public class JobStop : BaseEntity
     public string? Notes { get; set; }
 
     public decimal? SalePrice { get; set; }
-
-    /// <summary>Yolcuya transfer bilgisi gönderildiği an. Null ise bilgi henüz verilmemiştir. ContactedAt'tan bağımsızdır.</summary>
-    public DateTime? InfoSentAt { get; set; }
 
     public DateTime? PickedUpAt { get; set; }
     public DateTime? DroppedOffAt { get; set; }

@@ -87,8 +87,7 @@ public sealed class EmlImportService
                     new JobStopRequest
                     {
                         CustomerId = request.CustomerId,
-                        PassengerId = passengerId,
-                        PassengerCount = 1,
+                        PassengerIds = passengerId.HasValue ? [passengerId.Value] : [],
                         PickupAddress = transfer.PickupAddress,
                         DropoffAddress = transfer.DropoffAddress,
                         FlightCode = transfer.FlightCode,

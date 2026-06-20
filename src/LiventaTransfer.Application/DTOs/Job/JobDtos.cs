@@ -3,15 +3,40 @@ using LiventaTransfer.Domain.Enums;
 
 namespace LiventaTransfer.Application.DTOs.Job;
 
+public record JobStopPassengerDto
+{
+    public long Id { get; init; }
+    public long PassengerId { get; init; }
+    public string PassengerName { get; init; } = string.Empty;
+    public string? PassengerPhone { get; init; }
+
+    /// <summary>Bu yolcuya transfer bilgisinin gönderilip gönderilmediği.</summary>
+    public bool InfoSent { get; init; }
+    public DateTime? InfoSentAt { get; init; }
+    /// <summary>Bilgilendirme durumunun insan-okur açıklaması.</summary>
+    public string InfoStatusLabel { get; init; } = string.Empty;
+
+    public static JobStopPassengerDto FromEntity(Domain.Entities.JobStopPassenger p) => new()
+    {
+        Id = p.Id,
+        PassengerId = p.PassengerId,
+        PassengerName = p.Passenger?.FullName ?? string.Empty,
+        PassengerPhone = p.Passenger?.Phone,
+        InfoSent = p.InfoSentAt.HasValue,
+        InfoSentAt = p.InfoSentAt,
+        InfoStatusLabel = p.InfoSentAt.HasValue
+            ? "Yolcuya bilgi verildi."
+            : "Yolcuya henüz bilgi verilmedi."
+    };
+}
+
 public record JobStopDto
 {
     public long Id { get; init; }
     public int Sequence { get; init; }
     public long CustomerId { get; init; }
     public string CustomerName { get; init; } = string.Empty;
-    public long? PassengerId { get; init; }
-    public string? PassengerName { get; init; }
-    public string? PassengerPhone { get; init; }
+    public List<JobStopPassengerDto> Passengers { get; init; } = [];
     public int PassengerCount { get; init; }
     public long? PickupLocationId { get; init; }
     public string? PickupLocationName { get; init; }
@@ -23,44 +48,49 @@ public record JobStopDto
     public string? Notes { get; init; }
     public decimal? SalePrice { get; init; }
 
-    /// <summary>Yolcuya transfer bilgisinin gönderilip gönderilmediği.</summary>
-    public bool InfoSent { get; init; }
-    public DateTime? InfoSentAt { get; init; }
-    /// <summary>Bilgilendirme durumunun insan-okur açıklaması.</summary>
+    /// <summary>Durağın tüm yolcularına bilgi gönderilmişse true (yolcu yoksa false).</summary>
+    public bool AllInfoSent { get; init; }
+    /// <summary>Durak bazında bilgilendirme özeti.</summary>
     public string InfoStatusLabel { get; init; } = string.Empty;
 
-    public static JobStopDto FromEntity(Domain.Entities.JobStop s) => new()
+    public static JobStopDto FromEntity(Domain.Entities.JobStop s)
     {
-        Id = s.Id,
-        Sequence = s.Sequence,
-        CustomerId = s.CustomerId,
-        CustomerName = s.Customer?.Name ?? string.Empty,
-        PassengerId = s.PassengerId,
-        PassengerName = s.Passenger?.FullName,
-        PassengerPhone = s.Passenger?.Phone,
-        PassengerCount = s.PassengerCount,
-        PickupLocationId = s.PickupLocationId,
-        PickupLocationName = s.PickupLocation?.Name,
-        DropoffLocationId = s.DropoffLocationId,
-        DropoffLocationName = s.DropoffLocation?.Name,
-        PickupAddress = s.PickupAddress,
-        DropoffAddress = s.DropoffAddress,
-        FlightCode = s.FlightCode,
-        Notes = s.Notes,
-        SalePrice = s.SalePrice,
-        InfoSent = s.InfoSentAt.HasValue,
-        InfoSentAt = s.InfoSentAt,
-        InfoStatusLabel = s.InfoSentAt.HasValue
-            ? "Müşteriye bilgi verildi."
-            : "Müşteriye henüz bilgi verilmedi."
-    };
+        var passengers = s.Passengers
+            .Select(JobStopPassengerDto.FromEntity)
+            .ToList();
+        var allInfoSent = passengers.Count > 0 && passengers.All(p => p.InfoSent);
+
+        return new()
+        {
+            Id = s.Id,
+            Sequence = s.Sequence,
+            CustomerId = s.CustomerId,
+            CustomerName = s.Customer?.Name ?? string.Empty,
+            Passengers = passengers,
+            PassengerCount = passengers.Count,
+            PickupLocationId = s.PickupLocationId,
+            PickupLocationName = s.PickupLocation?.Name,
+            DropoffLocationId = s.DropoffLocationId,
+            DropoffLocationName = s.DropoffLocation?.Name,
+            PickupAddress = s.PickupAddress,
+            DropoffAddress = s.DropoffAddress,
+            FlightCode = s.FlightCode,
+            Notes = s.Notes,
+            SalePrice = s.SalePrice,
+            AllInfoSent = allInfoSent,
+            InfoStatusLabel = passengers.Count == 0
+                ? "Durakta yolcu yok."
+                : allInfoSent
+                    ? "Tüm yolculara bilgi verildi."
+                    : $"{passengers.Count(p => p.InfoSent)}/{passengers.Count} yolcuya bilgi verildi."
+        };
+    }
 }
 
 public record JobStopRequest
 {
     public long CustomerId { get; init; }
-    public long? PassengerId { get; init; }
-    public int PassengerCount { get; init; } = 1;
+    public List<long> PassengerIds { get; init; } = [];
     public long? PickupLocationId { get; init; }
     public long? DropoffLocationId { get; init; }
     public string? PickupAddress { get; init; }
@@ -92,6 +122,8 @@ public record JobListDto
     public int StopCount { get; init; }
     public int TotalPassengerCount { get; init; }
     public string CustomerNames { get; init; } = string.Empty;
+    /// <summary>İşin tüm duraklarındaki yolcuların ad-soyadları (her yolcu ayrı eleman).</summary>
+    public string[] PassengerNames { get; init; } = [];
     public string? DriverName { get; init; }
     public decimal? TotalSalePrice { get; init; }
     public long? MergedIntoJobId { get; init; }
@@ -122,12 +154,20 @@ public record JobListDto
             .Where(s => s.Customer != null)
             .Select(s => s.Customer!.Name)
             .Distinct()),
+        PassengerNames = e.Stops
+            .OrderBy(s => s.Sequence)
+            .SelectMany(s => s.Passengers)
+            .Where(p => p.Passenger != null)
+            .Select(p => p.Passenger!.FullName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray(),
         DriverName = e.Driver?.FullName,
         TotalSalePrice = e.Stops.Any(s => s.SalePrice.HasValue)
             ? e.Stops.Where(s => s.SalePrice.HasValue).Sum(s => s.SalePrice!.Value)
             : null,
         MergedIntoJobId = e.MergedIntoJobId,
-        AllInfoSent = e.Stops.Count > 0 && e.Stops.All(s => s.InfoSentAt.HasValue)
+        AllInfoSent = e.Stops.SelectMany(s => s.Passengers).Any()
+            && e.Stops.SelectMany(s => s.Passengers).All(p => p.InfoSentAt.HasValue)
     };
 }
 
@@ -164,12 +204,38 @@ public record JobDetailDto
 
     /// <summary>
     /// İşteki tüm duraklardaki yolculara transfer bilgisi gönderildi mi.
-    /// Yalnızca tüm duraklar bilgilendirildiyse true; aksi halde (ya da hiç durak yoksa) false.
+    /// Yalnızca tüm yolcular bilgilendirildiyse true; aksi halde (ya da hiç yolcu yoksa) false.
     /// </summary>
     public bool AllInfoSent { get; init; }
 
+    /// <summary>
+    /// İşin güzergahı: önce tüm durakların alış lokasyon isimleri (sıra ile), ardından tüm
+    /// durakların varış lokasyon isimleri " -> " ile birleştirilir. Aynı lokasyon adı
+    /// (alış/varış fark etmeksizin) yalnızca ilk geçtiği yerde bir kez yazılır.
+    /// </summary>
+    public string RouteSummary { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
+
+    private static string BuildRouteSummary(IEnumerable<Domain.Entities.JobStop> stops)
+    {
+        var ordered = stops.OrderBy(s => s.Sequence).ToList();
+
+        var names = new List<string>();
+        foreach (var s in ordered)
+        {
+            var name = s.PickupLocation?.Name ?? s.PickupAddress;
+            if (!string.IsNullOrWhiteSpace(name)) names.Add(name.Trim());
+        }
+        foreach (var s in ordered)
+        {
+            var name = s.DropoffLocation?.Name ?? s.DropoffAddress;
+            if (!string.IsNullOrWhiteSpace(name)) names.Add(name.Trim());
+        }
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        return string.Join(" -> ", names.Where(seen.Add));
+    }
 
     public static JobDetailDto FromEntity(Domain.Entities.Job e) => new()
     {
@@ -206,7 +272,9 @@ public record JobDetailDto
             .OrderBy(s => s.Sequence)
             .Select(JobStopDto.FromEntity)
             .ToList(),
-        AllInfoSent = e.Stops.Count > 0 && e.Stops.All(s => s.InfoSentAt.HasValue),
+        AllInfoSent = e.Stops.SelectMany(s => s.Passengers).Any()
+            && e.Stops.SelectMany(s => s.Passengers).All(p => p.InfoSentAt.HasValue),
+        RouteSummary = BuildRouteSummary(e.Stops),
         CreatedAt = e.CreatedAt,
         UpdatedAt = e.UpdatedAt
     };

@@ -17,7 +17,7 @@ public sealed class ConfirmationTableService
             return ApiResult<string>.Fail("En az bir iş ID'si gereklidir.", statusCode: 400);
 
         var jobs = await _db.Jobs.AsNoTracking()
-            .Include(j => j.Stops).ThenInclude(s => s.Passenger)
+            .Include(j => j.Stops).ThenInclude(s => s.Passengers).ThenInclude(p => p.Passenger)
             .Include(j => j.Stops).ThenInclude(s => s.PickupLocation)
             .Include(j => j.Stops).ThenInclude(s => s.DropoffLocation)
             .Where(j => jobIds.Contains(j.Id))
@@ -47,7 +47,12 @@ public sealed class ConfirmationTableService
         {
             foreach (var stop in job.Stops.OrderBy(s => s.Sequence))
             {
-                var passengerName = stop.Passenger?.FullName ?? "-";
+                var passengerName = stop.Passengers.Count > 0
+                    ? string.Join(", ", stop.Passengers
+                        .Where(p => p.Passenger != null)
+                        .Select(p => p.Passenger!.FullName))
+                    : "-";
+                if (string.IsNullOrWhiteSpace(passengerName)) passengerName = "-";
                 var pickup = stop.PickupLocation?.Name ?? stop.PickupAddress ?? "-";
                 var dropoff = stop.DropoffLocation?.Name ?? stop.DropoffAddress ?? "-";
                 var price = stop.SalePrice.HasValue

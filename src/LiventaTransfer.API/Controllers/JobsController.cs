@@ -67,11 +67,11 @@ public sealed class JobsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
-    /// <summary>İlgili duraktaki yolcuya transfer bilgisinin gönderildiğini işaretler (yolcu bazında).</summary>
-    [HttpPost("{id:long}/stops/{stopId:long}/info-sent")]
-    public async Task<IActionResult> MarkStopInfoSent(long id, long stopId, CancellationToken ct)
+    /// <summary>İlgili duraktaki bir yolcuya transfer bilgisinin gönderildiğini işaretler (yolcu bazında).</summary>
+    [HttpPost("{id:long}/stops/{stopId:long}/passengers/{passengerId:long}/info-sent")]
+    public async Task<IActionResult> MarkStopInfoSent(long id, long stopId, long passengerId, CancellationToken ct)
     {
-        var r = await _svc.MarkStopInfoSentAsync(id, stopId, ct);
+        var r = await _svc.MarkStopInfoSentAsync(id, stopId, passengerId, ct);
         return StatusCode(r.StatusCode, r);
     }
 

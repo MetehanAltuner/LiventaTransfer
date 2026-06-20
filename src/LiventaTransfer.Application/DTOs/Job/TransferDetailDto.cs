@@ -11,10 +11,19 @@ public enum StopProgress
     DroppedOff = 2
 }
 
+public record TransferPassengerDto
+{
+    public long PassengerId { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Phone { get; init; }
+}
+
 public record TransferStopDto
 {
     public long Id { get; init; }
     public int Sequence { get; init; }
+    public List<TransferPassengerDto> Passengers { get; init; } = [];
+    /// <summary>Yolcu isimleri, virgülle birleştirilmiş (geriye dönük uyumluluk).</summary>
     public string? PassengerName { get; init; }
     public string? PassengerPhone { get; init; }
     public int PassengerCount { get; init; }
@@ -32,14 +41,28 @@ public record TransferStopDto
     public DateTime? DroppedOffAt { get; init; }
     public StopProgress Progress { get; init; }
 
-    public static TransferStopDto FromEntity(JobStop s) =>
-        new()
+    public static TransferStopDto FromEntity(JobStop s)
+    {
+        var passengers = s.Passengers
+            .Where(p => p.Passenger != null)
+            .Select(p => new TransferPassengerDto
+            {
+                PassengerId = p.PassengerId,
+                Name = p.Passenger!.FullName,
+                Phone = p.Passenger.Phone
+            })
+            .ToList();
+
+        return new()
         {
             Id = s.Id,
             Sequence = s.Sequence,
-            PassengerName = s.Passenger?.FullName,
-            PassengerPhone = s.Passenger?.Phone,
-            PassengerCount = s.PassengerCount,
+            Passengers = passengers,
+            PassengerName = passengers.Count > 0
+                ? string.Join(", ", passengers.Select(p => p.Name))
+                : null,
+            PassengerPhone = passengers.FirstOrDefault(p => !string.IsNullOrWhiteSpace(p.Phone))?.Phone,
+            PassengerCount = passengers.Count,
             PickupLocationName = s.PickupLocation?.Name,
             PickupAddress = s.PickupLocation?.Address ?? s.PickupAddress,
             PickupLatitude = s.PickupLocation?.Latitude,
@@ -58,6 +81,7 @@ public record TransferStopDto
                     ? StopProgress.PickedUp
                     : StopProgress.Pending
         };
+    }
 }
 
 public record NavigationTargetDto

@@ -30,8 +30,7 @@ public class JobStopConfiguration : IEntityTypeConfiguration<JobStop>
         builder.Property(s => s.SalePrice)
             .HasPrecision(18, 2);
 
-        builder.Property(s => s.PassengerCount)
-            .HasDefaultValue(1);
+        builder.Ignore(s => s.PassengerCount);
 
         builder.HasOne(s => s.Job)
             .WithMany(j => j.Stops)
@@ -42,11 +41,6 @@ public class JobStopConfiguration : IEntityTypeConfiguration<JobStop>
             .WithMany(c => c.JobStops)
             .HasForeignKey(s => s.CustomerId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasOne(s => s.Passenger)
-            .WithMany()
-            .HasForeignKey(s => s.PassengerId)
-            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(s => s.PickupLocation)
             .WithMany()
