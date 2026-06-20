@@ -22,11 +22,11 @@ public sealed class CreateCustomerRequestValidator : AbstractValidator<CreateCus
             .NotEmpty().WithMessage("Kurumsal müşteriler için vergi numarası zorunludur.")
             .When(x => x.CustomerType == CustomerType.Corporate);
 
+        // TC Kimlik No zorunlu değil; ancak girilirse 11 haneli ve sadece rakam olmalı.
         RuleFor(x => x.TcKimlikNo)
-            .NotEmpty().WithMessage("Bireysel müşteriler için TC Kimlik No zorunludur.")
             .Length(11).WithMessage("TC Kimlik No 11 haneli olmalıdır.")
             .Matches(@"^\d{11}$").WithMessage("TC Kimlik No sadece rakam içermelidir.")
-            .When(x => x.CustomerType == CustomerType.Individual);
+            .When(x => !string.IsNullOrWhiteSpace(x.TcKimlikNo));
     }
 }
 
@@ -48,10 +48,10 @@ public sealed class UpdateCustomerRequestValidator : AbstractValidator<UpdateCus
             .NotEmpty().WithMessage("Kurumsal müşteriler için vergi numarası zorunludur.")
             .When(x => x.CustomerType == CustomerType.Corporate);
 
+        // TC Kimlik No zorunlu değil; ancak girilirse 11 haneli ve sadece rakam olmalı.
         RuleFor(x => x.TcKimlikNo)
-            .NotEmpty().WithMessage("Bireysel müşteriler için TC Kimlik No zorunludur.")
             .Length(11).WithMessage("TC Kimlik No 11 haneli olmalıdır.")
             .Matches(@"^\d{11}$").WithMessage("TC Kimlik No sadece rakam içermelidir.")
-            .When(x => x.CustomerType == CustomerType.Individual);
+            .When(x => !string.IsNullOrWhiteSpace(x.TcKimlikNo));
     }
 }

@@ -25,7 +25,6 @@ public record DriverDetailDto
     public long Id { get; init; }
     public string FullName { get; init; } = string.Empty;
     public string Phone { get; init; } = string.Empty;
-    public string? WhatsAppPhone { get; init; }
     public string? LicenseNumber { get; init; }
     public long VehicleOwnerId { get; init; }
     public string VehicleOwnerName { get; init; } = string.Empty;
@@ -40,7 +39,6 @@ public record DriverDetailDto
         Id = entity.Id,
         FullName = entity.FullName,
         Phone = entity.Phone,
-        WhatsAppPhone = entity.WhatsAppPhone,
         LicenseNumber = entity.LicenseNumber,
         VehicleOwnerId = entity.VehicleOwnerId,
         VehicleOwnerName = entity.VehicleOwner?.Name ?? string.Empty,
@@ -56,7 +54,6 @@ public record CreateDriverRequest
 {
     public string FullName { get; init; } = string.Empty;
     public string Phone { get; init; } = string.Empty;
-    public string? WhatsAppPhone { get; init; }
     public string? LicenseNumber { get; init; }
     public long VehicleOwnerId { get; init; }
     public long? DefaultVehicleId { get; init; }
@@ -66,7 +63,6 @@ public record UpdateDriverRequest
 {
     public string FullName { get; init; } = string.Empty;
     public string Phone { get; init; } = string.Empty;
-    public string? WhatsAppPhone { get; init; }
     public string? LicenseNumber { get; init; }
     public long VehicleOwnerId { get; init; }
     public long? DefaultVehicleId { get; init; }

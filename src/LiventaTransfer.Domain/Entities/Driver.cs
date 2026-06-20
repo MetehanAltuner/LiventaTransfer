@@ -4,7 +4,6 @@ public class Driver : BaseEntity
 {
     public string FullName { get; set; } = null!;
     public string Phone { get; set; } = null!;
-    public string? WhatsAppPhone { get; set; }
     public string? LicenseNumber { get; set; }
     public long VehicleOwnerId { get; set; }
     public long? DefaultVehicleId { get; set; }

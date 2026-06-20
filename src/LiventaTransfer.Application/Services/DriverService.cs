@@ -73,7 +73,6 @@ public sealed class DriverService
         {
             FullName = request.FullName.Trim(),
             Phone = request.Phone.Trim(),
-            WhatsAppPhone = request.WhatsAppPhone?.Trim(),
             LicenseNumber = request.LicenseNumber?.Trim(),
             VehicleOwnerId = request.VehicleOwnerId,
             DefaultVehicleId = request.DefaultVehicleId,
@@ -101,7 +100,6 @@ public sealed class DriverService
 
         entity.FullName = request.FullName.Trim();
         entity.Phone = request.Phone.Trim();
-        entity.WhatsAppPhone = request.WhatsAppPhone?.Trim();
         entity.LicenseNumber = request.LicenseNumber?.Trim();
         entity.VehicleOwnerId = request.VehicleOwnerId;
         entity.DefaultVehicleId = request.DefaultVehicleId;

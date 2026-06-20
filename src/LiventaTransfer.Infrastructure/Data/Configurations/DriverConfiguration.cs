@@ -18,9 +18,6 @@ public class DriverConfiguration : IEntityTypeConfiguration<Driver>
             .IsRequired()
             .HasMaxLength(20);
 
-        builder.Property(d => d.WhatsAppPhone)
-            .HasMaxLength(20);
-
         builder.Property(d => d.LicenseNumber)
             .HasMaxLength(50);
 
