@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace LiventaTransfer.API.Common;
+namespace LiventaTransfer.Application.Common;
 
 /// <summary>
 /// Nullable değer tiplerinde (decimal?, long?, int?, bool?, DateOnly?, ...) deserializasyonu
