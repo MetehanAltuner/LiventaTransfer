@@ -7,7 +7,6 @@ public class Passenger : BaseEntity
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public string? Notes { get; set; }
-    public bool IsActive { get; set; } = true;
 
     public ICollection<PassengerLocation> PassengerLocations { get; set; } = new List<PassengerLocation>();
 }

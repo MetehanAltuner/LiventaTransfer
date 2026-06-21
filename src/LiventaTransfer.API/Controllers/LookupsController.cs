@@ -103,7 +103,6 @@ public sealed class LookupsController : ControllerBase
     {
         var items = await _db.Passengers
             .AsNoTracking()
-            .Where(p => p.IsActive)
             .OrderBy(p => p.FullName)
             .Select(p => new LookupDto { Id = p.Id, Name = p.FullName })
             .ToListAsync(ct);

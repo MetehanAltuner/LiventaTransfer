@@ -25,8 +25,5 @@ public class PassengerConfiguration : IEntityTypeConfiguration<Passenger>
 
         builder.Property(p => p.Notes)
             .HasMaxLength(1000);
-
-        builder.Property(p => p.IsActive)
-            .HasDefaultValue(true);
     }
 }

@@ -22,9 +22,6 @@ public sealed class PassengerService
         if (!string.IsNullOrWhiteSpace(query.Search))
             q = q.Where(p => p.FullName.ToLower().Contains(query.Search.ToLower()));
 
-        if (query.IsActive.HasValue)
-            q = q.Where(p => p.IsActive == query.IsActive.Value);
-
         var total = await q.LongCountAsync(ct);
 
         q = (query.SortBy?.ToLower()) switch
@@ -80,8 +77,7 @@ public sealed class PassengerService
             NationalId = request.NationalId?.Trim(),
             Phone = request.Phone?.Trim(),
             Email = request.Email?.Trim(),
-            Notes = request.Notes?.Trim(),
-            IsActive = true
+            Notes = request.Notes?.Trim()
         };
 
         _db.Passengers.Add(entity);
@@ -111,7 +107,6 @@ public sealed class PassengerService
         entity.Phone = request.Phone?.Trim();
         entity.Email = request.Email?.Trim();
         entity.Notes = request.Notes?.Trim();
-        entity.IsActive = request.IsActive;
 
         await _db.SaveChangesAsync(ct);
 

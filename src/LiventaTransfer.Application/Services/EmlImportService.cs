@@ -177,8 +177,7 @@ public sealed class EmlImportService
         {
             FullName = trimmed,
             Phone = phone?.Trim(),
-            Email = email?.Trim(),
-            IsActive = true
+            Email = email?.Trim()
         };
 
         _db.Passengers.Add(passenger);
