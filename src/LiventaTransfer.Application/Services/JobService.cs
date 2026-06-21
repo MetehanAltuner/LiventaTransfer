@@ -329,6 +329,12 @@ public sealed class JobService
                 $"Yalnızca 'Açık' durumundaki işler birleştirilebilir. Uygun olmayan işler: {string.Join(", ", blocked.Select(b => b.JobNumber))}",
                 statusCode: 400);
 
+        var distinctTypes = jobs.Select(j => j.JobType).Distinct().ToList();
+        if (distinctTypes.Count > 1)
+            return ApiResult<JobDetailDto>.Fail(
+                "Farklı tiplerdeki işler birleştirilemez. Birleştirilecek işlerin tamamı aynı iş tipinde olmalıdır.",
+                statusCode: 400);
+
         var distinctDrivers = jobs.Select(j => j.DriverId).Distinct().ToList();
         if (distinctDrivers.Count > 1)
             return ApiResult<JobDetailDto>.Fail(
