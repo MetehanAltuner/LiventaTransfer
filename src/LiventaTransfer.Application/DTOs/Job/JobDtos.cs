@@ -135,6 +135,13 @@ public record JobListDto
     /// </summary>
     public bool AllInfoSent { get; init; }
 
+    /// <summary>
+    /// İşin güzergahı: önce tüm durakların alış lokasyon isimleri (sıra ile), ardından tüm
+    /// durakların varış lokasyon isimleri " -> " ile birleştirilir. Aynı lokasyon adı
+    /// (alış/varış fark etmeksizin) yalnızca ilk geçtiği yerde bir kez yazılır.
+    /// </summary>
+    public string RouteSummary { get; init; } = string.Empty;
+
     public static JobListDto FromEntity(Domain.Entities.Job e) => new()
     {
         Id = e.Id,
@@ -167,7 +174,8 @@ public record JobListDto
             : null,
         MergedIntoJobId = e.MergedIntoJobId,
         AllInfoSent = e.Stops.SelectMany(s => s.Passengers).Any()
-            && e.Stops.SelectMany(s => s.Passengers).All(p => p.InfoSentAt.HasValue)
+            && e.Stops.SelectMany(s => s.Passengers).All(p => p.InfoSentAt.HasValue),
+        RouteSummary = RouteSummaryHelper.Build(e.Stops)
     };
 }
 
@@ -217,26 +225,6 @@ public record JobDetailDto
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 
-    private static string BuildRouteSummary(IEnumerable<Domain.Entities.JobStop> stops)
-    {
-        var ordered = stops.OrderBy(s => s.Sequence).ToList();
-
-        var names = new List<string>();
-        foreach (var s in ordered)
-        {
-            var name = s.PickupLocation?.Name ?? s.PickupAddress;
-            if (!string.IsNullOrWhiteSpace(name)) names.Add(name.Trim());
-        }
-        foreach (var s in ordered)
-        {
-            var name = s.DropoffLocation?.Name ?? s.DropoffAddress;
-            if (!string.IsNullOrWhiteSpace(name)) names.Add(name.Trim());
-        }
-
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        return string.Join(" -> ", names.Where(seen.Add));
-    }
-
     public static JobDetailDto FromEntity(Domain.Entities.Job e) => new()
     {
         Id = e.Id,
@@ -274,7 +262,7 @@ public record JobDetailDto
             .ToList(),
         AllInfoSent = e.Stops.SelectMany(s => s.Passengers).Any()
             && e.Stops.SelectMany(s => s.Passengers).All(p => p.InfoSentAt.HasValue),
-        RouteSummary = BuildRouteSummary(e.Stops),
+        RouteSummary = RouteSummaryHelper.Build(e.Stops),
         CreatedAt = e.CreatedAt,
         UpdatedAt = e.UpdatedAt
     };

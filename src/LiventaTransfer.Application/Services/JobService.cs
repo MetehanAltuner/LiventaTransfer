@@ -33,6 +33,8 @@ public sealed class JobService
             .Include(j => j.Driver)
             .Include(j => j.Stops).ThenInclude(s => s.Customer)
             .Include(j => j.Stops).ThenInclude(s => s.Passengers).ThenInclude(p => p.Passenger)
+            .Include(j => j.Stops).ThenInclude(s => s.PickupLocation)
+            .Include(j => j.Stops).ThenInclude(s => s.DropoffLocation)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(query.Search))
