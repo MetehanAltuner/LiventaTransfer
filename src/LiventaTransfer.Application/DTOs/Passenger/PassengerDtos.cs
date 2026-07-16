@@ -1,3 +1,5 @@
+using LiventaTransfer.Application.Common;
+
 namespace LiventaTransfer.Application.DTOs.Passenger;
 
 public record PassengerListDto
@@ -11,7 +13,7 @@ public record PassengerListDto
     public static PassengerListDto FromEntity(Domain.Entities.Passenger entity) => new()
     {
         Id = entity.Id,
-        FullName = entity.FullName,
+        FullName = NameFormatter.ToTitleCase(entity.FullName),
         NationalId = entity.NationalId,
         Phone = entity.Phone,
         Email = entity.Email
@@ -32,7 +34,7 @@ public record PassengerDetailDto
     public static PassengerDetailDto FromEntity(Domain.Entities.Passenger entity) => new()
     {
         Id = entity.Id,
-        FullName = entity.FullName,
+        FullName = NameFormatter.ToTitleCase(entity.FullName),
         NationalId = entity.NationalId,
         Phone = entity.Phone,
         Email = entity.Email,

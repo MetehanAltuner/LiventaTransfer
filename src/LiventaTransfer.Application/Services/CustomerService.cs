@@ -63,7 +63,7 @@ public sealed class CustomerService
     {
         var entity = new Domain.Entities.Customer
         {
-            Name = request.Name.Trim(),
+            Name = NameFormatter.ToTitleCase(request.Name),
             CustomerType = request.CustomerType,
             TaxNumber = request.TaxNumber?.Trim(),
             TaxOffice = request.TaxOffice?.Trim(),
@@ -87,7 +87,7 @@ public sealed class CustomerService
         if (entity is null)
             return ApiResult<CustomerDetailDto>.Fail("Müşteri bulunamadı.", statusCode: 404);
 
-        entity.Name = request.Name.Trim();
+        entity.Name = NameFormatter.ToTitleCase(request.Name);
         entity.CustomerType = request.CustomerType;
         entity.TaxNumber = request.TaxNumber?.Trim();
         entity.TaxOffice = request.TaxOffice?.Trim();

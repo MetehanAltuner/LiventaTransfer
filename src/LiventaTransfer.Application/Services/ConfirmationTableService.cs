@@ -50,7 +50,7 @@ public sealed class ConfirmationTableService
                 var passengerName = stop.Passengers.Count > 0
                     ? string.Join(", ", stop.Passengers
                         .Where(p => p.Passenger != null)
-                        .Select(p => p.Passenger!.FullName))
+                        .Select(p => NameFormatter.ToTitleCase(p.Passenger!.FullName)))
                     : "-";
                 if (string.IsNullOrWhiteSpace(passengerName)) passengerName = "-";
                 var pickup = stop.PickupLocation?.Name ?? stop.PickupAddress ?? "-";

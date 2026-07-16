@@ -48,7 +48,7 @@ public record TransferStopDto
             .Select(p => new TransferPassengerDto
             {
                 PassengerId = p.PassengerId,
-                Name = p.Passenger!.FullName,
+                Name = NameFormatter.ToTitleCase(p.Passenger!.FullName),
                 Phone = p.Passenger.Phone
             })
             .ToList();
@@ -163,7 +163,7 @@ public record TransferDetailDto
             DriverStageLabel = EnumLabelHelper.GetLabel(stage),
             ContactedAt = e.ContactedAt,
             DepartedAt = e.DepartedAt,
-            DriverName = e.Driver?.FullName,
+            DriverName = NameFormatter.ToTitleCase(e.Driver?.FullName),
             DriverNumber = e.Driver?.Phone,
             OperationNumber = OperationPhone,
             VehiclePlate = e.Vehicle?.Plate,

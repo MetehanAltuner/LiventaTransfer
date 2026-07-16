@@ -26,7 +26,7 @@ public record VehicleListDto
         Model = entity.Model,
         Capacity = entity.Capacity,
         VehicleOwnerId = entity.VehicleOwnerId,
-        VehicleOwnerName = entity.VehicleOwner?.Name ?? string.Empty,
+        VehicleOwnerName = NameFormatter.ToTitleCase(entity.VehicleOwner?.Name) ?? string.Empty,
         IsActive = entity.IsActive
     };
 }
@@ -58,7 +58,7 @@ public record VehicleDetailDto
         Year = entity.Year,
         Capacity = entity.Capacity,
         VehicleOwnerId = entity.VehicleOwnerId,
-        VehicleOwnerName = entity.VehicleOwner?.Name ?? string.Empty,
+        VehicleOwnerName = NameFormatter.ToTitleCase(entity.VehicleOwner?.Name) ?? string.Empty,
         IsActive = entity.IsActive,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt

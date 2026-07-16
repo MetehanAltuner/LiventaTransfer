@@ -21,7 +21,7 @@ public record JobStatusHistoryDto
         OldStatusLabel = e.OldStatus.HasValue ? EnumLabelHelper.GetLabel(e.OldStatus.Value) : null,
         NewStatus = e.NewStatus,
         NewStatusLabel = EnumLabelHelper.GetLabel(e.NewStatus),
-        ChangedByUserName = e.ChangedByUser != null ? $"{e.ChangedByUser.FirstName} {e.ChangedByUser.LastName}" : string.Empty,
+        ChangedByUserName = e.ChangedByUser != null ? NameFormatter.ToTitleCase($"{e.ChangedByUser.FirstName} {e.ChangedByUser.LastName}") : string.Empty,
         ChangeReason = e.ChangeReason,
         ChangedAt = e.ChangedAt
     };

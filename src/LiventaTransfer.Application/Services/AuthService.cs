@@ -71,8 +71,8 @@ public sealed class AuthService : IAuthService
 
             existing.IsDeleted = false;
             existing.IsActive = true;
-            existing.FirstName = request.FirstName.Trim();
-            existing.LastName = request.LastName.Trim();
+            existing.FirstName = NameFormatter.ToTitleCase(request.FirstName);
+            existing.LastName = NameFormatter.ToTitleCase(request.LastName);
             existing.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
             existing.Role = request.Role;
             existing.BranchId = request.BranchId;
@@ -83,8 +83,8 @@ public sealed class AuthService : IAuthService
             user = new User
             {
                 Username = username,
-                FirstName = request.FirstName.Trim(),
-                LastName = request.LastName.Trim(),
+                FirstName = NameFormatter.ToTitleCase(request.FirstName),
+                LastName = NameFormatter.ToTitleCase(request.LastName),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Role = request.Role,
                 BranchId = request.BranchId,
@@ -131,8 +131,8 @@ public sealed class AuthService : IAuthService
         {
             Id = user.Id,
             Username = user.Username,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
+            FirstName = NameFormatter.ToTitleCase(user.FirstName),
+            LastName = NameFormatter.ToTitleCase(user.LastName),
             Role = user.Role,
             RoleLabel = Common.EnumLabelHelper.GetLabel(user.Role),
             BranchId = user.BranchId,

@@ -1,3 +1,5 @@
+using LiventaTransfer.Application.Common;
+
 namespace LiventaTransfer.Application.DTOs.JobNote;
 
 public record JobNoteDto
@@ -13,7 +15,7 @@ public record JobNoteDto
         Id = e.Id,
         JobId = e.JobId,
         NoteText = e.NoteText,
-        CreatedByUserName = e.CreatedByUser != null ? $"{e.CreatedByUser.FirstName} {e.CreatedByUser.LastName}" : string.Empty,
+        CreatedByUserName = e.CreatedByUser != null ? NameFormatter.ToTitleCase($"{e.CreatedByUser.FirstName} {e.CreatedByUser.LastName}") : string.Empty,
         CreatedAt = e.CreatedAt
     };
 }

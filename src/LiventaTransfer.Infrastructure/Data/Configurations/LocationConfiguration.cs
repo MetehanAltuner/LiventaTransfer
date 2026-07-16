@@ -14,9 +14,6 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.Property(l => l.ShortCode)
-            .HasMaxLength(20);
-
         builder.Property(l => l.Address)
             .HasMaxLength(500);
 

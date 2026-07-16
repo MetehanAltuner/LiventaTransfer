@@ -66,7 +66,7 @@ public sealed class VehicleOwnerService
     {
         var entity = new Domain.Entities.VehicleOwner
         {
-            Name = request.Name.Trim(),
+            Name = NameFormatter.ToTitleCase(request.Name),
             IsOwnFleet = request.IsOwnFleet,
             ContactPerson = request.ContactPerson?.Trim(),
             Phone = request.Phone?.Trim(),
@@ -87,7 +87,7 @@ public sealed class VehicleOwnerService
         if (entity is null)
             return ApiResult<VehicleOwnerDetailDto>.Fail("Araç sahibi bulunamadı.", statusCode: 404);
 
-        entity.Name = request.Name.Trim();
+        entity.Name = NameFormatter.ToTitleCase(request.Name);
         entity.IsOwnFleet = request.IsOwnFleet;
         entity.ContactPerson = request.ContactPerson?.Trim();
         entity.Phone = request.Phone?.Trim();

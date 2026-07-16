@@ -27,7 +27,7 @@ public record NotificationListDto
         RecipientType = e.RecipientType,
         RecipientTypeLabel = EnumLabelHelper.GetLabel(e.RecipientType),
         RecipientUserId = e.RecipientUserId,
-        RecipientUserName = e.RecipientUser != null ? $"{e.RecipientUser.FirstName} {e.RecipientUser.LastName}" : null,
+        RecipientUserName = e.RecipientUser != null ? NameFormatter.ToTitleCase($"{e.RecipientUser.FirstName} {e.RecipientUser.LastName}") : null,
         Channel = e.Channel,
         ChannelLabel = EnumLabelHelper.GetLabel(e.Channel),
         Message = e.Message,

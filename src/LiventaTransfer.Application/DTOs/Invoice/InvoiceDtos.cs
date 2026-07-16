@@ -19,7 +19,7 @@ public record InvoiceListDto
     {
         Id = e.Id,
         InvoiceNumber = e.InvoiceNumber,
-        CustomerName = e.Customer?.Name ?? string.Empty,
+        CustomerName = NameFormatter.ToTitleCase(e.Customer?.Name) ?? string.Empty,
         InvoiceDate = e.InvoiceDate,
         PeriodStart = e.PeriodStart,
         PeriodEnd = e.PeriodEnd,
@@ -62,7 +62,7 @@ public record InvoiceDetailDto
         Id = e.Id,
         InvoiceNumber = e.InvoiceNumber,
         CustomerId = e.CustomerId,
-        CustomerName = e.Customer?.Name ?? string.Empty,
+        CustomerName = NameFormatter.ToTitleCase(e.Customer?.Name) ?? string.Empty,
         InvoiceDate = e.InvoiceDate,
         PeriodStart = e.PeriodStart,
         PeriodEnd = e.PeriodEnd,

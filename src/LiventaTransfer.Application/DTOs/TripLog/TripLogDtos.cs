@@ -1,3 +1,5 @@
+using LiventaTransfer.Application.Common;
+
 namespace LiventaTransfer.Application.DTOs.TripLog;
 
 public record TripLogDto
@@ -23,7 +25,7 @@ public record TripLogDto
         JobId = e.JobId,
         JobNumber = e.Job?.JobNumber ?? string.Empty,
         DriverId = e.DriverId,
-        DriverName = e.Driver != null ? e.Driver.FullName : string.Empty,
+        DriverName = e.Driver != null ? NameFormatter.ToTitleCase(e.Driver.FullName) : string.Empty,
         PickupTime = e.PickupTime,
         DropoffTime = e.DropoffTime,
         StartKm = e.StartKm,

@@ -118,16 +118,16 @@ public sealed class EmlImportService
         if (string.IsNullOrWhiteSpace(name))
             return (0, false, string.Empty);
 
-        var trimmed = name.Trim();
+        var formatted = NameFormatter.ToTitleCase(name);
         var existing = await _db.Customers
-            .FirstOrDefaultAsync(c => c.Name.ToLower() == trimmed.ToLower(), ct);
+            .FirstOrDefaultAsync(c => c.Name.ToLower() == formatted.ToLower(), ct);
 
         if (existing != null)
-            return (existing.Id, true, existing.Name);
+            return (existing.Id, true, NameFormatter.ToTitleCase(existing.Name));
 
         var customer = new Domain.Entities.Customer
         {
-            Name = trimmed,
+            Name = formatted,
             CustomerType = CustomerType.Corporate,
             IsActive = true
         };
@@ -157,16 +157,16 @@ public sealed class EmlImportService
             };
         }
 
-        var trimmed = fullName.Trim();
+        var formatted = NameFormatter.ToTitleCase(fullName);
         var existing = await _db.Passengers
-            .FirstOrDefaultAsync(p => p.FullName.ToLower() == trimmed.ToLower(), ct);
+            .FirstOrDefaultAsync(p => p.FullName.ToLower() == formatted.ToLower(), ct);
 
         if (existing != null)
         {
             return new EmlPassengerDto
             {
                 Id = existing.Id,
-                FullName = existing.FullName,
+                FullName = NameFormatter.ToTitleCase(existing.FullName),
                 Phone = existing.Phone,
                 Email = existing.Email,
                 IsExisting = true
@@ -175,7 +175,7 @@ public sealed class EmlImportService
 
         var passenger = new Domain.Entities.Passenger
         {
-            FullName = trimmed,
+            FullName = formatted,
             Phone = phone?.Trim(),
             Email = email?.Trim()
         };

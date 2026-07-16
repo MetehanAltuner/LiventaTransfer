@@ -148,7 +148,8 @@ public sealed class JobService
         if (validation is not null)
             return ApiResult<JobDetailDto>.Fail(validation, statusCode: 400);
 
-        var resolvedStops = await ResolveStopLocationsAsync(request.Stops, ct);
+        var resolvedStops = JobStopSequenceHelper.OrderByRequestedSequence(
+            await ResolveStopLocationsAsync(request.Stops, ct));
 
         var jobNumber = await GenerateJobNumberAsync(ct);
 
@@ -227,7 +228,8 @@ public sealed class JobService
         entity.PurchasePrice = request.PurchasePrice;
         entity.ExtraCost = request.ExtraCost;
 
-        var resolvedStops = await ResolveStopLocationsAsync(request.Stops, ct);
+        var resolvedStops = JobStopSequenceHelper.OrderByRequestedSequence(
+            await ResolveStopLocationsAsync(request.Stops, ct));
 
         _db.JobStops.RemoveRange(entity.Stops);
         entity.Stops.Clear();
@@ -235,6 +237,70 @@ public sealed class JobService
         var seq = 1;
         foreach (var s in resolvedStops)
             entity.Stops.Add(BuildStop(s, seq++));
+
+        await _db.SaveChangesAsync(ct);
+        await _broadcaster.BroadcastJobsChangedAsync(ct);
+
+        return await GetByIdAsync(entity.Id, ct);
+    }
+
+    /// <summary>
+    /// İşin duraklarını verilen durak id + sıra numarası listesine göre yeniden sıralar.
+    /// Gönderilen liste işin TÜM duraklarını kapsamalıdır; sıra numaraları 1..n olarak
+    /// normalize edilerek kaydedilir.
+    /// </summary>
+    public async Task<ApiResult<JobDetailDto>> ReorderStopsAsync(long id, ReorderJobStopsRequest request, CancellationToken ct)
+    {
+        var items = request.Stops ?? [];
+        if (items.Count == 0)
+            return ApiResult<JobDetailDto>.Fail("En az bir durak (stop) gereklidir.", statusCode: 400);
+
+        var entity = await _db.Jobs
+            .Include(j => j.Stops)
+            .FirstOrDefaultAsync(j => j.Id == id, ct);
+        if (entity is null)
+            return ApiResult<JobDetailDto>.Fail("İş bulunamadı.", statusCode: 404);
+
+        if (entity.Status == JobStatus.Merged)
+            return ApiResult<JobDetailDto>.Fail("Birleştirilmiş işin durakları yeniden sıralanamaz.", statusCode: 400);
+
+        var duplicateStopIds = items
+            .GroupBy(i => i.StopId)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+        if (duplicateStopIds.Count > 0)
+            return ApiResult<JobDetailDto>.Fail(
+                $"Aynı durak (stopId) birden fazla gönderilemez: {string.Join(", ", duplicateStopIds)}", statusCode: 400);
+
+        var duplicateSequences = items
+            .GroupBy(i => i.Sequence)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+        if (duplicateSequences.Count > 0)
+            return ApiResult<JobDetailDto>.Fail(
+                $"Aynı sıra numarası (sequence) birden fazla durakta kullanılamaz: {string.Join(", ", duplicateSequences)}", statusCode: 400);
+
+        var jobStopIds = entity.Stops.Select(s => s.Id).ToHashSet();
+
+        var unknownStopIds = items
+            .Where(i => !jobStopIds.Contains(i.StopId))
+            .Select(i => i.StopId)
+            .ToList();
+        if (unknownStopIds.Count > 0)
+            return ApiResult<JobDetailDto>.Fail(
+                $"Durak bu işe ait değil: {string.Join(", ", unknownStopIds)}", statusCode: 400);
+
+        var sentStopIds = items.Select(i => i.StopId).ToHashSet();
+        var missingStopIds = jobStopIds.Where(sid => !sentStopIds.Contains(sid)).ToList();
+        if (missingStopIds.Count > 0)
+            return ApiResult<JobDetailDto>.Fail(
+                $"İşin tüm durakları gönderilmelidir. Eksik duraklar: {string.Join(", ", missingStopIds)}", statusCode: 400);
+
+        var seq = 1;
+        foreach (var item in items.OrderBy(i => i.Sequence))
+            entity.Stops.First(s => s.Id == item.StopId).Sequence = seq++;
 
         await _db.SaveChangesAsync(ct);
         await _broadcaster.BroadcastJobsChangedAsync(ct);

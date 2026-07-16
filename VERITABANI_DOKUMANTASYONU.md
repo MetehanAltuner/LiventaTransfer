@@ -391,7 +391,6 @@ Veritabanı, Excel'deki basit yapının ötesinde aşağıdaki kritik bilgileri 
 | Alan | Tip | Zorunlu | Açıklama |
 |---|---|---|---|
 | `Name` | varchar(200) | ✅ | Lokasyon adı (örn: "ESB", "SAW", "IST", "Batıkent") |
-| `ShortCode` | varchar(20) | ❌ | Kısa kod (örn: "ESB" → Esenboğa Havalimanı) |
 | `Address` | varchar(500) | ❌ | Detaylı adres |
 | `Latitude` | numeric(9,6) | ❌ | Enlem koordinatı |
 | `Longitude` | numeric(9,6) | ❌ | Boylam koordinatı |

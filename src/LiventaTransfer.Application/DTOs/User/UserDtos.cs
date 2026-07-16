@@ -18,8 +18,8 @@ public record UserListDto
     {
         Id = e.Id,
         Username = e.Username,
-        FirstName = e.FirstName,
-        LastName = e.LastName,
+        FirstName = NameFormatter.ToTitleCase(e.FirstName),
+        LastName = NameFormatter.ToTitleCase(e.LastName),
         Role = e.Role,
         RoleName = EnumLabelHelper.GetLabel(e.Role),
         BranchName = e.Branch?.Name ?? string.Empty,
@@ -45,8 +45,8 @@ public record UserDetailDto
     {
         Id = e.Id,
         Username = e.Username,
-        FirstName = e.FirstName,
-        LastName = e.LastName,
+        FirstName = NameFormatter.ToTitleCase(e.FirstName),
+        LastName = NameFormatter.ToTitleCase(e.LastName),
         Role = e.Role,
         RoleName = EnumLabelHelper.GetLabel(e.Role),
         BranchId = e.BranchId,

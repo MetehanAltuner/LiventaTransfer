@@ -36,7 +36,7 @@ public sealed class LookupsController : ControllerBase
             .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.Name)
-            .Select(c => new LookupDto { Id = c.Id, Name = c.Name })
+            .Select(c => new LookupDto { Id = c.Id, Name = NameFormatter.ToTitleCase(c.Name) })
             .ToListAsync(ct);
 
         return Ok(ApiResult<List<LookupDto>>.Ok(items, "Müşteriler."));
@@ -49,7 +49,7 @@ public sealed class LookupsController : ControllerBase
             .AsNoTracking()
             .Where(v => v.IsActive)
             .OrderBy(v => v.Name)
-            .Select(v => new LookupDto { Id = v.Id, Name = v.Name })
+            .Select(v => new LookupDto { Id = v.Id, Name = NameFormatter.ToTitleCase(v.Name) })
             .ToListAsync(ct);
 
         return Ok(ApiResult<List<LookupDto>>.Ok(items, "Araç sahipleri."));
@@ -79,7 +79,7 @@ public sealed class LookupsController : ControllerBase
             .AsNoTracking()
             .Where(d => d.IsActive)
             .OrderBy(d => d.FullName)
-            .Select(d => new LookupDto { Id = d.Id, Name = d.FullName })
+            .Select(d => new LookupDto { Id = d.Id, Name = NameFormatter.ToTitleCase(d.FullName) })
             .ToListAsync(ct);
 
         return Ok(ApiResult<List<LookupDto>>.Ok(items, "Şoförler."));
@@ -92,7 +92,7 @@ public sealed class LookupsController : ControllerBase
             .AsNoTracking()
             .Where(l => l.IsActive)
             .OrderBy(l => l.Name)
-            .Select(l => new LocationLookupDto { Id = l.Id, Name = l.Name, ShortCode = l.ShortCode })
+            .Select(l => new LocationLookupDto { Id = l.Id, Name = l.Name, Address = l.Address })
             .ToListAsync(ct);
 
         return Ok(ApiResult<List<LocationLookupDto>>.Ok(items, "Lokasyonlar."));
@@ -104,7 +104,7 @@ public sealed class LookupsController : ControllerBase
         var items = await _db.Passengers
             .AsNoTracking()
             .OrderBy(p => p.FullName)
-            .Select(p => new LookupDto { Id = p.Id, Name = p.FullName })
+            .Select(p => new LookupDto { Id = p.Id, Name = NameFormatter.ToTitleCase(p.FullName) })
             .ToListAsync(ct);
 
         return Ok(ApiResult<List<LookupDto>>.Ok(items, "Yolcular."));

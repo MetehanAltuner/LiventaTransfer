@@ -7,7 +7,7 @@ public record LocationListDto
 {
     public long Id { get; init; }
     public string Name { get; init; } = string.Empty;
-    public string? ShortCode { get; init; }
+    public string? Address { get; init; }
     public LocationType LocationType { get; init; }
     public string LocationTypeLabel { get; init; } = string.Empty;
     public bool IsActive { get; init; }
@@ -16,7 +16,7 @@ public record LocationListDto
     {
         Id = entity.Id,
         Name = entity.Name,
-        ShortCode = entity.ShortCode,
+        Address = entity.Address,
         LocationType = entity.LocationType,
         LocationTypeLabel = EnumLabelHelper.GetLabel(entity.LocationType),
         IsActive = entity.IsActive
@@ -27,7 +27,6 @@ public record LocationDetailDto
 {
     public long Id { get; init; }
     public string Name { get; init; } = string.Empty;
-    public string? ShortCode { get; init; }
     public string? Address { get; init; }
     public decimal? Latitude { get; init; }
     public decimal? Longitude { get; init; }
@@ -41,7 +40,6 @@ public record LocationDetailDto
     {
         Id = entity.Id,
         Name = entity.Name,
-        ShortCode = entity.ShortCode,
         Address = entity.Address,
         Latitude = entity.Latitude,
         Longitude = entity.Longitude,
@@ -56,7 +54,6 @@ public record LocationDetailDto
 public record CreateLocationRequest
 {
     public string Name { get; init; } = string.Empty;
-    public string? ShortCode { get; init; }
     public string? Address { get; init; }
     public decimal? Latitude { get; init; }
     public decimal? Longitude { get; init; }
@@ -66,7 +63,6 @@ public record CreateLocationRequest
 public record UpdateLocationRequest
 {
     public string Name { get; init; } = string.Empty;
-    public string? ShortCode { get; init; }
     public string? Address { get; init; }
     public decimal? Latitude { get; init; }
     public decimal? Longitude { get; init; }

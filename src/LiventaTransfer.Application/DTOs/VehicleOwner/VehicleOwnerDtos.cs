@@ -1,3 +1,5 @@
+using LiventaTransfer.Application.Common;
+
 namespace LiventaTransfer.Application.DTOs.VehicleOwner;
 
 public record VehicleOwnerListDto
@@ -12,7 +14,7 @@ public record VehicleOwnerListDto
     public static VehicleOwnerListDto FromEntity(Domain.Entities.VehicleOwner entity) => new()
     {
         Id = entity.Id,
-        Name = entity.Name,
+        Name = NameFormatter.ToTitleCase(entity.Name),
         IsOwnFleet = entity.IsOwnFleet,
         ContactPerson = entity.ContactPerson,
         Phone = entity.Phone,
@@ -54,7 +56,7 @@ public record VehicleOwnerDetailDto
     public static VehicleOwnerDetailDto FromEntity(Domain.Entities.VehicleOwner entity) => new()
     {
         Id = entity.Id,
-        Name = entity.Name,
+        Name = NameFormatter.ToTitleCase(entity.Name),
         IsOwnFleet = entity.IsOwnFleet,
         ContactPerson = entity.ContactPerson,
         Phone = entity.Phone,
@@ -77,7 +79,7 @@ public record VehicleOwnerDetailDto
             .Select(d => new DriverBrief
             {
                 Id = d.Id,
-                FullName = d.FullName,
+                FullName = NameFormatter.ToTitleCase(d.FullName),
                 Phone = d.Phone,
                 IsActive = d.IsActive
             }).ToList()

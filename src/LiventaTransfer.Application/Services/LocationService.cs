@@ -20,7 +20,7 @@ public sealed class LocationService
 
         if (!string.IsNullOrWhiteSpace(query.Search))
             q = q.Where(l => l.Name.ToLower().Contains(query.Search.ToLower()) ||
-                             (l.ShortCode != null && l.ShortCode.ToLower().Contains(query.Search.ToLower())));
+                             (l.Address != null && l.Address.ToLower().Contains(query.Search.ToLower())));
 
         if (query.IsActive.HasValue)
             q = q.Where(l => l.IsActive == query.IsActive.Value);
@@ -65,7 +65,6 @@ public sealed class LocationService
         var entity = new Domain.Entities.Location
         {
             Name = request.Name.Trim(),
-            ShortCode = request.ShortCode?.Trim(),
             Address = request.Address?.Trim(),
             Latitude = request.Latitude,
             Longitude = request.Longitude,
@@ -86,7 +85,6 @@ public sealed class LocationService
             return ApiResult<LocationDetailDto>.Fail("Lokasyon bulunamadı.", statusCode: 404);
 
         entity.Name = request.Name.Trim();
-        entity.ShortCode = request.ShortCode?.Trim();
         entity.Address = request.Address?.Trim();
         entity.Latitude = request.Latitude;
         entity.Longitude = request.Longitude;

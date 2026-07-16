@@ -20,7 +20,7 @@ public record JobStopPassengerDto
     {
         Id = p.Id,
         PassengerId = p.PassengerId,
-        PassengerName = p.Passenger?.FullName ?? string.Empty,
+        PassengerName = NameFormatter.ToTitleCase(p.Passenger?.FullName) ?? string.Empty,
         PassengerPhone = p.Passenger?.Phone,
         InfoSent = p.InfoSentAt.HasValue,
         InfoSentAt = p.InfoSentAt,
@@ -65,7 +65,7 @@ public record JobStopDto
             Id = s.Id,
             Sequence = s.Sequence,
             CustomerId = s.CustomerId,
-            CustomerName = s.Customer?.Name ?? string.Empty,
+            CustomerName = NameFormatter.ToTitleCase(s.Customer?.Name) ?? string.Empty,
             Passengers = passengers,
             PassengerCount = passengers.Count,
             PickupLocationId = s.PickupLocationId,
@@ -89,6 +89,13 @@ public record JobStopDto
 
 public record JobStopRequest
 {
+    /// <summary>
+    /// Durağın istenen sıra numarası (opsiyonel). İstekteki herhangi bir durakta gönderilmişse
+    /// duraklar bu değerlere göre sıralanıp 1..n olarak normalize edilir; Sequence'i olmayan
+    /// duraklar liste sırası korunarak sona eklenir. Hiç gönderilmemişse liste sırası kullanılır.
+    /// </summary>
+    public int? Sequence { get; init; }
+
     public long CustomerId { get; init; }
     public List<long> PassengerIds { get; init; } = [];
     public long? PickupLocationId { get; init; }
@@ -158,17 +165,18 @@ public record JobListDto
         StopCount = e.Stops.Count,
         TotalPassengerCount = e.Stops.Sum(s => s.PassengerCount),
         CustomerNames = string.Join(", ", e.Stops
+            .OrderBy(s => s.Sequence)
             .Where(s => s.Customer != null)
-            .Select(s => s.Customer!.Name)
+            .Select(s => NameFormatter.ToTitleCase(s.Customer!.Name))
             .Distinct()),
         PassengerNames = e.Stops
             .OrderBy(s => s.Sequence)
             .SelectMany(s => s.Passengers)
             .Where(p => p.Passenger != null)
-            .Select(p => p.Passenger!.FullName)
+            .Select(p => NameFormatter.ToTitleCase(p.Passenger!.FullName))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray(),
-        DriverName = e.Driver?.FullName,
+        DriverName = NameFormatter.ToTitleCase(e.Driver?.FullName),
         TotalSalePrice = e.Stops.Any(s => s.SalePrice.HasValue)
             ? e.Stops.Where(s => s.SalePrice.HasValue).Sum(s => s.SalePrice!.Value)
             : null,
@@ -241,18 +249,18 @@ public record JobDetailDto
         Notes = e.Notes,
         SourceEmail = e.SourceEmail,
         VehicleOwnerId = e.VehicleOwnerId,
-        VehicleOwnerName = e.VehicleOwner?.Name,
+        VehicleOwnerName = NameFormatter.ToTitleCase(e.VehicleOwner?.Name),
         VehicleId = e.VehicleId,
         VehiclePlate = e.Vehicle?.Plate,
         DriverId = e.DriverId,
-        DriverName = e.Driver?.FullName,
+        DriverName = NameFormatter.ToTitleCase(e.Driver?.FullName),
         PurchasePrice = e.PurchasePrice,
         ExtraCost = e.ExtraCost,
         TotalSalePrice = e.Stops.Any(s => s.SalePrice.HasValue)
             ? e.Stops.Where(s => s.SalePrice.HasValue).Sum(s => s.SalePrice!.Value)
             : null,
-        CreatedByUserName = e.CreatedByUser != null ? $"{e.CreatedByUser.FirstName} {e.CreatedByUser.LastName}" : string.Empty,
-        AssignedByUserName = e.AssignedByUser != null ? $"{e.AssignedByUser.FirstName} {e.AssignedByUser.LastName}" : null,
+        CreatedByUserName = e.CreatedByUser != null ? NameFormatter.ToTitleCase($"{e.CreatedByUser.FirstName} {e.CreatedByUser.LastName}") : string.Empty,
+        AssignedByUserName = e.AssignedByUser != null ? NameFormatter.ToTitleCase($"{e.AssignedByUser.FirstName} {e.AssignedByUser.LastName}") : null,
         MergedIntoJobId = e.MergedIntoJobId,
         MergedIntoJobNumber = e.MergedIntoJob?.JobNumber,
         MergedJobIds = e.MergedJobs.Select(m => m.Id).ToList(),
@@ -311,4 +319,16 @@ public record UpdateJobStatusRequest
 public record MergeJobsRequest
 {
     public List<long> JobIds { get; init; } = [];
+}
+
+public record JobStopSequenceItem
+{
+    public long StopId { get; init; }
+    public int Sequence { get; init; }
+}
+
+public record ReorderJobStopsRequest
+{
+    /// <summary>İşin TÜM duraklarını kapsayan durak id + sıra numarası listesi.</summary>
+    public List<JobStopSequenceItem> Stops { get; init; } = [];
 }

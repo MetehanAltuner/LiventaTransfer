@@ -67,6 +67,15 @@ public sealed class JobsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
+    /// <summary>İşin duraklarını verilen durak id + sıra numarası listesine göre yeniden sıralar.</summary>
+    /// <remarks>Gönderilen liste işin TÜM duraklarını kapsamalıdır; sıra numaraları 1..n olarak normalize edilir.</remarks>
+    [HttpPut("{id:long}/stops/reorder")]
+    public async Task<IActionResult> ReorderStops(long id, [FromBody] ReorderJobStopsRequest request, CancellationToken ct)
+    {
+        var r = await _svc.ReorderStopsAsync(id, request, ct);
+        return StatusCode(r.StatusCode, r);
+    }
+
     /// <summary>İlgili duraktaki bir yolcuya transfer bilgisinin gönderildiğini işaretler (yolcu bazında).</summary>
     [HttpPost("{id:long}/stops/{stopId:long}/passengers/{passengerId:long}/info-sent")]
     public async Task<IActionResult> MarkStopInfoSent(long id, long stopId, long passengerId, CancellationToken ct)

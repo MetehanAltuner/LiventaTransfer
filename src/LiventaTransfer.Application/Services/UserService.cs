@@ -69,8 +69,8 @@ public sealed class UserService
         if (!await _db.Branches.AnyAsync(b => b.Id == request.BranchId, ct))
             return ApiResult<UserDetailDto>.Fail("Şube bulunamadı.", statusCode: 400);
 
-        entity.FirstName = request.FirstName.Trim();
-        entity.LastName = request.LastName.Trim();
+        entity.FirstName = NameFormatter.ToTitleCase(request.FirstName);
+        entity.LastName = NameFormatter.ToTitleCase(request.LastName);
         entity.Role = request.Role;
         entity.BranchId = request.BranchId;
         entity.IsActive = request.IsActive;

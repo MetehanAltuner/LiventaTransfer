@@ -16,7 +16,7 @@ public record CustomerListDto
     public static CustomerListDto FromEntity(Domain.Entities.Customer entity) => new()
     {
         Id = entity.Id,
-        Name = entity.Name,
+        Name = NameFormatter.ToTitleCase(entity.Name),
         CustomerType = entity.CustomerType,
         CustomerTypeLabel = EnumLabelHelper.GetLabel(entity.CustomerType),
         Phone = entity.Phone,
@@ -45,7 +45,7 @@ public record CustomerDetailDto
     public static CustomerDetailDto FromEntity(Domain.Entities.Customer entity) => new()
     {
         Id = entity.Id,
-        Name = entity.Name,
+        Name = NameFormatter.ToTitleCase(entity.Name),
         CustomerType = entity.CustomerType,
         CustomerTypeLabel = EnumLabelHelper.GetLabel(entity.CustomerType),
         TaxNumber = entity.TaxNumber,

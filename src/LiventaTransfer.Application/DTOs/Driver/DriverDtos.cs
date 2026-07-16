@@ -1,3 +1,5 @@
+using LiventaTransfer.Application.Common;
+
 namespace LiventaTransfer.Application.DTOs.Driver;
 
 public record DriverListDto
@@ -12,10 +14,10 @@ public record DriverListDto
     public static DriverListDto FromEntity(Domain.Entities.Driver entity) => new()
     {
         Id = entity.Id,
-        FullName = entity.FullName,
+        FullName = NameFormatter.ToTitleCase(entity.FullName),
         Phone = entity.Phone,
         VehicleOwnerId = entity.VehicleOwnerId,
-        VehicleOwnerName = entity.VehicleOwner?.Name ?? string.Empty,
+        VehicleOwnerName = NameFormatter.ToTitleCase(entity.VehicleOwner?.Name) ?? string.Empty,
         IsActive = entity.IsActive
     };
 }
@@ -37,11 +39,11 @@ public record DriverDetailDto
     public static DriverDetailDto FromEntity(Domain.Entities.Driver entity) => new()
     {
         Id = entity.Id,
-        FullName = entity.FullName,
+        FullName = NameFormatter.ToTitleCase(entity.FullName),
         Phone = entity.Phone,
         LicenseNumber = entity.LicenseNumber,
         VehicleOwnerId = entity.VehicleOwnerId,
-        VehicleOwnerName = entity.VehicleOwner?.Name ?? string.Empty,
+        VehicleOwnerName = NameFormatter.ToTitleCase(entity.VehicleOwner?.Name) ?? string.Empty,
         DefaultVehicleId = entity.DefaultVehicleId,
         DefaultVehiclePlate = entity.DefaultVehicle?.Plate,
         IsActive = entity.IsActive,

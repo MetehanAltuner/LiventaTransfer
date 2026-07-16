@@ -71,7 +71,7 @@ public sealed class DriverService
 
         var entity = new Domain.Entities.Driver
         {
-            FullName = request.FullName.Trim(),
+            FullName = NameFormatter.ToTitleCase(request.FullName),
             Phone = request.Phone.Trim(),
             LicenseNumber = request.LicenseNumber?.Trim(),
             VehicleOwnerId = request.VehicleOwnerId,
@@ -98,7 +98,7 @@ public sealed class DriverService
             !await _db.Vehicles.AnyAsync(v => v.Id == request.DefaultVehicleId.Value, ct))
             return ApiResult<DriverDetailDto>.Fail("Varsayılan araç bulunamadı.", statusCode: 400);
 
-        entity.FullName = request.FullName.Trim();
+        entity.FullName = NameFormatter.ToTitleCase(request.FullName);
         entity.Phone = request.Phone.Trim();
         entity.LicenseNumber = request.LicenseNumber?.Trim();
         entity.VehicleOwnerId = request.VehicleOwnerId;
