@@ -30,6 +30,7 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

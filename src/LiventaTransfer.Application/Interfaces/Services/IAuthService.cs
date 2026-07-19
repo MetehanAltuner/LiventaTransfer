@@ -7,6 +7,8 @@ public interface IAuthService
 {
     Task<ApiResult<AuthResponse>> LoginAsync(LoginRequest request, CancellationToken ct = default);
     Task<ApiResult<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken ct = default);
+    Task<ApiResult<AuthResponse>> RefreshAsync(RefreshTokenRequest request, CancellationToken ct = default);
+    Task<ApiResult<bool>> LogoutAsync(Guid userId, CancellationToken ct = default);
     Task<ApiResult<bool>> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct = default);
     Task<ApiResult<UserInfoDto>> GetCurrentUserAsync(Guid userId, CancellationToken ct = default);
 }

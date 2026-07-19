@@ -33,6 +33,23 @@ public sealed class AuthController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
+    /// <summary>Refresh token ile yeni access token al (rotation: eski refresh token geçersizleşir)</summary>
+    [AllowAnonymous]
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken ct)
+    {
+        var r = await _auth.RefreshAsync(request, ct);
+        return StatusCode(r.StatusCode, r);
+    }
+
+    /// <summary>Çıkış — kullanıcının tüm refresh token'ları geçersizleşir</summary>
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(CancellationToken ct)
+    {
+        var r = await _auth.LogoutAsync(User.GetUserId(), ct);
+        return StatusCode(r.StatusCode, r);
+    }
+
     /// <summary>Şifre değiştirme — kullanıcı JWT'den alınır</summary>
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken ct)

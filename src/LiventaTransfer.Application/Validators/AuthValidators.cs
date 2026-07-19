@@ -29,6 +29,14 @@ public sealed class RegisterRequestValidator : AbstractValidator<RegisterRequest
     }
 }
 
+public sealed class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
+{
+    public RefreshTokenRequestValidator()
+    {
+        RuleFor(x => x.RefreshToken).NotEmpty().WithMessage("Refresh token zorunludur.");
+    }
+}
+
 public sealed class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRequest>
 {
     public ChangePasswordRequestValidator()

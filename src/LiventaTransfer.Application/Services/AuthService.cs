@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Auth;
@@ -44,10 +45,9 @@ public sealed class AuthService : IAuthService
         if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             return ApiResult<AuthResponse>.Fail("Geçersiz kullanıcı adı veya şifre.", statusCode: 401);
 
-        var permissions = await GetPermissionCodesAsync(user.Role, ct);
-        var token = GenerateToken(user, permissions);
+        var response = await IssueTokensAsync(user, ct);
 
-        return ApiResult<AuthResponse>.Ok(token, "Giriş başarılı.");
+        return ApiResult<AuthResponse>.Ok(response, "Giriş başarılı.");
     }
 
     public async Task<ApiResult<AuthResponse>> RegisterAsync(RegisterRequest request, CancellationToken ct = default)
@@ -95,10 +95,49 @@ public sealed class AuthService : IAuthService
 
         await _db.SaveChangesAsync(ct);
 
-        var permissions = await GetPermissionCodesAsync(user.Role, ct);
-        var token = GenerateToken(user, permissions);
+        var response = await IssueTokensAsync(user, ct);
 
-        return ApiResult<AuthResponse>.Ok(token, "Kayıt başarılı.", 201);
+        return ApiResult<AuthResponse>.Ok(response, "Kayıt başarılı.", 201);
+    }
+
+    public async Task<ApiResult<AuthResponse>> RefreshAsync(RefreshTokenRequest request, CancellationToken ct = default)
+    {
+        var refreshToken = await _db.RefreshTokens
+            .Include(rt => rt.User)
+            .FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken, ct);
+
+        if (refreshToken is null || refreshToken.IsRevoked || refreshToken.ExpiresAt < DateTime.UtcNow)
+            return ApiResult<AuthResponse>.Fail("Geçersiz veya süresi dolmuş refresh token.", statusCode: 401);
+
+        if (!refreshToken.User.IsActive)
+            return ApiResult<AuthResponse>.Fail("Kullanıcı hesabı pasif.", statusCode: 401);
+
+        // Rotation: kullanılan refresh token tek seferliktir, yenisiyle değiştirilir.
+        refreshToken.IsRevoked = true;
+        refreshToken.RevokedAt = DateTime.UtcNow;
+
+        var response = await IssueTokensAsync(refreshToken.User, ct);
+
+        return ApiResult<AuthResponse>.Ok(response, "Token yenilendi.");
+    }
+
+    public async Task<ApiResult<bool>> LogoutAsync(Guid userId, CancellationToken ct = default)
+    {
+        var activeTokens = await _db.RefreshTokens
+            .Where(rt => rt.UserId == userId && !rt.IsRevoked)
+            .ToListAsync(ct);
+
+        var now = DateTime.UtcNow;
+        foreach (var token in activeTokens)
+        {
+            token.IsRevoked = true;
+            token.RevokedAt = now;
+        }
+
+        if (activeTokens.Count > 0)
+            await _db.SaveChangesAsync(ct);
+
+        return ApiResult<bool>.Ok(true, "Başarıyla çıkış yapıldı.");
     }
 
     public async Task<ApiResult<bool>> ChangePasswordAsync(Guid userId, ChangePasswordRequest request, CancellationToken ct = default)
@@ -168,6 +207,37 @@ public sealed class AuthService : IAuthService
             .OrderBy(x => x.SortOrder)
             .Select(x => x.Code)
             .ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Access token + refresh token çifti üretir. Refresh token JWT değildir;
+    /// 32 baytlık rastgele bir Base64 string olarak DB'de saklanır ve her
+    /// kullanımda yenisiyle değiştirilir (rotation).
+    /// </summary>
+    private async Task<AuthResponse> IssueTokensAsync(User user, CancellationToken ct)
+    {
+        var permissions = await GetPermissionCodesAsync(user.Role, ct);
+        var response = GenerateToken(user, permissions);
+
+        var expiryHours = int.Parse(_config["Jwt:RefreshTokenExpiryHours"] ?? "8");
+        var tokenBytes = new byte[32];
+        RandomNumberGenerator.Fill(tokenBytes);
+
+        var refreshToken = new RefreshToken
+        {
+            UserId = user.Id,
+            Token = Convert.ToBase64String(tokenBytes),
+            ExpiresAt = DateTime.UtcNow.AddHours(expiryHours)
+        };
+
+        _db.RefreshTokens.Add(refreshToken);
+        await _db.SaveChangesAsync(ct);
+
+        return response with
+        {
+            RefreshToken = refreshToken.Token,
+            RefreshTokenExpiration = refreshToken.ExpiresAt
+        };
     }
 
     private AuthResponse GenerateToken(User user, IReadOnlyCollection<string> permissionCodes)

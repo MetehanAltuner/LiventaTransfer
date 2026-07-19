@@ -32,6 +32,7 @@ public sealed class TestAppDbContext : DbContext, IAppDbContext
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public static TestAppDbContext Create() =>
         new(new DbContextOptionsBuilder<TestAppDbContext>()
