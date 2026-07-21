@@ -177,6 +177,17 @@ public sealed class LookupsController : ControllerBase
         return Ok(ApiResult<List<LookupDto>>.Ok(items, "İş türleri."));
     }
 
+    [HttpGet("flight-types")]
+    public IActionResult FlightTypes()
+    {
+        var items = Enum.GetValues<FlightType>()
+            .Select(t => new LookupDto { Id = (long)t, Name = EnumLabelHelper.GetLabel(t) })
+            .OrderBy(t => t.Id)
+            .ToList();
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "Hat türleri."));
+    }
+
     [HttpGet("invoice-statuses")]
     public IActionResult InvoiceStatuses()
     {

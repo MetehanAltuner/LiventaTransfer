@@ -13,6 +13,13 @@ public sealed class JobService
 {
     private static readonly JobStatus[] MergeableStatuses = [JobStatus.Open];
 
+    // Müşteriye özel iç/dış hat birleştirme kuralları için sabit müşteri id'leri.
+    private const long HavelsanCustomerId = 10;
+    private const long RoketsanCustomerId = 14;
+
+    // Roketsan kuralı: dış hat işi, iç hat işinden en az bu kadar dakika önce olmalı.
+    private const int RoketsanMinLeadMinutes = 30;
+
     private readonly IAppDbContext _db;
     private readonly IJobBroadcaster _broadcaster;
 
@@ -159,6 +166,8 @@ public sealed class JobService
             JobDate = request.JobDate,
             JobTime = request.JobTime,
             JobType = request.JobType,
+            FlightType = request.FlightType,
+            FlightTime = request.FlightTime,
             Status = JobStatus.Open,
             RouteDescription = request.RouteDescription?.Trim(),
             ExtraInfo = request.ExtraInfo?.Trim(),
@@ -218,6 +227,8 @@ public sealed class JobService
         entity.JobDate = request.JobDate;
         entity.JobTime = request.JobTime;
         entity.JobType = request.JobType;
+        entity.FlightType = request.FlightType;
+        entity.FlightTime = request.FlightTime;
         entity.RouteDescription = request.RouteDescription?.Trim();
         entity.ExtraInfo = request.ExtraInfo?.Trim();
         entity.Notes = request.Notes?.Trim();
@@ -402,6 +413,48 @@ public sealed class JobService
             return ApiResult<JobDetailDto>.Fail(
                 "Farklı tiplerdeki işler birleştirilemez. Birleştirilecek işlerin tamamı aynı iş tipinde olmalıdır.",
                 statusCode: 400);
+
+        var hasDomestic = jobs.Any(j => j.FlightType == FlightType.Domestic);
+        var hasInternational = jobs.Any(j => j.FlightType == FlightType.International);
+        if (hasDomestic && hasInternational)
+        {
+            // Müşteriye özel kural yalnızca birleşen işlerin TAMAMINDA o müşteri varsa geçerli
+            // (Havelsan yalnızca Havelsan ile, Roketsan yalnızca Roketsan ile). Farklı müşterilerle
+            // karışan senaryolarda varsayılan iç/dış bloku uygulanır.
+            var allHavelsan = jobs.All(j => j.Stops.Any(s => s.CustomerId == HavelsanCustomerId));
+            var allRoketsan = jobs.All(j => j.Stops.Any(s => s.CustomerId == RoketsanCustomerId));
+
+            if (allHavelsan)
+            {
+                // Havelsan: iç ve dış hat işleri koşulsuz birleştirilebilir.
+            }
+            else if (allRoketsan)
+            {
+                // Roketsan: dış hat uçuşu, iç hat uçuşundan en az yarım saat önce ise birleştirilebilir.
+                // Kontrol iş üzerindeki uçuş saatinden (FlightTime) yapılır.
+                var internationalJobs = jobs.Where(j => j.FlightType == FlightType.International).ToList();
+                var domesticJobs = jobs.Where(j => j.FlightType == FlightType.Domestic).ToList();
+
+                if (internationalJobs.Any(j => j.FlightTime is null) || domesticJobs.Any(j => j.FlightTime is null))
+                    return ApiResult<JobDetailDto>.Fail(
+                        "Uçuş saati girilmemiş işler iç/dış hat kuralına göre birleştirilemez. Lütfen ilgili işlerin uçuş saatini girin.",
+                        statusCode: 400);
+
+                var latestInternational = internationalJobs.Max(j => j.JobDate.ToDateTime(j.FlightTime!.Value));
+                var earliestDomestic = domesticJobs.Min(j => j.JobDate.ToDateTime(j.FlightTime!.Value));
+
+                if (latestInternational > earliestDomestic.AddMinutes(-RoketsanMinLeadMinutes))
+                    return ApiResult<JobDetailDto>.Fail(
+                        "Dış hat işi, iç hat işinden en az yarım saat önce olmalıdır.",
+                        statusCode: 400);
+            }
+            else
+            {
+                return ApiResult<JobDetailDto>.Fail(
+                    "İç hat ve dış hat işleri birleştirilemez.",
+                    statusCode: 400);
+            }
+        }
 
         var distinctDrivers = jobs.Select(j => j.DriverId).Distinct().ToList();
         if (distinctDrivers.Count > 1)

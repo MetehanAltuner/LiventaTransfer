@@ -122,6 +122,8 @@ public record JobListDto
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
     public string JobTypeLabel { get; init; } = string.Empty;
+    public FlightType? FlightType { get; init; }
+    public string? FlightTypeLabel { get; init; }
     public JobStatus Status { get; init; }
     public string StatusLabel { get; init; } = string.Empty;
     public DriverStage DriverStage { get; init; }
@@ -158,6 +160,8 @@ public record JobListDto
         JobTime = e.JobTime,
         JobType = e.JobType,
         JobTypeLabel = EnumLabelHelper.GetLabel(e.JobType),
+        FlightType = e.FlightType,
+        FlightTypeLabel = e.FlightType.HasValue ? EnumLabelHelper.GetLabel(e.FlightType.Value) : null,
         Status = e.Status,
         StatusLabel = EnumLabelHelper.GetLabel(e.Status),
         DriverStage = DriverStageHelper.Resolve(e),
@@ -196,6 +200,9 @@ public record JobDetailDto
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
     public string JobTypeLabel { get; init; } = string.Empty;
+    public FlightType? FlightType { get; init; }
+    public string? FlightTypeLabel { get; init; }
+    public TimeOnly? FlightTime { get; init; }
     public JobStatus Status { get; init; }
     public string StatusLabel { get; init; } = string.Empty;
     public string? RouteDescription { get; init; }
@@ -242,6 +249,9 @@ public record JobDetailDto
         JobTime = e.JobTime,
         JobType = e.JobType,
         JobTypeLabel = EnumLabelHelper.GetLabel(e.JobType),
+        FlightType = e.FlightType,
+        FlightTypeLabel = e.FlightType.HasValue ? EnumLabelHelper.GetLabel(e.FlightType.Value) : null,
+        FlightTime = e.FlightTime,
         Status = e.Status,
         StatusLabel = EnumLabelHelper.GetLabel(e.Status),
         RouteDescription = e.RouteDescription,
@@ -281,6 +291,8 @@ public record CreateJobRequest
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
+    public FlightType? FlightType { get; init; }
+    public TimeOnly? FlightTime { get; init; }
     public string? RouteDescription { get; init; }
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }
@@ -298,6 +310,8 @@ public record UpdateJobRequest
     public DateOnly JobDate { get; init; }
     public TimeOnly JobTime { get; init; }
     public JobType JobType { get; init; }
+    public FlightType? FlightType { get; init; }
+    public TimeOnly? FlightTime { get; init; }
     public string? RouteDescription { get; init; }
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }

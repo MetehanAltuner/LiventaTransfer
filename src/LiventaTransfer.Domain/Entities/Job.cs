@@ -9,6 +9,8 @@ public class Job : BaseEntity
     public DateOnly JobDate { get; set; }
     public TimeOnly JobTime { get; set; }
     public JobType JobType { get; set; }
+    public FlightType? FlightType { get; set; }
+    public TimeOnly? FlightTime { get; set; }
     public JobStatus Status { get; set; }
     public string? RouteDescription { get; set; }
     public string? ExtraInfo { get; set; }

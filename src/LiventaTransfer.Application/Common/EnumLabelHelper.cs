@@ -24,6 +24,13 @@ public static class EnumLabelHelper
         _ => type.ToString()
     };
 
+    public static string GetLabel(FlightType type) => type switch
+    {
+        FlightType.Domestic => "İç Hat",
+        FlightType.International => "Dış Hat",
+        _ => type.ToString()
+    };
+
     public static string GetLabel(InvoiceStatus status) => status switch
     {
         InvoiceStatus.Draft => "Taslak",
