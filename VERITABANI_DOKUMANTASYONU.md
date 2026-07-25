@@ -297,15 +297,13 @@ Veritabanı, Excel'deki basit yapının ötesinde aşağıdaki kritik bilgileri 
 **Amaç:** Müşterilerin üstünde yer alan üst kurum/acenteyi tanımlar. Hiyerarşi: **Yüklenici → Müşteri → Yolcu**.
 Örn. "Tatil Sepeti" bir yüklenici olup "Havelsan / HTR / SSB" gibi müşterileri kapsar.
 
-> **Not:** Yüklenici alanları **Customers tablosu ile birebir aynıdır** (bkz. 6.3 Customers).
+> **Not:** Yüklenici alanları Customers tablosunu izler; ancak `CustomerType` ve `TcKimlikNo` **içermez**.
 
 | Alan | Tip | Zorunlu | Açıklama |
 |---|---|---|---|
 | `Name` | varchar(300) | ✅ | Yüklenici adı |
-| `CustomerType` | integer | ✅ | Tip: Kurumsal (1) veya Bireysel (2) |
 | `TaxNumber` | varchar(20) | ❌ | Vergi numarası (benzersiz, koşullu) |
 | `TaxOffice` | varchar(200) | ❌ | Vergi dairesi |
-| `TcKimlikNo` | varchar(11) | ❌ | T.C. Kimlik No |
 | `Phone` | varchar(20) | ❌ | Telefon |
 | `Email` | varchar(200) | ❌ | E-posta |
 | `Address` | varchar(500) | ❌ | Adres |

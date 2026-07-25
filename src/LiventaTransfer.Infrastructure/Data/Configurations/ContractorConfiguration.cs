@@ -24,9 +24,6 @@ public class ContractorConfiguration : IEntityTypeConfiguration<Contractor>
         builder.Property(c => c.TaxOffice)
             .HasMaxLength(200);
 
-        builder.Property(c => c.TcKimlikNo)
-            .HasMaxLength(11);
-
         builder.Property(c => c.Phone)
             .HasMaxLength(20);
 
