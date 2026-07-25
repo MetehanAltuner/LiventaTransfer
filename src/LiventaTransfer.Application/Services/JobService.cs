@@ -15,7 +15,7 @@ public sealed class JobService
 
     // Müşteriye özel iç/dış hat birleştirme kuralları için sabit müşteri id'leri.
     private const long HavelsanCustomerId = 10;
-    private const long RoketsanCustomerId = 14;
+    private const long RoketsanCustomerId = 12;
 
     // Roketsan kuralı: dış hat işi, iç hat işinden en az bu kadar dakika önce olmalı.
     private const int RoketsanMinLeadMinutes = 30;

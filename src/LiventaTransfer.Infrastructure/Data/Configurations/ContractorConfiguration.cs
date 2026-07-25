@@ -14,8 +14,18 @@ public class ContractorConfiguration : IEntityTypeConfiguration<Contractor>
             .IsRequired()
             .HasMaxLength(300);
 
-        builder.Property(c => c.ContactPerson)
+        builder.Property(c => c.TaxNumber)
+            .HasMaxLength(20);
+
+        builder.HasIndex(c => c.TaxNumber)
+            .IsUnique()
+            .HasFilter("\"TaxNumber\" IS NOT NULL");
+
+        builder.Property(c => c.TaxOffice)
             .HasMaxLength(200);
+
+        builder.Property(c => c.TcKimlikNo)
+            .HasMaxLength(11);
 
         builder.Property(c => c.Phone)
             .HasMaxLength(20);

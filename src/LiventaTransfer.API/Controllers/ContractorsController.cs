@@ -1,6 +1,7 @@
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Contractor;
 using LiventaTransfer.Application.Services;
+using LiventaTransfer.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LiventaTransfer.API.Controllers;
@@ -15,9 +16,9 @@ public sealed class ContractorsController : ControllerBase
     public ContractorsController(ContractorService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, CancellationToken ct)
+    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] CustomerType? customerType, CancellationToken ct)
     {
-        var r = await _svc.GetPagedAsync(query, ct);
+        var r = await _svc.GetPagedAsync(query, customerType, ct);
         return StatusCode(r.StatusCode, r);
     }
 
