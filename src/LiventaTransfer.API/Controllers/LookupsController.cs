@@ -29,6 +29,19 @@ public sealed class LookupsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
+    [HttpGet("contractors")]
+    public async Task<IActionResult> Contractors(CancellationToken ct)
+    {
+        var items = await _db.Contractors
+            .AsNoTracking()
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.Name)
+            .Select(c => new LookupDto { Id = c.Id, Name = NameFormatter.ToTitleCase(c.Name) })
+            .ToListAsync(ct);
+
+        return Ok(ApiResult<List<LookupDto>>.Ok(items, "Yükleniciler."));
+    }
+
     [HttpGet("customers")]
     public async Task<IActionResult> Customers(CancellationToken ct)
     {

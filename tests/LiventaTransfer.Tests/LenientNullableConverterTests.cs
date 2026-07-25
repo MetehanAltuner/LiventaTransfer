@@ -18,18 +18,25 @@ public class LenientNullableConverterTests
     private static JobStopRequest Stop(string json) =>
         JsonSerializer.Deserialize<JobStopRequest>(json, Options)!;
 
+    // SalePrice iş seviyesine taşındı; nullable decimal converter davranışı Job üzerinden test edilir.
+    private static decimal? JobSalePrice(string salePriceJson)
+    {
+        var json = $$"""
+        { "jobDate": "2026-06-20", "jobTime": "14:30", "jobType": 1, "salePrice": {{salePriceJson}}, "stops": [ { "customerId": 5 } ] }
+        """;
+        return JsonSerializer.Deserialize<CreateJobRequest>(json, Options)!.SalePrice;
+    }
+
     [Fact]
     public void EmptyString_SalePrice_BecomesNull()
     {
-        var stop = Stop("""{ "customerId": 5, "salePrice": "" }""");
-        Assert.Null(stop.SalePrice);
+        Assert.Null(JobSalePrice("\"\""));
     }
 
     [Fact]
     public void Whitespace_SalePrice_BecomesNull()
     {
-        var stop = Stop("""{ "customerId": 5, "salePrice": "   " }""");
-        Assert.Null(stop.SalePrice);
+        Assert.Null(JobSalePrice("\"   \""));
     }
 
     [Fact]
@@ -43,29 +50,25 @@ public class LenientNullableConverterTests
     [Fact]
     public void StringNumber_WithDot_IsParsed()
     {
-        var stop = Stop("""{ "customerId": 5, "salePrice": "150.50" }""");
-        Assert.Equal(150.50m, stop.SalePrice);
+        Assert.Equal(150.50m, JobSalePrice("\"150.50\""));
     }
 
     [Fact]
     public void StringNumber_WithComma_IsParsed()
     {
-        var stop = Stop("""{ "customerId": 5, "salePrice": "150,50" }""");
-        Assert.Equal(150.50m, stop.SalePrice);
+        Assert.Equal(150.50m, JobSalePrice("\"150,50\""));
     }
 
     [Fact]
     public void RealNumber_StillWorks()
     {
-        var stop = Stop("""{ "customerId": 5, "salePrice": 200 }""");
-        Assert.Equal(200m, stop.SalePrice);
+        Assert.Equal(200m, JobSalePrice("200"));
     }
 
     [Fact]
     public void ExplicitNull_StaysNull()
     {
-        var stop = Stop("""{ "customerId": 5, "salePrice": null }""");
-        Assert.Null(stop.SalePrice);
+        Assert.Null(JobSalePrice("null"));
     }
 
     [Fact]
@@ -76,21 +79,22 @@ public class LenientNullableConverterTests
             "jobDate": "2026-06-20",
             "jobTime": "14:30",
             "jobType": 1,
+            "salePrice": "",
             "purchasePrice": "",
             "extraCost": "",
             "vehicleOwnerId": "",
-            "stops": [ { "customerId": 5, "salePrice": "" } ]
+            "stops": [ { "customerId": 5 } ]
         }
         """;
 
         var req = JsonSerializer.Deserialize<CreateJobRequest>(json, Options)!;
 
+        Assert.Null(req.SalePrice);
         Assert.Null(req.PurchasePrice);
         Assert.Null(req.ExtraCost);
         Assert.Null(req.VehicleOwnerId);
         Assert.Equal(new DateOnly(2026, 6, 20), req.JobDate);
         Assert.Equal(new TimeOnly(14, 30), req.JobTime);
         Assert.Single(req.Stops);
-        Assert.Null(req.Stops[0].SalePrice);
     }
 }

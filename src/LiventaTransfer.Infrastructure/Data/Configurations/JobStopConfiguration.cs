@@ -27,9 +27,6 @@ public class JobStopConfiguration : IEntityTypeConfiguration<JobStop>
         builder.Property(s => s.Notes)
             .HasMaxLength(1000);
 
-        builder.Property(s => s.SalePrice)
-            .HasPrecision(18, 2);
-
         builder.Ignore(s => s.PassengerCount);
 
         builder.HasOne(s => s.Job)

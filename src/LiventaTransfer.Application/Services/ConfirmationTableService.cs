@@ -45,6 +45,8 @@ public sealed class ConfirmationTableService
         // Data rows — bir Job'da birden fazla durak varsa her durak ayrı satır olur
         foreach (var job in jobs)
         {
+            // Fiyat artık iş seviyesinde; işin ilk durak satırında gösterilir, sonrakiler "-".
+            var isFirstStopRow = true;
             foreach (var stop in job.Stops.OrderBy(s => s.Sequence))
             {
                 var passengerName = stop.Passengers.Count > 0
@@ -55,9 +57,10 @@ public sealed class ConfirmationTableService
                 if (string.IsNullOrWhiteSpace(passengerName)) passengerName = "-";
                 var pickup = stop.PickupLocation?.Name ?? stop.PickupAddress ?? "-";
                 var dropoff = stop.DropoffLocation?.Name ?? stop.DropoffAddress ?? "-";
-                var price = stop.SalePrice.HasValue
-                    ? $"₺{stop.SalePrice.Value.ToString("N2", new CultureInfo("tr-TR"))}"
+                var price = isFirstStopRow && job.SalePrice.HasValue
+                    ? $"₺{job.SalePrice.Value.ToString("N2", new CultureInfo("tr-TR"))}"
                     : "-";
+                isFirstStopRow = false;
 
                 sb.Append(@"<tr style=""height:19.95pt"">");
                 AppendDataCell(sb, job.JobDate.ToString("dd.MM.yyyy"), 83, "62.0pt", "center", isFirst: true);

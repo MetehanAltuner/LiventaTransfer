@@ -15,5 +15,9 @@ public class Customer : BaseEntity
     public string? Notes { get; set; }
     public bool IsActive { get; set; } = true;
 
+    /// <summary>Müşterinin bağlı olduğu yüklenici (opsiyonel). Hiyerarşi: Yüklenici → Müşteri → Yolcu.</summary>
+    public long? ContractorId { get; set; }
+    public Contractor? Contractor { get; set; }
+
     public ICollection<JobStop> JobStops { get; set; } = new List<JobStop>();
 }

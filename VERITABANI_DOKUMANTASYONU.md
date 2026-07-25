@@ -276,15 +276,41 @@ Veritabanı, Excel'deki basit yapının ötesinde aşağıdaki kritik bilgileri 
 | `Email` | varchar(200) | ❌ | E-posta adresi |
 | `Address` | varchar(500) | ❌ | Adres bilgisi |
 | `Notes` | varchar(2000) | ❌ | Müşteriyle ilgili genel notlar |
+| `ContractorId` | bigint (FK → Contractors) | ❌ | Müşterinin bağlı olduğu yüklenici (opsiyonel). Hiyerarşi: Yüklenici → Müşteri → Yolcu. Silinirse SET NULL. |
 | `IsActive` | boolean | ✅ | Aktif/pasif durumu |
 
 **İş Mantığı:**
 - Excel'deki mevcut veriye göre **40 farklı müşteri firması** bulunmaktadır.
+- **Yüklenici (Contractor) hiyerarşisi:** Müşteriler opsiyonel olarak bir yükleniciye bağlanabilir
+  (örn. "Tatil Sepeti" yüklenici; "Havelsan / HTR / SSB" onun müşterileri). `ContractorId` null olabilir;
+  mevcut müşteriler bu alan boş kalacak şekilde korunur.
 - Örnek firmalar: Havelsan Tatil Sepeti, HTR Sanayi Tatil Sepeti, SSB Tatil Sepeti, Kızılırmak Elektrik Üretim, Buz Hokeyi Federasyonu, Meteksan, ULAQ, Lidya Madencilik, FCC Travel vb.
 - `CustomerType` alanı, Kurumsal müşteriler için `TaxNumber`/`TaxOffice`, bireysel müşteriler için `TcKimlikNo` kullanılmasını sağlar.
 - Müşteri bilgileri saklanır ve tekrarlı girişlerde referans olarak kullanılır.
 
 **Unique Index:** `IX_Customers_TaxNumber` → TaxNumber (WHERE TaxNumber IS NOT NULL)
+
+---
+
+### 6.3.1 Contractors (Yükleniciler)
+
+**Amaç:** Müşterilerin üstünde yer alan üst kurum/acenteyi tanımlar. Hiyerarşi: **Yüklenici → Müşteri → Yolcu**.
+Örn. "Tatil Sepeti" bir yüklenici olup "Havelsan / HTR / SSB" gibi müşterileri kapsar.
+
+| Alan | Tip | Zorunlu | Açıklama |
+|---|---|---|---|
+| `Name` | varchar(300) | ✅ | Yüklenici adı |
+| `ContactPerson` | varchar(200) | ❌ | İrtibat kişisi |
+| `Phone` | varchar(20) | ❌ | Telefon |
+| `Email` | varchar(200) | ❌ | E-posta |
+| `Address` | varchar(500) | ❌ | Adres |
+| `Notes` | varchar(2000) | ❌ | Notlar |
+| `IsActive` | boolean | ✅ | Aktif/pasif (varsayılan: true) |
+
+**İş Mantığı:**
+- Bir yüklenicinin birden fazla müşterisi olabilir (`Contractors` 1—N `Customers`).
+- `Customers.ContractorId` opsiyoneldir; yüklenici atanmamış müşteriler serbest çalışır.
+- Yüklenici silinirse bağlı müşterilerin `ContractorId` değeri null olur (SET NULL).
 
 ---
 
@@ -298,6 +324,7 @@ Veritabanı, Excel'deki basit yapının ötesinde aşağıdaki kritik bilgileri 
 | `Phone` | varchar(20) | ❌ | Yolcu telefon numarası |
 | `Email` | varchar(200) | ❌ | Yolcu e-posta adresi |
 | `Notes` | varchar(1000) | ❌ | Yolcuyla ilgili özel notlar (VIP tercihleri, alerjiler vb.) |
+| `IsVip` | boolean | ✅ | VIP yolcu mu (varsayılan: false). **True ise:** bu yolcuyu içeren iş yalnızca tek durak ve tek yolcudan oluşabilir (işe başka yolcu/durak eklenemez) ve bu işler birleştirilemez. |
 | `CustomerId` | UUID (FK → Customers) | ✅ | Yolcunun bağlı olduğu müşteri firma |
 | `IsActive` | boolean | ✅ | Aktif/pasif durumu |
 

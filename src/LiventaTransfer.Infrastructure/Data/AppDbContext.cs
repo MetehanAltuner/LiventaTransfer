@@ -12,6 +12,7 @@ public class AppDbContext : DbContext, IAppDbContext
 
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<Contractor> Contractors => Set<Contractor>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<Passenger> Passengers => Set<Passenger>();
     public DbSet<VehicleOwner> VehicleOwners => Set<VehicleOwner>();

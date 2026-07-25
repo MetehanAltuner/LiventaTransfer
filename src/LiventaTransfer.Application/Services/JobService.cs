@@ -37,6 +37,7 @@ public sealed class JobService
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
 
         var q = _db.Jobs.AsNoTracking()
+            .Include(j => j.Contractor)
             .Include(j => j.Driver)
             .Include(j => j.Stops).ThenInclude(s => s.Customer)
             .Include(j => j.Stops).ThenInclude(s => s.Passengers).ThenInclude(p => p.Passenger)
@@ -147,7 +148,7 @@ public sealed class JobService
         if (userValidation is not null)
             return ApiResult<JobDetailDto>.Fail(userValidation, statusCode: 400);
 
-        var refValidation = await ValidateJobReferencesAsync(request.VehicleOwnerId, request.VehicleId, request.DriverId, ct);
+        var refValidation = await ValidateJobReferencesAsync(request.ContractorId, request.VehicleOwnerId, request.VehicleId, request.DriverId, ct);
         if (refValidation is not null)
             return ApiResult<JobDetailDto>.Fail(refValidation, statusCode: 400);
 
@@ -173,9 +174,11 @@ public sealed class JobService
             ExtraInfo = request.ExtraInfo?.Trim(),
             Notes = request.Notes?.Trim(),
             SourceEmail = request.SourceEmail?.Trim(),
+            ContractorId = request.ContractorId,
             VehicleOwnerId = request.VehicleOwnerId,
             VehicleId = request.VehicleId,
             DriverId = request.DriverId,
+            SalePrice = request.SalePrice,
             PurchasePrice = request.PurchasePrice,
             ExtraCost = request.ExtraCost,
             CreatedByUserId = userId
@@ -216,7 +219,7 @@ public sealed class JobService
         if (entity.Status == JobStatus.Merged)
             return ApiResult<JobDetailDto>.Fail("Birleştirilmiş iş güncellenemez.", statusCode: 400);
 
-        var refValidation = await ValidateJobReferencesAsync(request.VehicleOwnerId, request.VehicleId, request.DriverId, ct);
+        var refValidation = await ValidateJobReferencesAsync(request.ContractorId, request.VehicleOwnerId, request.VehicleId, request.DriverId, ct);
         if (refValidation is not null)
             return ApiResult<JobDetailDto>.Fail(refValidation, statusCode: 400);
 
@@ -233,9 +236,11 @@ public sealed class JobService
         entity.ExtraInfo = request.ExtraInfo?.Trim();
         entity.Notes = request.Notes?.Trim();
         entity.SourceEmail = request.SourceEmail?.Trim();
+        entity.ContractorId = request.ContractorId;
         entity.VehicleOwnerId = request.VehicleOwnerId;
         entity.VehicleId = request.VehicleId;
         entity.DriverId = request.DriverId;
+        entity.SalePrice = request.SalePrice;
         entity.PurchasePrice = request.PurchasePrice;
         entity.ExtraCost = request.ExtraCost;
 
@@ -408,6 +413,17 @@ public sealed class JobService
                 $"Yalnızca 'Açık' durumundaki işler birleştirilebilir. Uygun olmayan işler: {string.Join(", ", blocked.Select(b => b.JobNumber))}",
                 statusCode: 400);
 
+        // VIP kuralı: VIP yolcu içeren işler birleştirilemez.
+        var vipJobNumbers = await _db.Jobs
+            .Where(j => jobIds.Contains(j.Id)
+                        && j.Stops.SelectMany(s => s.Passengers).Any(p => p.Passenger.IsVip))
+            .Select(j => j.JobNumber)
+            .ToListAsync(ct);
+        if (vipJobNumbers.Count > 0)
+            return ApiResult<JobDetailDto>.Fail(
+                $"VIP yolcu içeren işler birleştirilemez: {string.Join(", ", vipJobNumbers)}",
+                statusCode: 400);
+
         var distinctTypes = jobs.Select(j => j.JobType).Distinct().ToList();
         if (distinctTypes.Count > 1)
             return ApiResult<JobDetailDto>.Fail(
@@ -480,6 +496,11 @@ public sealed class JobService
                 stop.JobId = target.Id;
                 stop.Sequence = nextSeq++;
             }
+
+            // Fiyat iş seviyesinde tutulduğundan, birleştirilen işlerin satış fiyatları
+            // hedef işte toplanır (kayıpsız). İkisi de null ise değer null kalır.
+            if (source.SalePrice.HasValue || target.SalePrice.HasValue)
+                target.SalePrice = (target.SalePrice ?? 0) + (source.SalePrice ?? 0);
 
             var oldStatus = source.Status;
             source.Status = JobStatus.Merged;
@@ -725,6 +746,7 @@ public sealed class JobService
         if (asNoTracking) q = q.AsNoTracking();
 
         return await q
+            .Include(j => j.Contractor)
             .Include(j => j.VehicleOwner)
             .Include(j => j.Vehicle)
             .Include(j => j.Driver)
@@ -750,8 +772,12 @@ public sealed class JobService
         return null;
     }
 
-    private async Task<string?> ValidateJobReferencesAsync(long? vehicleOwnerId, long? vehicleId, long? driverId, CancellationToken ct)
+    private async Task<string?> ValidateJobReferencesAsync(long? contractorId, long? vehicleOwnerId, long? vehicleId, long? driverId, CancellationToken ct)
     {
+        if (contractorId.HasValue &&
+            !await _db.Contractors.AnyAsync(c => c.Id == contractorId.Value, ct))
+            return $"Yüklenici bulunamadı: {contractorId.Value}";
+
         if (vehicleOwnerId.HasValue &&
             !await _db.VehicleOwners.AnyAsync(v => v.Id == vehicleOwnerId.Value, ct))
             return $"Araç sahibi bulunamadı: {vehicleOwnerId.Value}";
@@ -801,13 +827,21 @@ public sealed class JobService
             .ToList();
         if (passengerIds.Count > 0)
         {
-            var existingPassengerIds = await _db.Passengers
+            var existing = await _db.Passengers
                 .Where(p => passengerIds.Contains(p.Id))
-                .Select(p => p.Id)
+                .Select(p => new { p.Id, p.IsVip })
                 .ToListAsync(ct);
-            var missingPassengers = passengerIds.Except(existingPassengerIds).ToList();
+            var missingPassengers = passengerIds.Except(existing.Select(p => p.Id)).ToList();
             if (missingPassengers.Count > 0)
                 return $"Yolcu bulunamadı: {string.Join(", ", missingPassengers)}";
+
+            // VIP kuralı: VIP yolcu içeren iş tek durak ve tek yolcudan oluşmalıdır.
+            // (Başka yolcu veya durak eklenemez; VIP yolcu işte tek olur.)
+            var hasVip = existing.Any(p => p.IsVip);
+            var totalPassengerSlots = stops.Sum(s => (s.PassengerIds ?? []).Distinct().Count());
+            if (hasVip && (stops.Count > 1 || totalPassengerSlots > 1))
+                return "VIP yolcu içeren iş yalnızca tek durak ve tek yolcudan oluşabilir. " +
+                       "VIP yolcuya başka yolcu veya durak eklenemez.";
         }
 
         return null;
@@ -934,8 +968,7 @@ public sealed class JobService
             PickupAddress = s.PickupAddress?.Trim(),
             DropoffAddress = s.DropoffAddress?.Trim(),
             FlightCode = s.FlightCode?.Trim(),
-            Notes = s.Notes?.Trim(),
-            SalePrice = s.SalePrice
+            Notes = s.Notes?.Trim()
         };
 
         foreach (var passengerId in (s.PassengerIds ?? []).Distinct())

@@ -3,6 +3,7 @@ using System;
 using LiventaTransfer.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LiventaTransfer.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260725174646_MoveSalePriceToJobAndAddContractors")]
+    partial class MoveSalePriceToJobAndAddContractors
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -351,9 +354,6 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.Property<DateTime?>("ContactedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long?>("ContractorId")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -440,8 +440,6 @@ namespace LiventaTransfer.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AssignedByUserId");
-
-                    b.HasIndex("ContractorId");
 
                     b.HasIndex("CreatedByUserId");
 
@@ -776,11 +774,6 @@ namespace LiventaTransfer.Infrastructure.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVip")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("NationalId")
                         .HasMaxLength(11)
@@ -1241,11 +1234,6 @@ namespace LiventaTransfer.Infrastructure.Migrations
                         .HasForeignKey("AssignedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("LiventaTransfer.Domain.Entities.Contractor", "Contractor")
-                        .WithMany()
-                        .HasForeignKey("ContractorId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("LiventaTransfer.Domain.Entities.User", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
@@ -1273,8 +1261,6 @@ namespace LiventaTransfer.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("AssignedByUser");
-
-                    b.Navigation("Contractor");
 
                     b.Navigation("CreatedByUser");
 

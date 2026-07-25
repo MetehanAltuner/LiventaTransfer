@@ -18,9 +18,11 @@ public class Job : BaseEntity
     public string? SourceEmail { get; set; }
     public DateTime? ContactedAt { get; set; }
     public DateTime? DepartedAt { get; set; }
+    public long? ContractorId { get; set; }
     public long? VehicleOwnerId { get; set; }
     public long? VehicleId { get; set; }
     public long? DriverId { get; set; }
+    public decimal? SalePrice { get; set; }
     public decimal? PurchasePrice { get; set; }
     public decimal? ExtraCost { get; set; }
     public Guid CreatedByUserId { get; set; }
@@ -29,6 +31,7 @@ public class Job : BaseEntity
     public long? MergedIntoJobId { get; set; }
     public Job? MergedIntoJob { get; set; }
 
+    public Contractor? Contractor { get; set; }
     public VehicleOwner? VehicleOwner { get; set; }
     public Vehicle? Vehicle { get; set; }
     public Driver? Driver { get; set; }

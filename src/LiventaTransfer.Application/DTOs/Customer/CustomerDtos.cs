@@ -11,6 +11,8 @@ public record CustomerListDto
     public string CustomerTypeLabel { get; init; } = string.Empty;
     public string? Phone { get; init; }
     public string? Email { get; init; }
+    public long? ContractorId { get; init; }
+    public string? ContractorName { get; init; }
     public bool IsActive { get; init; }
 
     public static CustomerListDto FromEntity(Domain.Entities.Customer entity) => new()
@@ -21,6 +23,8 @@ public record CustomerListDto
         CustomerTypeLabel = EnumLabelHelper.GetLabel(entity.CustomerType),
         Phone = entity.Phone,
         Email = entity.Email,
+        ContractorId = entity.ContractorId,
+        ContractorName = NameFormatter.ToTitleCase(entity.Contractor?.Name),
         IsActive = entity.IsActive
     };
 }
@@ -38,6 +42,8 @@ public record CustomerDetailDto
     public string? Email { get; init; }
     public string? Address { get; init; }
     public string? Notes { get; init; }
+    public long? ContractorId { get; init; }
+    public string? ContractorName { get; init; }
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
@@ -55,6 +61,8 @@ public record CustomerDetailDto
         Email = entity.Email,
         Address = entity.Address,
         Notes = entity.Notes,
+        ContractorId = entity.ContractorId,
+        ContractorName = NameFormatter.ToTitleCase(entity.Contractor?.Name),
         IsActive = entity.IsActive,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
@@ -72,6 +80,7 @@ public record CreateCustomerRequest
     public string? Email { get; init; }
     public string? Address { get; init; }
     public string? Notes { get; init; }
+    public long? ContractorId { get; init; }
 }
 
 public record UpdateCustomerRequest
@@ -85,5 +94,6 @@ public record UpdateCustomerRequest
     public string? Email { get; init; }
     public string? Address { get; init; }
     public string? Notes { get; init; }
+    public long? ContractorId { get; init; }
     public bool IsActive { get; init; }
 }
