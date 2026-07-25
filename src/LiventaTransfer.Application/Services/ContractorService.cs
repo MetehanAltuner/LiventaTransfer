@@ -1,6 +1,7 @@
 using LiventaTransfer.Application.Common;
 using LiventaTransfer.Application.DTOs.Contractor;
 using LiventaTransfer.Application.Interfaces;
+using LiventaTransfer.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace LiventaTransfer.Application.Services;
@@ -10,7 +11,7 @@ public sealed class ContractorService
     private readonly IAppDbContext _db;
     public ContractorService(IAppDbContext db) => _db = db;
 
-    public async Task<ApiResult<PagedResult<ContractorListDto>>> GetPagedAsync(PagedQuery query, CancellationToken ct)
+    public async Task<ApiResult<PagedResult<ContractorListDto>>> GetPagedAsync(PagedQuery query, CustomerType? customerType, CancellationToken ct)
     {
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
@@ -22,6 +23,9 @@ public sealed class ContractorService
 
         if (query.IsActive.HasValue)
             q = q.Where(c => c.IsActive == query.IsActive.Value);
+
+        if (customerType.HasValue)
+            q = q.Where(c => c.CustomerType == customerType.Value);
 
         var total = await q.LongCountAsync(ct);
 
@@ -60,7 +64,10 @@ public sealed class ContractorService
         var entity = new Domain.Entities.Contractor
         {
             Name = NameFormatter.ToTitleCase(request.Name),
-            ContactPerson = request.ContactPerson?.Trim(),
+            CustomerType = request.CustomerType,
+            TaxNumber = request.TaxNumber?.Trim(),
+            TaxOffice = request.TaxOffice?.Trim(),
+            TcKimlikNo = request.TcKimlikNo?.Trim(),
             Phone = request.Phone?.Trim(),
             Email = request.Email?.Trim(),
             Address = request.Address?.Trim(),
@@ -81,7 +88,10 @@ public sealed class ContractorService
             return ApiResult<ContractorDetailDto>.Fail("Yüklenici bulunamadı.", statusCode: 404);
 
         entity.Name = NameFormatter.ToTitleCase(request.Name);
-        entity.ContactPerson = request.ContactPerson?.Trim();
+        entity.CustomerType = request.CustomerType;
+        entity.TaxNumber = request.TaxNumber?.Trim();
+        entity.TaxOffice = request.TaxOffice?.Trim();
+        entity.TcKimlikNo = request.TcKimlikNo?.Trim();
         entity.Phone = request.Phone?.Trim();
         entity.Email = request.Email?.Trim();
         entity.Address = request.Address?.Trim();
