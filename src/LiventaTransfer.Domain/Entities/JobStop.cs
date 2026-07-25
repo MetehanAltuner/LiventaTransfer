@@ -31,8 +31,6 @@ public class JobStop : BaseEntity
     public string? FlightCode { get; set; }
     public string? Notes { get; set; }
 
-    public decimal? SalePrice { get; set; }
-
     public DateTime? PickedUpAt { get; set; }
     public DateTime? DroppedOffAt { get; set; }
 }

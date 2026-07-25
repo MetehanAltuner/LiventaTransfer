@@ -7,6 +7,7 @@ public interface IAppDbContext
 {
     DbSet<Branch> Branches { get; }
     DbSet<User> Users { get; }
+    DbSet<Contractor> Contractors { get; }
     DbSet<Customer> Customers { get; }
     DbSet<Passenger> Passengers { get; }
     DbSet<VehicleOwner> VehicleOwners { get; }

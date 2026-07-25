@@ -41,5 +41,12 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
         builder.Property(c => c.IsActive)
             .HasDefaultValue(true);
+
+        builder.HasIndex(c => c.ContractorId);
+
+        builder.HasOne(c => c.Contractor)
+            .WithMany(x => x.Customers)
+            .HasForeignKey(c => c.ContractorId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -118,6 +118,7 @@ builder.Services.AddAuthorization();
 
 // CRUD services
 builder.Services.AddScoped<BranchService>();
+builder.Services.AddScoped<ContractorService>();
 builder.Services.AddScoped<CustomerService>();
 builder.Services.AddScoped<PassengerService>();
 builder.Services.AddScoped<VehicleOwnerService>();

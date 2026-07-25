@@ -46,7 +46,6 @@ public record JobStopDto
     public string? DropoffAddress { get; init; }
     public string? FlightCode { get; init; }
     public string? Notes { get; init; }
-    public decimal? SalePrice { get; init; }
 
     /// <summary>Durağın tüm yolcularına bilgi gönderilmişse true (yolcu yoksa false).</summary>
     public bool AllInfoSent { get; init; }
@@ -76,7 +75,6 @@ public record JobStopDto
             DropoffAddress = s.DropoffAddress,
             FlightCode = s.FlightCode,
             Notes = s.Notes,
-            SalePrice = s.SalePrice,
             AllInfoSent = allInfoSent,
             InfoStatusLabel = passengers.Count == 0
                 ? "Durakta yolcu yok."
@@ -104,7 +102,6 @@ public record JobStopRequest
     public string? DropoffAddress { get; init; }
     public string? FlightCode { get; init; }
     public string? Notes { get; init; }
-    public decimal? SalePrice { get; init; }
 }
 
 public record DriverActiveJobDto
@@ -134,7 +131,9 @@ public record JobListDto
     /// <summary>İşin tüm duraklarındaki yolcuların ad-soyadları (her yolcu ayrı eleman).</summary>
     public string[] PassengerNames { get; init; } = [];
     public string? DriverName { get; init; }
-    public decimal? TotalSalePrice { get; init; }
+    public long? ContractorId { get; init; }
+    public string? ContractorName { get; init; }
+    public decimal? SalePrice { get; init; }
     public long? MergedIntoJobId { get; init; }
 
     /// <summary>
@@ -181,9 +180,9 @@ public record JobListDto
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray(),
         DriverName = NameFormatter.ToTitleCase(e.Driver?.FullName),
-        TotalSalePrice = e.Stops.Any(s => s.SalePrice.HasValue)
-            ? e.Stops.Where(s => s.SalePrice.HasValue).Sum(s => s.SalePrice!.Value)
-            : null,
+        ContractorId = e.ContractorId,
+        ContractorName = NameFormatter.ToTitleCase(e.Contractor?.Name),
+        SalePrice = e.SalePrice,
         MergedIntoJobId = e.MergedIntoJobId,
         AllInfoSent = e.Stops.SelectMany(s => s.Passengers).Any()
             && e.Stops.SelectMany(s => s.Passengers).All(p => p.InfoSentAt.HasValue),
@@ -209,15 +208,17 @@ public record JobDetailDto
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }
     public string? SourceEmail { get; init; }
+    public long? ContractorId { get; init; }
+    public string? ContractorName { get; init; }
     public long? VehicleOwnerId { get; init; }
     public string? VehicleOwnerName { get; init; }
     public long? VehicleId { get; init; }
     public string? VehiclePlate { get; init; }
     public long? DriverId { get; init; }
     public string? DriverName { get; init; }
+    public decimal? SalePrice { get; init; }
     public decimal? PurchasePrice { get; init; }
     public decimal? ExtraCost { get; init; }
-    public decimal? TotalSalePrice { get; init; }
     public string CreatedByUserName { get; init; } = string.Empty;
     public string? AssignedByUserName { get; init; }
     public long? MergedIntoJobId { get; init; }
@@ -258,17 +259,17 @@ public record JobDetailDto
         ExtraInfo = e.ExtraInfo,
         Notes = e.Notes,
         SourceEmail = e.SourceEmail,
+        ContractorId = e.ContractorId,
+        ContractorName = NameFormatter.ToTitleCase(e.Contractor?.Name),
         VehicleOwnerId = e.VehicleOwnerId,
         VehicleOwnerName = NameFormatter.ToTitleCase(e.VehicleOwner?.Name),
         VehicleId = e.VehicleId,
         VehiclePlate = e.Vehicle?.Plate,
         DriverId = e.DriverId,
         DriverName = NameFormatter.ToTitleCase(e.Driver?.FullName),
+        SalePrice = e.SalePrice,
         PurchasePrice = e.PurchasePrice,
         ExtraCost = e.ExtraCost,
-        TotalSalePrice = e.Stops.Any(s => s.SalePrice.HasValue)
-            ? e.Stops.Where(s => s.SalePrice.HasValue).Sum(s => s.SalePrice!.Value)
-            : null,
         CreatedByUserName = e.CreatedByUser != null ? NameFormatter.ToTitleCase($"{e.CreatedByUser.FirstName} {e.CreatedByUser.LastName}") : string.Empty,
         AssignedByUserName = e.AssignedByUser != null ? NameFormatter.ToTitleCase($"{e.AssignedByUser.FirstName} {e.AssignedByUser.LastName}") : null,
         MergedIntoJobId = e.MergedIntoJobId,
@@ -297,9 +298,11 @@ public record CreateJobRequest
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }
     public string? SourceEmail { get; init; }
+    public long? ContractorId { get; init; }
     public long? VehicleOwnerId { get; init; }
     public long? VehicleId { get; init; }
     public long? DriverId { get; init; }
+    public decimal? SalePrice { get; init; }
     public decimal? PurchasePrice { get; init; }
     public decimal? ExtraCost { get; init; }
     public List<JobStopRequest> Stops { get; init; } = [];
@@ -316,9 +319,11 @@ public record UpdateJobRequest
     public string? ExtraInfo { get; init; }
     public string? Notes { get; init; }
     public string? SourceEmail { get; init; }
+    public long? ContractorId { get; init; }
     public long? VehicleOwnerId { get; init; }
     public long? VehicleId { get; init; }
     public long? DriverId { get; init; }
+    public decimal? SalePrice { get; init; }
     public decimal? PurchasePrice { get; init; }
     public decimal? ExtraCost { get; init; }
     public List<JobStopRequest> Stops { get; init; } = [];

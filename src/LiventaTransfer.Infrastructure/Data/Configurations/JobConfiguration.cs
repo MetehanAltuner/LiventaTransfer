@@ -27,6 +27,7 @@ public class JobConfiguration : IEntityTypeConfiguration<Job>
         builder.HasIndex(j => j.JobDate);
         builder.HasIndex(j => j.Status);
         builder.HasIndex(j => j.DriverId);
+        builder.HasIndex(j => j.ContractorId);
         builder.HasIndex(j => j.MergedIntoJobId);
 
         builder.Property(j => j.RouteDescription)
@@ -41,11 +42,19 @@ public class JobConfiguration : IEntityTypeConfiguration<Job>
         builder.Property(j => j.SourceEmail)
             .HasMaxLength(500);
 
+        builder.Property(j => j.SalePrice)
+            .HasPrecision(18, 2);
+
         builder.Property(j => j.PurchasePrice)
             .HasPrecision(18, 2);
 
         builder.Property(j => j.ExtraCost)
             .HasPrecision(18, 2);
+
+        builder.HasOne(j => j.Contractor)
+            .WithMany()
+            .HasForeignKey(j => j.ContractorId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(j => j.VehicleOwner)
             .WithMany()

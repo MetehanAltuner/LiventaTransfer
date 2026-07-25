@@ -19,7 +19,6 @@ public sealed class JobStopRequestValidator : AbstractValidator<JobStopRequest>
         RuleFor(x => x.DropoffAddress).MaximumLength(500);
         RuleFor(x => x.FlightCode).MaximumLength(20);
         RuleFor(x => x.Notes).MaximumLength(1000);
-        RuleFor(x => x.SalePrice).GreaterThanOrEqualTo(0).When(x => x.SalePrice.HasValue);
     }
 
     /// <summary>Sequence gönderilen durakların sıra numaraları aynı istekte tekrar edemez.</summary>
@@ -42,6 +41,7 @@ public sealed class CreateJobRequestValidator : AbstractValidator<CreateJobReque
         RuleFor(x => x.ExtraInfo).MaximumLength(2000);
         RuleFor(x => x.Notes).MaximumLength(2000);
         RuleFor(x => x.SourceEmail).MaximumLength(500);
+        RuleFor(x => x.SalePrice).GreaterThanOrEqualTo(0).When(x => x.SalePrice.HasValue);
         RuleFor(x => x.PurchasePrice).GreaterThanOrEqualTo(0).When(x => x.PurchasePrice.HasValue);
         RuleFor(x => x.ExtraCost).GreaterThanOrEqualTo(0).When(x => x.ExtraCost.HasValue);
         RuleFor(x => x.Stops).NotEmpty().WithMessage("En az bir durak (stop) gereklidir.");
@@ -61,6 +61,7 @@ public sealed class UpdateJobRequestValidator : AbstractValidator<UpdateJobReque
         RuleFor(x => x.ExtraInfo).MaximumLength(2000);
         RuleFor(x => x.Notes).MaximumLength(2000);
         RuleFor(x => x.SourceEmail).MaximumLength(500);
+        RuleFor(x => x.SalePrice).GreaterThanOrEqualTo(0).When(x => x.SalePrice.HasValue);
         RuleFor(x => x.PurchasePrice).GreaterThanOrEqualTo(0).When(x => x.PurchasePrice.HasValue);
         RuleFor(x => x.ExtraCost).GreaterThanOrEqualTo(0).When(x => x.ExtraCost.HasValue);
         RuleFor(x => x.Stops).NotEmpty().WithMessage("En az bir durak (stop) gereklidir.");

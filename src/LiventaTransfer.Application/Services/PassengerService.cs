@@ -77,7 +77,8 @@ public sealed class PassengerService
             NationalId = request.NationalId?.Trim(),
             Phone = request.Phone?.Trim(),
             Email = request.Email?.Trim(),
-            Notes = request.Notes?.Trim()
+            Notes = request.Notes?.Trim(),
+            IsVip = request.IsVip
         };
 
         _db.Passengers.Add(entity);
@@ -107,6 +108,7 @@ public sealed class PassengerService
         entity.Phone = request.Phone?.Trim();
         entity.Email = request.Email?.Trim();
         entity.Notes = request.Notes?.Trim();
+        entity.IsVip = request.IsVip;
 
         await _db.SaveChangesAsync(ct);
 

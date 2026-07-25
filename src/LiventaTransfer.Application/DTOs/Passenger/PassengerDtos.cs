@@ -9,6 +9,7 @@ public record PassengerListDto
     public string? NationalId { get; init; }
     public string? Phone { get; init; }
     public string? Email { get; init; }
+    public bool IsVip { get; init; }
 
     public static PassengerListDto FromEntity(Domain.Entities.Passenger entity) => new()
     {
@@ -16,7 +17,8 @@ public record PassengerListDto
         FullName = NameFormatter.ToTitleCase(entity.FullName),
         NationalId = entity.NationalId,
         Phone = entity.Phone,
-        Email = entity.Email
+        Email = entity.Email,
+        IsVip = entity.IsVip
     };
 }
 
@@ -28,6 +30,7 @@ public record PassengerDetailDto
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public string? Notes { get; init; }
+    public bool IsVip { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
 
@@ -39,6 +42,7 @@ public record PassengerDetailDto
         Phone = entity.Phone,
         Email = entity.Email,
         Notes = entity.Notes,
+        IsVip = entity.IsVip,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
     };
@@ -51,6 +55,7 @@ public record CreatePassengerRequest
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public string? Notes { get; init; }
+    public bool IsVip { get; init; }
     public List<long> LocationIds { get; init; } = [];
 }
 
@@ -61,6 +66,7 @@ public record UpdatePassengerRequest
     public string? Phone { get; init; }
     public string? Email { get; init; }
     public string? Notes { get; init; }
+    public bool IsVip { get; init; }
 }
 
 public record SetPassengerLocationsRequest

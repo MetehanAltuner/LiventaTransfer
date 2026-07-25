@@ -1,0 +1,35 @@
+using LiventaTransfer.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace LiventaTransfer.Infrastructure.Data.Configurations;
+
+public class ContractorConfiguration : IEntityTypeConfiguration<Contractor>
+{
+    public void Configure(EntityTypeBuilder<Contractor> builder)
+    {
+        builder.ToTable("Contractors");
+
+        builder.Property(c => c.Name)
+            .IsRequired()
+            .HasMaxLength(300);
+
+        builder.Property(c => c.ContactPerson)
+            .HasMaxLength(200);
+
+        builder.Property(c => c.Phone)
+            .HasMaxLength(20);
+
+        builder.Property(c => c.Email)
+            .HasMaxLength(200);
+
+        builder.Property(c => c.Address)
+            .HasMaxLength(500);
+
+        builder.Property(c => c.Notes)
+            .HasMaxLength(2000);
+
+        builder.Property(c => c.IsActive)
+            .HasDefaultValue(true);
+    }
+}
