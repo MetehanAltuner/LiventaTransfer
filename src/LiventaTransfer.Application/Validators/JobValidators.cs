@@ -81,6 +81,18 @@ public sealed class UpdateJobStatusRequestValidator : AbstractValidator<UpdateJo
     }
 }
 
+public sealed class UpdateJobDriverRequestValidator : AbstractValidator<UpdateJobDriverRequest>
+{
+    public UpdateJobDriverRequestValidator()
+    {
+        RuleFor(x => x.DriverId)
+            .GreaterThan(0)
+            .When(x => x.DriverId.HasValue)
+            .WithMessage("Geçerli bir sürücü (driverId) gönderilmelidir.");
+        RuleFor(x => x.ChangeReason).MaximumLength(500);
+    }
+}
+
 public sealed class MergeJobsRequestValidator : AbstractValidator<MergeJobsRequest>
 {
     public MergeJobsRequestValidator()

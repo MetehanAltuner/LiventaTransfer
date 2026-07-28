@@ -335,6 +335,13 @@ public record UpdateJobStatusRequest
     public string? ChangeReason { get; init; }
 }
 
+public record UpdateJobDriverRequest
+{
+    /// <summary>İşe atanacak sürücü. null gönderilirse işin sürücü ataması kaldırılır.</summary>
+    public long? DriverId { get; init; }
+    public string? ChangeReason { get; init; }
+}
+
 public record MergeJobsRequest
 {
     public List<long> JobIds { get; init; } = [];

@@ -95,5 +95,6 @@ public record UpdateCustomerRequest
     public string? Address { get; init; }
     public string? Notes { get; init; }
     public long? ContractorId { get; init; }
-    public bool IsActive { get; init; }
+    /// <summary>Gönderilmezse mevcut aktiflik durumu korunur.</summary>
+    public bool? IsActive { get; init; }
 }
