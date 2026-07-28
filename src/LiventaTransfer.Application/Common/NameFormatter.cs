@@ -8,6 +8,18 @@ public static class NameFormatter
     private static readonly CultureInfo Turkish = CultureInfo.GetCultureInfo("tr-TR");
 
     /// <summary>
+    /// Türkçe harf kurallarının yanlış sonuç verdiği yabancı kökenli kelimeler/kısaltmalar.
+    /// tr-TR'de 'I' -> 'ı' küçüldüğü için "VIP" normalde "Vıp" olurdu; bu kelimeler için
+    /// beklenen yazım doğrudan buradan alınır. Anahtar karşılaştırması büyük/küçük harf
+    /// duyarsızdır ("vip", "VIP", "Vip" -> "Vip").
+    /// </summary>
+    private static readonly Dictionary<string, string> SpecialWords =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["VIP"] = "Vip"
+        };
+
+    /// <summary>
     /// Kişi adını Türkçe (tr-TR) kurallarına göre title case yapar: her kelimenin ilk harfi
     /// büyük, kalanı küçük olur ("kenan ozturk" -> "Kenan Ozturk", "ismail" -> "İsmail",
     /// "IŞIL" -> "Işıl"). Baştaki/sondaki boşluklar atılır, kelimeler arası fazla boşluklar
@@ -37,6 +49,9 @@ public static class NameFormatter
     {
         if (part.Length == 0)
             return part;
+
+        if (SpecialWords.TryGetValue(part, out var special))
+            return special;
 
         // TextInfo.ToTitleCase tamamen büyük yazılmış kelimeleri kısaltma sayıp dokunmadığı
         // için ("IŞIL" -> "IŞIL") dönüşüm elle yapılıyor: önce tr-TR ile küçült, sonra ilk

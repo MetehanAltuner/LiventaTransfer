@@ -386,6 +386,75 @@ public sealed class JobService
         return await GetByIdAsync(entity.Id, ct);
     }
 
+    /// <summary>
+    /// İşin sürücüsünü değiştirir (atama, değiştirme veya kaldırma). DriverId null gönderilirse
+    /// atama kaldırılır. Sürücü atandığında 'Açık' durumundaki iş 'Atandı'ya, atama kaldırıldığında
+    /// 'Atandı' durumundaki iş 'Açık'a çekilir ve değişiklik durum geçmişine yazılır.
+    /// </summary>
+    public async Task<ApiResult<JobDetailDto>> UpdateDriverAsync(long id, UpdateJobDriverRequest request, Guid userId, CancellationToken ct)
+    {
+        var entity = await _db.Jobs
+            .Include(j => j.Stops)
+            .FirstOrDefaultAsync(j => j.Id == id, ct);
+        if (entity is null)
+            return ApiResult<JobDetailDto>.Fail("İş bulunamadı.", statusCode: 404);
+
+        if (entity.Status is JobStatus.Merged or JobStatus.Cancelled
+            or JobStatus.Completed or JobStatus.PendingInvoice or JobStatus.Invoiced)
+            return ApiResult<JobDetailDto>.Fail(
+                $"İşin sürücüsü bu durumda değiştirilemez: {EnumLabelHelper.GetLabel(entity.Status)}", statusCode: 400);
+
+        // Sürücü yola çıkmışsa (iş devam ediyorsa) atama kaldırılamaz; iş sürücüsüz kalamaz.
+        if (!request.DriverId.HasValue && entity.Status == JobStatus.InProgress)
+            return ApiResult<JobDetailDto>.Fail(
+                "Devam eden bir işin sürücü ataması kaldırılamaz. Önce işin durumunu değiştirin.", statusCode: 400);
+
+        if (request.DriverId.HasValue &&
+            !await _db.Drivers.AnyAsync(d => d.Id == request.DriverId.Value, ct))
+            return ApiResult<JobDetailDto>.Fail($"Sürücü bulunamadı: {request.DriverId.Value}", statusCode: 400);
+
+        // Idempotent: aynı sürücü tekrar gönderilirse durum geçmişine kayıt açılmaz.
+        if (entity.DriverId == request.DriverId)
+            return await GetByIdAsync(entity.Id, ct);
+
+        var userExists = await UserExistsAsync(userId, ct);
+        var oldStatus = entity.Status;
+
+        entity.DriverId = request.DriverId;
+
+        if (request.DriverId.HasValue)
+        {
+            entity.AssignedByUserId = userExists ? userId : null;
+            if (entity.Status == JobStatus.Open)
+                entity.Status = JobStatus.Assigned;
+        }
+        else
+        {
+            entity.AssignedByUserId = null;
+            if (entity.Status == JobStatus.Assigned)
+                entity.Status = JobStatus.Open;
+        }
+
+        if (userExists && entity.Status != oldStatus)
+        {
+            _db.JobStatusHistories.Add(new Domain.Entities.JobStatusHistory
+            {
+                JobId = entity.Id,
+                OldStatus = oldStatus,
+                NewStatus = entity.Status,
+                ChangedByUserId = userId,
+                ChangeReason = request.ChangeReason?.Trim()
+                    ?? (request.DriverId.HasValue ? "Sürücü atandı." : "Sürücü ataması kaldırıldı."),
+                ChangedAt = DateTime.UtcNow
+            });
+        }
+
+        await _db.SaveChangesAsync(ct);
+        await _broadcaster.BroadcastJobsChangedAsync(ct);
+
+        return await GetByIdAsync(entity.Id, ct);
+    }
+
     public async Task<ApiResult<JobDetailDto>> MergeAsync(MergeJobsRequest request, Guid userId, CancellationToken ct)
     {
         var userValidation = await ValidateUserAsync(userId, ct);

@@ -16,9 +16,9 @@ public sealed class CustomersController : ControllerBase
     public CustomersController(CustomerService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] CustomerType? customerType, CancellationToken ct)
+    public async Task<IActionResult> GetPaged([FromQuery] PagedQuery query, [FromQuery] CustomerType? customerType, [FromQuery] long? contractorId, CancellationToken ct)
     {
-        var r = await _svc.GetPagedAsync(query, customerType, ct);
+        var r = await _svc.GetPagedAsync(query, customerType, contractorId, ct);
         return StatusCode(r.StatusCode, r);
     }
 

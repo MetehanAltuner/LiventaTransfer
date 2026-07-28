@@ -11,7 +11,7 @@ public sealed class CustomerService
     private readonly IAppDbContext _db;
     public CustomerService(IAppDbContext db) => _db = db;
 
-    public async Task<ApiResult<PagedResult<CustomerListDto>>> GetPagedAsync(PagedQuery query, CustomerType? customerType, CancellationToken ct)
+    public async Task<ApiResult<PagedResult<CustomerListDto>>> GetPagedAsync(PagedQuery query, CustomerType? customerType, long? contractorId, CancellationToken ct)
     {
         var page = Math.Max(1, query.Page);
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
@@ -26,6 +26,9 @@ public sealed class CustomerService
 
         if (customerType.HasValue)
             q = q.Where(c => c.CustomerType == customerType.Value);
+
+        if (contractorId.HasValue)
+            q = q.Where(c => c.ContractorId == contractorId.Value);
 
         var total = await q.LongCountAsync(ct);
 
@@ -109,7 +112,8 @@ public sealed class CustomerService
         entity.Address = request.Address?.Trim();
         entity.Notes = request.Notes?.Trim();
         entity.ContractorId = request.ContractorId;
-        entity.IsActive = request.IsActive;
+        if (request.IsActive.HasValue)
+            entity.IsActive = request.IsActive.Value;
 
         await _db.SaveChangesAsync(ct);
 

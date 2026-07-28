@@ -84,4 +84,21 @@ public class NameFormatterTests
     {
         Assert.Equal("A B", NameFormatter.ToTitleCase("a b"));
     }
+
+    [Theory]
+    [InlineData("VIP")]
+    [InlineData("vip")]
+    [InlineData("Vip")]
+    [InlineData("vIP")]
+    public void Vip_HerYazimdaVipOlur(string input)
+    {
+        // tr-TR kuralı uygulansaydı "VIP" -> "Vıp" olurdu (I -> ı)
+        Assert.Equal("Vip", NameFormatter.ToTitleCase(input));
+    }
+
+    [Fact]
+    public void VipKelimesiCumleIcinde_DogruYazilir()
+    {
+        Assert.Equal("Vip Transfer", NameFormatter.ToTitleCase("VIP TRANSFER"));
+    }
 }

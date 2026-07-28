@@ -67,6 +67,15 @@ public sealed class JobsController : ControllerBase
         return StatusCode(r.StatusCode, r);
     }
 
+    /// <summary>İşin sürücüsünü değiştirir (atama, değiştirme veya kaldırma).</summary>
+    /// <remarks>driverId null gönderilirse atama kaldırılır. Sürücü atandığında 'Açık' iş 'Atandı'ya, atama kaldırıldığında 'Atandı' iş 'Açık'a çekilir.</remarks>
+    [HttpPatch("{id:long}/driver")]
+    public async Task<IActionResult> UpdateDriver(long id, [FromBody] UpdateJobDriverRequest request, CancellationToken ct)
+    {
+        var r = await _svc.UpdateDriverAsync(id, request, User.GetUserId(), ct);
+        return StatusCode(r.StatusCode, r);
+    }
+
     /// <summary>İşin duraklarını verilen durak id + sıra numarası listesine göre yeniden sıralar.</summary>
     /// <remarks>Gönderilen liste işin TÜM duraklarını kapsamalıdır; sıra numaraları 1..n olarak normalize edilir.</remarks>
     [HttpPut("{id:long}/stops/reorder")]
